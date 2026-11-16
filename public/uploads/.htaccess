@@ -1,0 +1,8 @@
+# Proteksi Direktori Upload Media (BRIEF Bab 2.3 & OWASP Top 10)
+Options -Indexes -ExecCGI
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<FilesMatch "\.(php|php5|php7|php8|phtml|pl|py|jsp|asp|htm|html|sh|cgi)$">
+    Require all denied
+</FilesMatch>

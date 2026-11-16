@@ -1,0 +1,98 @@
+# ==============================================================================
+# 1. Environment & Kredensial Sensitif
+# ==============================================================================
+.env
+.env.*
+!.env.example
+*.env
+*.key
+*.pem
+*.cert
+auth.json
+
+# ==============================================================================
+# 2. Dependensi Paket (Composer & NPM)
+# ==============================================================================
+/node_modules
+/vendor
+
+# ==============================================================================
+# 3. Log, Sesi, Cache, & File Upload Lokal (Storage)
+# ==============================================================================
+*.log
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Framework Cache, Sesi, & Views
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/debugbar/*
+/storage/pail/*
+
+# Upload Media Lokal Pengujian
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+# Vite Frontend Build & Symlink
+/public/hot
+/public/storage
+/public/build
+
+# ==============================================================================
+# 4. Pengujian & Basis Data Sementara
+# ==============================================================================
+.phpunit.result.cache
+.phpunit.cache/
+*.sqlite
+*.sqlite-journal
+database/*.sqlite
+database/*.sqlite-journal
+Homestead.json
+Homestead.yaml
+
+# ==============================================================================
+# 5. File Sementara & Scratch
+# ==============================================================================
+Zzz/
+value
+*.tmp
+
+# ==============================================================================
+# 6. Metadata AI Agent & Cache Indexing
+# ==============================================================================
+.codegraph/
+.codebase-memory/
+.agents/
+.rtk/
+.grok/
+CLAUDE.md
+GEMINI.md
+
+# ==============================================================================
+# 7. IDE & Sistem Operasi (Windows / macOS)
+# ==============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.phpactor.json

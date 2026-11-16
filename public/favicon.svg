@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="coalGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#coalGrad)"/>
+  <path d="M14 38V24C14 21.7909 15.7909 20 18 20H38V38H14Z" fill="white" fill-opacity="0.95"/>
+  <path d="M38 26H46.5L52 33V38H38V26Z" fill="#BAE6FD"/>
+  <circle cx="23" cy="41" r="5" fill="#0F172A" stroke="white" stroke-width="2.5"/>
+  <circle cx="44" cy="41" r="5" fill="#0F172A" stroke="white" stroke-width="2.5"/>
+</svg>
