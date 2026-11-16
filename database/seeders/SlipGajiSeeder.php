@@ -27,9 +27,9 @@ class SlipGajiSeeder extends Seeder
         $periodeGaji = PeriodeGaji::updateOrCreate(
             ['kode' => 'Jan-26'],
             [
-                'tanggal_mulai' => '2026-08-21',
-                'tanggal_selesai' => '2026-09-18',
-                'tanggal_bayar' => '2026-09-25',
+                'tanggal_mulai' => '2026-01-01',
+                'tanggal_selesai' => '2026-01-31',
+                'tanggal_bayar' => '2026-02-05',
                 'status' => 'draft',
             ],
         );
@@ -99,7 +99,7 @@ class SlipGajiSeeder extends Seeder
             'gaji_komisi' => 4176658,
             'total_tunjangan' => 0,
             'potongan_bpjs' => 129000,
-            'potongan_kasbon' => 500000,
+            'potongan_kasbon' => 0,
             'gaji_bersih' => 3547658,
         ];
 

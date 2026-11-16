@@ -54,6 +54,8 @@ class DatabaseSeeder extends Seeder
             SlipDummySeeder::class,
             MasterStatusSeeder::class,
             NormalisasiModelTrukSeeder::class,
+            JenisTrukSeeder::class,
+            BiayaOperasionalSeeder::class,
             DataPerusahaanSeeder::class,
         ]);
     }
