@@ -8,13 +8,14 @@
 
 ## 1. Deskripsi & Tujuan Aplikasi
 
-Dalam industri logistik transportasi batubara (*coal haulage*), penggajian pengemudi truk tronton tidak menggunakan sistem gaji bulanan statis (*fixed monthly salary*), melainkan berbasis pada **kinerja operasional harian di lapangan (ritase, tonase muatan, rute jalan, dan beban perawatan armada)**.
+Dalam industri logistik transportasi batubara (_coal haulage_), penggajian pengemudi truk tronton tidak menggunakan sistem gaji bulanan statis (_fixed monthly salary_), melainkan berbasis pada **kinerja operasional harian di lapangan (ritase, tonase muatan, rute jalan, dan beban perawatan armada)**.
 
-Tujuan utama dari pengembangan sistem ini adalah **menghadirkan standarisasi dan otomatisasi alur penggajian berbasis kejadian (event-driven operational lifecycle)** yang dimulai sejak **Surat Jalan pertama kali diterbitkan di pos operasional hingga pencairan dana disahkan oleh Direksi**. 
+Tujuan utama dari pengembangan sistem ini adalah **menghadirkan standarisasi dan otomatisasi alur penggajian berbasis kejadian (event-driven operational lifecycle)** yang dimulai sejak **Surat Jalan pertama kali diterbitkan di pos operasional hingga pencairan dana disahkan oleh Direksi**.
 
 Sistem ini memecahkan berbagai risiko bisnis nyata, seperti:
+
 - Mencegah timbulnya surat jalan fiktif melalui validasi foto bukti fisik bertanda tangan penerima dan normalisasi data timbangan.
-- Menjamin tidak ada surat jalan yang tertinggal (*unverified trips*) saat gaji diajukan ke Direksi melalui mekanisme blokir otomatis (*strict pre-condition check*).
+- Menjamin tidak ada surat jalan yang tertinggal (_unverified trips_) saat gaji diajukan ke Direksi melalui mekanisme blokir otomatis (_strict pre-condition check_).
 - Menghilangkan perselisihan pembagian komisi supir melalui rekonsiliasi berjenjang 4 tahap berpresisi bilangan bulat Rupiah (`BIGINT`).
 - Mengotomatiskan pemotongan angsuran kasbon supir tepat pada saat pencairan dana gaji dieksekusi oleh Pimpinan.
 - Memberikan transparansi kepada pengemudi melalui **Portal Mandiri Supir** dan fitur **Simulasi & Kalkulator Gaji (1 s.d. 31 Rit)**.
@@ -25,52 +26,52 @@ Sistem ini memecahkan berbagai risiko bisnis nyata, seperti:
 
 Berikut adalah alur aktivitas sistem dari penugasan Surat Jalan hingga pengesahan slip gaji:
 
-![Activity Diagram Alur Penggajian](../docs/ACTIVITY_DIAGRAM.png)
+![Activity Diagram Alur Penggajian](ACTIVITY_DIAGRAM.png)
 
 ---
 
 ## 3. Tahapan Alur Operasional Penggajian (Urutan Bernomor 1–10)
 
-Seluruh proses di dalam aplikasi mengikuti urutan bernomor yang mengikat antar peran (*Admin HRD*, *Supir*, dan *Pimpinan/Direksi*):
+Seluruh proses di dalam aplikasi mengikuti urutan bernomor yang mengikat antar peran (_Admin HRD_, _Supir_, dan _Pimpinan/Direksi_):
 
 1. **Pembuatan Surat Jalan (`draft` atau langsung `terbit`) — Admin HRD (`/admin/operational/trips`):**
-   - Admin membuat Surat Jalan baru untuk penugasan supir, nomor polisi armada, rute koridor tambang, dan uang jalan jalan operasional.
-   - Status awal dapat disetel ke **`draft`** (*Draf / Belum Diterbitkan*) atau langsung **`terbit`** (*Terbit / Siap Dikirim Supir*).
-   - **Kunci Keamanan:** Surat Jalan berstatus **`draft` TIDAK BOLEH terlihat di Portal Supir (`/my/trips`)** dan setiap aksi supir (`mulai-kirim` atau `konfirmasi`) atas Surat Jalan `draft` otomatis ditolak oleh server dengan HTTP `403`.
+    - Admin membuat Surat Jalan baru untuk penugasan supir, nomor polisi armada, rute koridor tambang, dan uang jalan jalan operasional.
+    - Status awal dapat disetel ke **`draft`** (_Draf / Belum Diterbitkan_) atau langsung **`terbit`** (_Terbit / Siap Dikirim Supir_).
+    - **Kunci Keamanan:** Surat Jalan berstatus **`draft` TIDAK BOLEH terlihat di Portal Supir (`/my/trips`)** dan setiap aksi supir (`mulai-kirim` atau `konfirmasi`) atas Surat Jalan `draft` otomatis ditolak oleh server dengan HTTP `403`.
 
 2. **Penerbitan Surat Jalan (`draft` → `terbit`) — Admin HRD (`/admin/operational/trips`):**
-   - Admin menerbitkan Surat Jalan draf (satuan maupun massal) menjadi status **`terbit`** agar penugasan resmi muncul di gawai/portal supir (`/my/trips`).
+    - Admin menerbitkan Surat Jalan draf (satuan maupun massal) menjadi status **`terbit`** agar penugasan resmi muncul di gawai/portal supir (`/my/trips`).
 
 3. **Mulai Pengantaran oleh Supir (`terbit` → `sedang_dikirim`) — Supir (`/my/trips`):**
-   - Supir melihat Surat Jalan berstatus **`terbit`** di Portal Supir, lalu menekan tombol **"Mulai Kirim"** (`PATCH /my/trips/{trip}/mulai-kirim`) saat armada mulai bergerak mengangkut batubara.
-   - Status Surat Jalan otomatis berubah menjadi **`sedang_dikirim`** (*Sedang Dikirim*).
+    - Supir melihat Surat Jalan berstatus **`terbit`** di Portal Supir, lalu menekan tombol **"Mulai Kirim"** (`PATCH /my/trips/{trip}/mulai-kirim`) saat armada mulai bergerak mengangkut batubara.
+    - Status Surat Jalan otomatis berubah menjadi **`sedang_dikirim`** (_Sedang Dikirim_).
 
 4. **Konfirmasi Tiba di Tujuan & Bukti Fisik Timbangan (`sedang_dikirim` → `menunggu_verifikasi`) — Supir (`/my/trips`):**
-   - Saat tiba di stockpile atau pelabuhan pembongkaran, supir menekan tombol **"Konfirmasi Sampai"**.
-   - Supir **wajib** mengisi **`nama_penerima`** (otomatis dinormalisasi menjadi HURUF BESAR oleh model `Ritase`), tonase hasil timbangan jembatan, dan **wajib** mengunggah minimal 1 (`>= 1`) foto bukti surat jalan fisik yang telah dibubuhi tanda tangan/stempel penerima (`foto_surat_jalan`, berkas gambar otomatis dikonversi ke `.webp` dengan batas maks 2 MB per foto).
-   - Status Surat Jalan berubah menjadi **`menunggu_verifikasi`** (*Menunggu Verifikasi Admin*).
+    - Saat tiba di stockpile atau pelabuhan pembongkaran, supir menekan tombol **"Konfirmasi Sampai"**.
+    - Supir **wajib** mengisi **`nama_penerima`** (otomatis dinormalisasi menjadi HURUF BESAR oleh model `Ritase`), tonase hasil timbangan jembatan, dan **wajib** mengunggah minimal 1 (`>= 1`) foto bukti surat jalan fisik yang telah dibubuhi tanda tangan/stempel penerima (`foto_surat_jalan`, berkas gambar otomatis dikonversi ke `.webp` dengan batas maks 2 MB per foto).
+    - Status Surat Jalan berubah menjadi **`menunggu_verifikasi`** (_Menunggu Verifikasi Admin_).
 
 5. **Verifikasi Surat Jalan Lapangan (`menunggu_verifikasi` → `terverifikasi`) — Admin HRD (`/admin/operational/trips`):**
-   - Admin memeriksa keabsahan foto bukti fisik bertanda tangan, kesesuaian tonase muatan, dan identitas penerima (dapat diverifikasi satuan maupun massal).
-   - Admin menandai Surat Jalan sebagai **`terverifikasi`** (*Berhasil Terkirim & Terverifikasi*). Hanya surat jalan dengan status `terverifikasi` yang sah untuk diperhitungkan dalam penggajian bulanan.
+    - Admin memeriksa keabsahan foto bukti fisik bertanda tangan, kesesuaian tonase muatan, dan identitas penerima (dapat diverifikasi satuan maupun massal).
+    - Admin menandai Surat Jalan sebagai **`terverifikasi`** (_Berhasil Terkirim & Terverifikasi_). Hanya surat jalan dengan status `terverifikasi` yang sah untuk diperhitungkan dalam penggajian bulanan.
 
 6. **Rekonsiliasi Penggajian & Blokir Pengajuan (`draft` → `pending`) — Admin HRD (`/admin/payroll`):**
-   - Layanan `PayrollCalculationService::rekonsiliasiPeriode()` **hanya** menghitung surat jalan yang berstatus **`terverifikasi`**.
-   - **Blokir Integritas:** Ketika Admin mengajukan rekapitulasi gaji ke Pimpinan (`POST /admin/payroll/{period}/submit`), server **wajib memblokir dengan HTTP `422`** apabila masih ditemukan Surat Jalan pada periode tersebut yang berstatus `draft`, `terbit`, `sedang_dikirim`, atau `menunggu_verifikasi`. Seluruh perjalanan harus tuntas diverifikasi atau dibatalkan terlebih dahulu.
-   - Setelah lolos verifikasi, status periode berubah menjadi **`pending`** (*Menunggu Otorisasi Pimpinan*).
+    - Layanan `PayrollCalculationService::rekonsiliasiPeriode()` **hanya** menghitung surat jalan yang berstatus **`terverifikasi`**.
+    - **Blokir Integritas:** Ketika Admin mengajukan rekapitulasi gaji ke Pimpinan (`POST /admin/payroll/{period}/submit`), server **wajib memblokir dengan HTTP `422`** apabila masih ditemukan Surat Jalan pada periode tersebut yang berstatus `draft`, `terbit`, `sedang_dikirim`, atau `menunggu_verifikasi`. Seluruh perjalanan harus tuntas diverifikasi atau dibatalkan terlebih dahulu.
+    - Setelah lolos verifikasi, status periode berubah menjadi **`pending`** (_Menunggu Otorisasi Pimpinan_).
 
 7. **Audit & Otorisasi Bertahap Direksi — Pimpinan / Direksi (`/executive/payroll`):**
-   - Pimpinan memeriksa kebutuhan likuiditas kas (*cash requirement*), total komisi pengemudi, rekap uang jalan, beban sparepart per unit armada, serta potongan kewajiban (BPJS dan kasbon).
-   - Pimpinan berwenang memberikan **ACC Satuan** per supir, **ACC Baris Terpilih** via checkbox, atau **ACC Semua** (`approved`).
-   - Jika ditemukan selisih atau anomali data, Pimpinan dapat mengembalikan periode ke status **`draft`** (*Tolak / Revisi*) disertai **`catatan_penolakan`**.
+    - Pimpinan memeriksa kebutuhan likuiditas kas (_cash requirement_), total komisi pengemudi, rekap uang jalan, beban sparepart per unit armada, serta potongan kewajiban (BPJS dan kasbon).
+    - Pimpinan berwenang memberikan **ACC Satuan** per supir, **ACC Baris Terpilih** via checkbox, atau **ACC Semua** (`approved`).
+    - Jika ditemukan selisih atau anomali data, Pimpinan dapat mengembalikan periode ke status **`draft`** (_Tolak / Revisi_) disertai **`catatan_penolakan`**.
 
 8. **Pencairan Dana (`approved` → `paid`) & Pemotongan Kasbon Otomatis — Pimpinan (`/executive/payroll`):**
-   - Pimpinan mengeksekusi pencairan dana (`PATCH /executive/payroll/{period}/disburse`) untuk baris gaji berstatus `approved` menjadi **`paid`** (*Sudah Dicairkan*).
-   - Proses pencairan otomatis menandai jadwal tagihan `angsuran_kasbon` periode berjalan menjadi **`terpotong`** dan mengurangi saldo `kasbon.sisa_pinjaman` (otomatis berstatus **`lunas`** saat sisa pinjaman mencapai `0`).
+    - Pimpinan mengeksekusi pencairan dana (`PATCH /executive/payroll/{period}/disburse`) untuk baris gaji berstatus `approved` menjadi **`paid`** (_Sudah Dicairkan_).
+    - Proses pencairan otomatis menandai jadwal tagihan `angsuran_kasbon` periode berjalan menjadi **`terpotong`** dan mengurangi saldo `kasbon.sisa_pinjaman` (otomatis berstatus **`lunas`** saat sisa pinjaman mencapai `0`).
 
 9. **Penerbitan Slip Gaji & Laporan Keuangan Resmi (`data_perusahaan`):**
-   - Slip gaji dan laporan keuangan periode hanya diterbitkan dan dapat diunduh supir/admin setelah periode berstatus disetujui (`approved` / `paid`).
-   - Identitas legal perusahaan (kop surat, logo, nomor rekening bank pencairan, nama & tanda tangan pemilik) dikelola secara terpusat oleh Pimpinan di `/executive/company` pada tabel `data_perusahaan`.
+    - Slip gaji dan laporan keuangan periode hanya diterbitkan dan dapat diunduh supir/admin setelah periode berstatus disetujui (`approved` / `paid`).
+    - Identitas legal perusahaan (kop surat, logo, nomor rekening bank pencairan, nama & tanda tangan pemilik) dikelola secara terpusat oleh Pimpinan di `/executive/company` pada tabel `data_perusahaan`.
 
 10. **Simulasi Mandiri & Perencanaan Ritase Supir — Supir (`/my/simulation`):**
     - Supir dapat membuat proyeksi penghasilan mandiri dengan menyusun 1 s.d. 31 baris surat jalan simulasi berdasarkan rute-rute resmi aktif.
@@ -82,7 +83,7 @@ Seluruh proses di dalam aplikasi mengikuti urutan bernomor yang mengikat antar p
 ## 4. Rumus Kalkulasi Gaji Supir 4 Tahap
 
 Seluruh perhitungan matematis dikonsolidasikan pada satu kelas layanan tunggal: `App\Services\PayrollCalculationService::hitungKomponenGaji()`.  
-Semua nilai nominal uang menggunakan bilangan bulat Rupiah (`BIGINT`) untuk mencegah galat pembulatan desimal (*floating-point rounding errors*), berat muatan dalam kilogram (`tonase_kg BIGINT`), dan persentase komisi supir disimpan sebagai basis poin (`persentase_komisi_bp SMALLINT`, di mana `1000` = `10,00%`).
+Semua nilai nominal uang menggunakan bilangan bulat Rupiah (`BIGINT`) untuk mencegah galat pembulatan desimal (_floating-point rounding errors_), berat muatan dalam kilogram (`tonase_kg BIGINT`), dan persentase komisi supir disimpan sebagai basis poin (`persentase_komisi_bp SMALLINT`, di mana `1000` = `10,00%`).
 
 ```text
 Ritase Terverifikasi (tonase_kg × tarif_per_ton)
@@ -114,11 +115,11 @@ Ritase Terverifikasi (tonase_kg × tarif_per_ton)
 
 ## 5. Matriks Peran & Hak Akses Pengguna (Role-Based Access Control)
 
-| Peran | Prefix URL | Hak Akses & Tanggung Jawab Operasional |
-|---|---|---|
-| **Admin HRD** (`admin`) | `/admin/*` | Pengelolaan data master (supir, armada truk, rute), penerbitan & verifikasi surat jalan lapangan, rekonsiliasi payroll bulanan, pengajuan pengesahan ke Pimpinan (`submit`). **Dilarang keras menyetujui / memberi ACC.** |
-| **Pimpinan / Direksi** (`pimpinan`) | `/executive/*` | Pemegang otoritas tertinggi pengesahan gaji: ACC satuan per supir, ACC batch/massal, penolakan/revisi periode ke draf, eksekusi pencairan dana gaji (`disburse`), serta tata kelola data legal perusahaan (`/executive/company`). |
-| **Pengemudi / Supir** (`supir`) | `/my/*` | Akses mandiri supir: menerima surat jalan terbit, tombol mulai kirim, konfirmasi serah terima muatan & unggah bukti foto fisik, pemantauan buku kasbon & jadwal cicilan, kalkulator simulasi gaji (1–31 rit), serta unduh slip gaji resmi. |
+| Peran                               | Prefix URL     | Hak Akses & Tanggung Jawab Operasional                                                                                                                                                                                                     |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Admin HRD** (`admin`)             | `/admin/*`     | Pengelolaan data master (supir, armada truk, rute), penerbitan & verifikasi surat jalan lapangan, rekonsiliasi payroll bulanan, pengajuan pengesahan ke Pimpinan (`submit`). **Dilarang keras menyetujui / memberi ACC.**                  |
+| **Pimpinan / Direksi** (`pimpinan`) | `/executive/*` | Pemegang otoritas tertinggi pengesahan gaji: ACC satuan per supir, ACC batch/massal, penolakan/revisi periode ke draf, eksekusi pencairan dana gaji (`disburse`), serta tata kelola data legal perusahaan (`/executive/company`).          |
+| **Pengemudi / Supir** (`supir`)     | `/my/*`        | Akses mandiri supir: menerima surat jalan terbit, tombol mulai kirim, konfirmasi serah terima muatan & unggah bukti foto fisik, pemantauan buku kasbon & jadwal cicilan, kalkulator simulasi gaji (1–31 rit), serta unduh slip gaji resmi. |
 
 ---
 
@@ -149,6 +150,7 @@ php artisan serve --port=8888
 Setelah server aktif, akses aplikasi melalui peramban web di: `http://127.0.0.1:8888`
 
 ### Akun Uji Coba Default (Kredensial Simulasi):
+
 - **Akun Admin HRD:** `admin@payroll.test` | Kata Sandi: `password`
 - **Akun Pimpinan Direksi:** `pimpinan@payroll.test` | Kata Sandi: `password`
 - **Akun Supir:** `supir@payroll.test` | Kata Sandi: `password`
