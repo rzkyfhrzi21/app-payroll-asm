@@ -27,6 +27,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PencarianController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+})->withoutMiddleware('web')->name('health');
+
 Route::redirect('/', '/login');
 
 // Fallback penyajian media dari disk `public` bila symlink `public/storage`

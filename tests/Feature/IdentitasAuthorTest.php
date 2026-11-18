@@ -92,4 +92,12 @@ class IdentitasAuthorTest extends TestCase
         $responPimpinan->assertSee('2311050052', false);
         $responPimpinan->assertDontSee('Pembimbing:', false);
     }
+
+    public function test_endpoint_health_mengembalikan_status_ok_tanpa_auth(): void
+    {
+        $respon = $this->getJson('/health');
+
+        $respon->assertOk()
+            ->assertExactJson(['status' => 'ok']);
+    }
 }
