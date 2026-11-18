@@ -1,3 +1,12 @@
+<!-- ======================================================
+     KOMPONEN UI: BILAH AKSI MASSAL TABEL VIA CHECKBOX (BULK ACTION BAR)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Stempel Massal Banyak Dokumen Sekaligus".
+     Saat admin atau pimpinan ingin mengubah status banyak surat jalan atau
+     meng-ACC gaji banyak supir sekaligus, mereka tinggal mencentang kotak-kotak
+     checkbox di tabel, memilih status tujuan, lalu menekan tombol terapkan.
+====================================================== -->
 @props([
     'url',
     'opsiStatus' => [],

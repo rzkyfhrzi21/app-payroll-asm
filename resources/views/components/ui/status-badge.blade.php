@@ -1,3 +1,13 @@
+<!-- ======================================================
+     KOMPONEN UI: LENCANA LABEL STATUS BERWARNA (STATUS BADGE)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Pita Stempel Berwarna Status Dokumen".
+     - Hijau (Emerald) : Disetujui / Selesai / Terverifikasi / Lunas
+     - Kuning (Amber)  : Menunggu ACC / Diajukan / Terjadwal
+     - Merah (Red)     : Ditolak / Gagal / Rusak
+     - Abu-abu (Slate) : Draf Belum Diterbitkan / Nonaktif
+====================================================== -->
 @props([
     'tone' => 'slate',
     'label',

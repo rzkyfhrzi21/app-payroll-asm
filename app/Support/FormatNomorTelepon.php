@@ -3,11 +3,18 @@
 namespace App\Support;
 
 /**
- * Penyeragaman nomor telepon/WhatsApp Indonesia.
- *
- * Nilai disimpan dalam format internasional "+62" diikuti digit lokal yang
- * diawali angka 8, misalnya "+6281289301123". Form hanya menampilkan
- * angka lokalnya agar pengguna tidak perlu mengetik kode negara.
+ * ============================================================================
+ * HELPER: PENYERAGAMAN FORMAT NOMOR TELEPON (PHONE FORMAT HELPER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Alat Penertib Nomor Kontak WhatsApp / Telepon".
+ * Pengguna sering mengetik nomor HP dengan format berbeda-beda:
+ * ada yang "0812...", "+62812...", atau "62812...".
+ * Helper ini merapikan nomor tersebut agar seragam dalam format standar internasional (+62...)
+ * saat disimpan di database, dan membuang kode negara saat ditampilkan di formulir
+ * agar supir tidak bingung.
+ * ============================================================================
  */
 final class FormatNomorTelepon
 {

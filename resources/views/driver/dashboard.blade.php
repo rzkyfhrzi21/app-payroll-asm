@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DASHBOARD SLIP GAJI SUPIR):
+     - Tujuan Halaman: Halaman beranda utama untuk supir truk saat membuka aplikasi:
+       menampilkan slip gaji bulan berjalan, nominal take-home pay, tanggal transfer bank,
+       dan rincian surat jalan yang sudah terbayar.
+     - Analogi Dunia Nyata: Seperti membuka map slip gaji pribadi di akhir bulan:
+       supir bisa melihat berapa total gaji yang masuk ke rekening ATM-nya, rincian ritase,
+       serta tombol unduh berkas slip gaji resmi dalam format PDF.
+     - Data dari Controller (Driver/DashboardController@index):
+       * $profile: Info pribadi supir (nama, NIP, bank, nomor rekening).
+       * $period: Info periode aktif penggajian.
+       * $payroll: Rincian komponen gaji (komisi, uang jalan, potongan kasbon, BPJS, take home pay).
+       * $trips: Daftar surat jalan (ritase) supir yang masuk dalam perhitungan gaji bulan ini.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 @endphp

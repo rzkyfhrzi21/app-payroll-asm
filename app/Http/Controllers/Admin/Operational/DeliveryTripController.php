@@ -17,37 +17,64 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * ============================================================================
+ * CONTROLLER: OPERASIONAL SURAT JALAN & RITASE (DELIVERY TRIP CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Loket Penugasan Pengiriman & Pemeriksaan Surat Jalan Fisik".
+ * Di loket inilah admin membagikan surat jalan (ritase) kepada supir batubara.
+ * Ketika supir kembali membawa foto surat jalan bertanda tangan dari pelabuhan,
+ * admin mencocokkan berat tonase timbangan dan memeriksa cap tanda tangan basah,
+ * lalu menandai statusnya menjadi 'terverifikasi'.
+ * 
+ * Syarat Masuk Gaji:
+ * Hanya surat jalan yang lolos verifikasi di loket ini yang boleh dihitung
+ * uang angkutannya ke dalam slip gaji bulanan supir!
+ * ============================================================================
+ */
 class DeliveryTripController extends Controller
 {
+    // Menggunakan trait paginasi tabel dan standar notifikasi toast
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Perjalanan Pengiriman Surat Jalan
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Tentukan periode bulan penggajian aktif.
+     * (2) Tangkap saringan filter (supir, rute, status verifikasi, rentang tanggal).
+     * (3) Ambil daftar ritase terpaginasi dari database.
+     * (4) Buka tampilan 'admin.operational.trips.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $kodePeriode = $request->query('periode');
         $periode = $layananDataPayroll->ambilPeriodeBerdasarkanKode(is_string($kodePeriode) ? $kodePeriode : null)
             ?? $layananDataPayroll->ambilPeriodeTerbaru();
-
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
-            'supir' => $this->ambilFilterTeks($request, 'supir'),
-            'rute' => $this->ambilFilterTeks($request, 'rute'),
-            'jenis' => $this->ambilFilterTeks($request, 'jenis'),
-            'status' => $this->ambilFilterTeks($request, 'status'),
-            'tanggal_dari' => $this->ambilFilterTanggal($request, 'tanggal_dari'),
-            'tanggal_sampai' => $this->ambilFilterTanggal($request, 'tanggal_sampai'),
+            'periode'         => $periode?->kode ?? 'all',
+            'cari'            => $this->ambilKataKunciPencarian($request),
+            'supir'           => $this->ambilFilterTeks($request, 'supir'),
+            'rute'            => $this->ambilFilterTeks($request, 'rute'),
+            'jenis'           => $this->ambilFilterTeks($request, 'jenis'),
+            'status'          => $this->ambilFilterTeks($request, 'status'),
+            'tanggal_dari'    => $this->ambilFilterTanggal($request, 'tanggal_dari'),
+            'tanggal_sampai'  => $this->ambilFilterTanggal($request, 'tanggal_sampai'),
         ];
 
         return view('admin.operational.trips.index', [
-            'rows' => $layananDataPayroll->barisRitaseOperasionalTerpaginasi($periode, $filter, $perHalaman),
-            'summary' => $layananDataPayroll->ringkasanRitasePeriode($periode),
+            'rows'               => $layananDataPayroll->barisRitaseOperasionalTerpaginasi($periode, $filter, $perHalaman),
+            'summary'            => $layananDataPayroll->ringkasanRitasePeriode($periode),
             'summaryKeseluruhan' => $layananDataPayroll->ringkasanRitaseKeseluruhan(),
-            'period' => $layananDataPayroll->formatPeriode($periode),
-            'periodOptions' => $layananDataPayroll->daftarOpsiPeriode(),
-            'drivers' => $layananDataPayroll->pilihanSupirRitase(),
-            'trucks' => $layananDataPayroll->pilihanTrukBiaya(),
-            'routes' => $layananDataPayroll->pilihanRuteRitase(),
-            'jenisTrukOptions' => $layananDataPayroll->pilihanJenisTrukRitase(),
+            'period'             => $layananDataPayroll->formatPeriode($periode),
+            'periodOptions'      => $layananDataPayroll->daftarOpsiPeriode(),
+            'drivers'            => $layananDataPayroll->pilihanSupirRitase(),
+            'trucks'             => $layananDataPayroll->pilihanTrukBiaya(),
+            'routes'             => $layananDataPayroll->pilihanRuteRitase(),
+            'jenisTrukOptions'   => $layananDataPayroll->pilihanJenisTrukRitase(),
             'statusOptions' => Ritase::daftarStatus(),
             'periodeAktifId' => $periode?->id,
             'filter' => $filter,

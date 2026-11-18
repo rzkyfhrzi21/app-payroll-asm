@@ -5,6 +5,7 @@ import registerToast from './ui/toast.js';
 import registerLightbox from './ui/lightbox.js';
 import registerSearch from './ui/search.js';
 import registerTableManager from './ui/table-manager.js';
+import registerTabelAjax from './ui/tabel-ajax.js';
 
 import registerShared from './modules/shared/auth.js';
 import registerAdminPayroll from './modules/admin/payroll.js';
@@ -26,11 +27,16 @@ import registerDriverProfile from './modules/driver/profile.js';
 
 window.Alpine = Alpine;
 
+// Store global kecil: dipakai agar tumpukan toast tidak menimpa kartu progres
+// unggah/impor yang juga berada di pojok kanan atas.
+Alpine.store('panelProgres', { aktif: false });
+
 // 1. UI Infrastructure
 registerToast(Alpine);
 registerLightbox(Alpine);
 registerSearch(Alpine);
 registerTableManager(Alpine);
+registerTabelAjax(Alpine);
 
 // 2. Shared & Auth Components
 registerShared(Alpine);

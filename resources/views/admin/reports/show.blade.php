@@ -1,3 +1,15 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DETAIL RINCIAN PERIODE LAPORAN):
+     - Tujuan Halaman: Menampilkan tabel rincian gaji seluruh supir untuk satu periode tertentu,
+       lengkap dengan perolehan tonase, uang jalan, potongan kasbon, dan tombol cetak slip per supir.
+     - Analogi Dunia Nyata: Seperti membuka map satu bulan gajian: melihat satu per satu nama supir,
+       berapa ton batubara yang dia bawa, berapa komisi 10% yang diperoleh, cicilan kasbon yang dipotong,
+       dan tombol cetak slip gaji perorangan untuk dibagikan ke supir.
+     - Data dari Controller (Admin/ReportController@show):
+       * $periode: Info kode periode ('Jan-26'), rentang tanggal, status persetujuan, dan tanggal bayar.
+       * $daftarSupir: Daftar gaji supir dari tabel `penggajian` join `karyawan`.
+       * $ringkasanFinansial: Total uang jalan, total komisi, potongan, dan kas bersih yang dikeluarkan.
+     ============================================================================== -->
 @php
     $rp = fn ($nilai) => 'Rp '.number_format((int) round((float) $nilai), 0, ',', '.');
 @endphp
@@ -331,24 +343,20 @@
                                     <span class="font-bold text-emerald-700 text-sm" x-text="formatRupiah(supir.gaji_bersih)"></span>
                                 </td>
                                 <td class="py-3 px-3 text-center" @click.stop>
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button
-                                            type="button"
-                                            @click="bukaModalRitaseSupir(supir)"
-                                            title="Lihat Catatan Pengantaran &amp; Rincian Slip"
-                                            class="btn-aksi-tabel hover:text-blue-600 hover:bg-blue-50"
-                                        >
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
+                                    <x-ui.tabel-aksi label="Aksi Supir">
+                                        <x-ui.tabel-aksi-item ikon="visibility" @click="bukaModalRitaseSupir(supir)">
+                                            Lihat Pengantaran &amp; Slip
+                                        </x-ui.tabel-aksi-item>
                                         <a
                                             :href="supir.url_cetak_slip"
                                             target="_blank"
-                                            title="Cetak Slip Gaji Supir"
-                                            class="btn-aksi-tabel hover:text-blue-600 hover:bg-blue-50"
+                                            role="menuitem"
+                                            class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-banner-indigo transition-colors hover:bg-surface-container-low"
                                         >
-                                            <span class="material-symbols-outlined text-[18px]">print</span>
+                                            <span class="material-symbols-outlined text-[1.25rem]">print</span>
+                                            <span>Cetak Slip Gaji</span>
                                         </a>
-                                    </div>
+                                    </x-ui.tabel-aksi>
                                 </td>
                             </tr>
                         </template>

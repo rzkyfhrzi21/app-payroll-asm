@@ -55,30 +55,11 @@ export default function registerAdminReports(Alpine) {
         pindahHalaman(halaman) {
             if (halaman >= 1 && halaman <= this.totalHalaman) {
                 this.halamanAktif = halaman;
-                this.sinkronPaginasiAjax();
             }
         },
 
         ubahPerHalaman() {
             this.halamanAktif = 1;
-            this.sinkronPaginasiAjax();
-        },
-
-        sinkronPaginasiAjax() {
-            if (typeof window.queryTabelAjaxPost === 'function') {
-                window
-                    .queryTabelAjaxPost('laporan', {
-                        cari: this.kataKunci,
-                        filter: {
-                            bulan: this.filterBulan,
-                            tahun: this.filterTahun,
-                            status: this.filterStatus,
-                        },
-                        halaman: this.halamanAktif,
-                        per_halaman: this.perHalaman,
-                    })
-                    .catch(() => {});
-            }
         },
 
         get totalSupirTerfilter() {
@@ -249,29 +230,11 @@ export default function registerAdminReports(Alpine) {
             const targetAngka = Number(target);
             if (targetAngka >= 1 && targetAngka <= this.totalHalaman) {
                 this.halamanAktif = targetAngka;
-                this.sinkronPaginasiAjax();
             }
         },
 
         ubahPerHalaman() {
             this.halamanAktif = 1;
-            this.sinkronPaginasiAjax();
-        },
-
-        sinkronPaginasiAjax() {
-            if (typeof window.queryTabelAjaxPost === 'function') {
-                window
-                    .queryTabelAjaxPost('penggajian', {
-                        cari: this.kataKunci,
-                        filter: {
-                            tab: this.tabFilter,
-                            periode: this.infoPeriode?.kode || '',
-                        },
-                        halaman: this.halamanAktif,
-                        per_halaman: this.perHalaman,
-                    })
-                    .catch(() => {});
-            }
         },
 
         resetPencarian() {
@@ -342,9 +305,9 @@ export default function registerAdminReports(Alpine) {
                 return;
             }
 
-            const ekstensiValid = /\.(csv|txt|xlsx|xls)$/i.test(berkas.name);
+            const ekstensiValid = /\.(csv|txt|xlsx)$/i.test(berkas.name);
             if (!ekstensiValid) {
-                this.pesanGalat = 'Format berkas harus berupa .csv, .xlsx, atau .xls.';
+                this.pesanGalat = 'Format berkas harus berupa .xlsx, .csv, atau .txt. Berkas .xls lama harap disimpan ulang sebagai .xlsx.';
                 event.target.value = '';
                 this.namaBerkas = '';
                 this.ukuranBerkas = '';
@@ -370,9 +333,12 @@ export default function registerAdminReports(Alpine) {
         validasiSebelumSubmit(event) {
             this.pesanGalat = '';
 
-            if (!this.namaBerkas) {
+            const inputBerkas = this.$el?.querySelector('input[name="berkas_excel"]');
+            const adaFile = Boolean(this.namaBerkas) || Boolean(inputBerkas?.files?.length);
+
+            if (!adaFile) {
                 event.preventDefault();
-                this.pesanGalat = 'Silakan pilih berkas Excel (.xlsx) atau CSV (.csv) terlebih dahulu.';
+                this.pesanGalat = 'Silakan pilih berkas Excel (.xlsx), CSV (.csv), atau teks (.txt) terlebih dahulu.';
                 return false;
             }
 
@@ -382,13 +348,11 @@ export default function registerAdminReports(Alpine) {
                 return false;
             }
 
-            if (!this.konfirmasiPencairan) {
-                event.preventDefault();
-                this.pesanGalat = 'Harap centang konfirmasi status pencairan gaji (Sudah Dicairkan / Belum Dicairkan) sebelum memproses import.';
-                return false;
-            }
-
             this.sedangMemproses = true;
+            setTimeout(() => {
+                this.sedangMemproses = false;
+            }, 3000);
+
             return true;
         },
     }));

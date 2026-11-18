@@ -8,7 +8,10 @@
 
     @php
         $pageTitle = html_entity_decode((string) ($title ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $author = $infoAuthor ?? config('app.author', []);
     @endphp
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
 
     <title>{{ $pageTitle !== '' ? $pageTitle.' — ' : '' }}{{ !empty($dataPerusahaan?->kode_perusahaan) ? $dataPerusahaan->kode_perusahaan.' • ' : '' }}{{ config('app.name') }}</title>
     <link rel="icon" type="image/x-icon" href="{{ !empty($dataPerusahaan?->url_logo) ? $dataPerusahaan->url_logo : asset('favicon.svg') }}">
@@ -23,6 +26,7 @@
 <body class="bg-canvas-bg font-sans text-slate-text-primary antialiased">
     <x-ui.toast-stack />
     <x-ui.lightbox />
+    <x-ui.modal-author />
     {{ $slot }}
 </body>
 </html>

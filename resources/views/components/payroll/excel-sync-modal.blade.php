@@ -1,3 +1,21 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MODAL MIGRASI EXCEL PENGGAJIAN):
+     - Tujuan Komponen: Jendela sembul (Modal Popup) untuk mengunggah (Import) dan mengunduh
+       (Export) berkas spreadsheet Excel/CSV yang berisi rincian ritase dan gaji supir batubara.
+     - Analogi Dunia Nyata: Seperti loket serah terima map berkas fisik: admin membawa satu map
+       berisi lembar rekap bulanan supir, lalu loket ini membaca isinya dan memasukkannya ke
+       buku besar database secara serentak (atau sebaliknya, mencetak buku besar ke lembar kerja).
+     - Data dari Controller / Props:
+       * $opsiPeriode: Daftar pilihan bulan/tahun periode gaji yang tersedia.
+       * $periodeDefault: Periode yang otomatis terpilih saat modal dibuka.
+     - Form & Pemetaan Input ke Database / Service:
+       * Input berkas: `name="berkas_excel"` (File .xlsx/.csv) -> diproses ExcelPayrollMigrationService.
+       * Input target: `name="target_periode"` -> menentukan id_periode_gaji tujuan migrasi.
+       * Opsi status: `name="status_pencairan"` -> menentukan apakah langsung 'paid' atau 'belum_cair'.
+     - Interaksi & Event:
+       * Terbuka lewat event JavaScript window `@buka-modal-migrasi-excel`.
+       * Memiliki 2 tab: Tab 1 untuk Import Berkas dan Tab 2 untuk Export Rekapitulasi.
+     ============================================================================== -->
 @props([
     'opsiPeriode' => [],
     'periodeDefault' => 'auto',
@@ -98,7 +116,9 @@
                 <form
                     x-show="tabAktif === 'import'"
                     method="POST"
-                    action="{{ route('admin.reports.migrasi.import') }}"
+                    action="{{ route('admin.reports.migrasi.preview') }}"
+                    target="_blank"
+                    data-no-ajax
                     enctype="multipart/form-data"
                     @submit="validasiSebelumSubmit($event)"
                     class="space-y-5"
@@ -192,7 +212,7 @@
                                         <span class="text-xs font-bold text-slate-900">Belum Dicairkan (Draf / Menunggu ACC)</span>
                                     </div>
                                     <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">
-                                        Data masuk ke <strong>Operasional Pengantaran</strong> &amp; <strong>Laporan Gaji</strong> sebagai draf aktif. Masih dapat direvisi sebelum uang gajian ditransfer.
+                                        Surat jalan dicatat sebagai <strong>riwayat terverifikasi</strong>, sedangkan baris gaji masuk ke <strong>Laporan Gaji</strong> sebagai draf aktif. Masih dapat direvisi sebelum uang gajian ditransfer.
                                     </p>
                                 </div>
                             </label>
@@ -259,7 +279,7 @@
                                 x-ref="inputBerkasExcel"
                                 type="file"
                                 name="berkas_excel"
-                                accept=".csv,.txt,.xlsx,.xls"
+                                accept=".xlsx,.csv,.txt"
                                 @change="pilihBerkas($event)"
                                 class="absolute inset-0 opacity-0 cursor-pointer z-10"
                             />
@@ -275,7 +295,7 @@
                                 Tarik &amp; lepas berkas Excel / CSV di sini, atau <span class="text-blue-600 underline">Telusuri Berkas</span>
                             </span>
                             <p class="text-xs text-slate-500 max-w-2xl mt-1 leading-relaxed">
-                                Mendukung berkas <strong class="text-slate-700">.csv</strong> dan <strong class="text-slate-700">.xlsx</strong> format <strong>Rincian Gaji Supir</strong> (1 supir maupun banyak blok/sheet supir sekaligus). Otomatis memetakan Nama Supir, Plat Truk, Pengantaran Harian, Uang Jalan, Sparepart, Komisi Supir, BPJS, dan Kasbon.
+                                Mendukung berkas <strong class="text-slate-700">.xlsx</strong>, <strong class="text-slate-700">.csv</strong>, dan <strong class="text-slate-700">.txt</strong> format <strong>Rincian Gaji Supir</strong> (1 supir maupun banyak blok/sheet supir sekaligus). Otomatis memetakan Nama Supir, Plat Truk, Pengantaran Harian, Uang Jalan, Sparepart, Komisi Supir, BPJS, dan Kasbon.
                             </p>
 
                             {{-- Selected File Pill --}}
@@ -323,7 +343,7 @@
                                 class="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 font-semibold"
                             >
                                 <span class="material-symbols-outlined text-[17px]">download_for_offline</span>
-                                <span>Unduh Contoh Format Migrasi (8 Supir .csv)</span>
+                                <span>Unduh Contoh Format Migrasi (.xlsx)</span>
                             </a>
                             <span class="text-slate-300">|</span>
                             <a
@@ -331,7 +351,7 @@
                                 class="text-slate-600 hover:text-slate-900 hover:underline inline-flex items-center gap-1 font-medium"
                             >
                                 <span class="material-symbols-outlined text-[17px]">description</span>
-                                <span>Template Kosong (.csv)</span>
+                                <span>Template Kosong (.xlsx)</span>
                             </a>
                         </div>
 
@@ -348,8 +368,8 @@
                                 :disabled="sedangMemproses"
                                 class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-sm text-xs font-bold inline-flex items-center justify-center gap-2 transition-all"
                             >
-                                <span class="material-symbols-outlined text-[18px]" :class="sedangMemproses ? 'animate-spin' : ''">sync</span>
-                                <span x-text="sedangMemproses ? 'Memproses Migrasi...' : 'Proses Import ke Database'"></span>
+                                <span class="material-symbols-outlined text-[18px]" :class="sedangMemproses ? 'animate-spin' : ''" x-text="sedangMemproses ? 'sync' : 'open_in_new'"></span>
+                                <span x-text="sedangMemproses ? 'Menyiapkan Pratinjau...' : 'Buka Pratinjau &amp; Validasi Data (Tab Baru)'"></span>
                             </button>
                         </div>
                     </div>

@@ -6,8 +6,22 @@ use App\Support\AturanKataSandi;
 use App\Support\FormatNomorTelepon;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PENDAFTARAN SUPIR & KARYAWAN BARU
+ * ==============================================================================
+ * Kelas ini bertugas seperti petugas registrasi HRD saat ada supir baru masuk kerja:
+ * 1. NIP wajib unik (tidak boleh kembar dengan supir lain).
+ * 2. Menyiapkan akun email dan kata sandi untuk login ke Portal Supir (`users`).
+ * 3. Memvalidasi nomor rekening bank (6 s.d. 20 digit angka) untuk transfer gaji.
+ * 4. Memformat nomor telepon otomatis ke standar Indonesia (+628...).
+ * ==============================================================================
+ */
 class StoreKaryawanRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang boleh mendaftarkan supir baru.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
@@ -15,22 +29,21 @@ class StoreKaryawanRequest extends FormRequest
 
     /**
      * Aturan validasi pendaftaran supir baru.
-     * Email dipakai untuk akun login Portal Supir.
      */
     public function rules(): array
     {
         return [
-            'nomor_induk_karyawan' => ['required', 'string', 'max:20', 'unique:karyawan,nomor_induk_karyawan'],
-            'nama_lengkap' => ['required', 'string', 'min:3', 'max:150'],
-            'status' => ['required', 'in:aktif,nonaktif'],
-            'persentase_komisi' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'nama_bank' => ['nullable', 'string', 'max:50'],
-            'nomor_rekening' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]{6,20}$/'],
-            'potongan_bpjs_bulanan' => ['nullable', 'integer', 'min:0'],
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
-            'password' => AturanKataSandi::aturan(),
-            'nomor_telepon' => ['nullable', 'string', 'regex:'.FormatNomorTelepon::POLA_VALIDASI],
-            'foto_profil' => ['nullable', 'file', 'max:2048'],
+            'nomor_induk_karyawan' => ['required', 'string', 'max:20', 'unique:karyawan,nomor_induk_karyawan'], // NIP unik
+            'nama_lengkap' => ['required', 'string', 'min:3', 'max:150'],                                      // Nama supir
+            'status' => ['required', 'in:aktif,nonaktif'],                                                     // Status kerja
+            'persentase_komisi' => ['nullable', 'numeric', 'min:0', 'max:100'],                                // Komisi supir
+            'nama_bank' => ['nullable', 'string', 'max:50'],                                                   // Nama bank
+            'nomor_rekening' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]{6,20}$/'],                     // Rekening 6-20 digit
+            'potongan_bpjs_bulanan' => ['nullable', 'integer', 'min:0'],                                       // Potongan BPJS
+            'email' => ['required', 'email', 'max:150', 'unique:users,email'],                                 // Email login supir
+            'password' => AturanKataSandi::aturan(),                                                           // Standar password kuat
+            'nomor_telepon' => ['nullable', 'string', 'regex:'.FormatNomorTelepon::POLA_VALIDASI],              // No HP valid
+            'foto_profil' => ['nullable', 'file', 'max:2048'],                                                 // Foto profil maks 2 MB
         ];
     }
 

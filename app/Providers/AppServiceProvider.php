@@ -151,13 +151,14 @@ class AppServiceProvider extends ServiceProvider
             ['admin.dashboard', 'admin.payroll.index', 'executive.dashboard', 'executive.payroll.index'],
             function ($tampilan): void {
                 $sekarang = now();
-                $kodeBulanIni = \App\Support\SiklusPeriodeGaji::kodeDariTanggal($sekarang);
-                $adaBulanIni = \App\Models\PeriodeGaji::where('kode', $kodeBulanIni)->exists();
+                $layananDataPayroll = app(PayrollDataService::class);
+                $periodeBerjalan = $layananDataPayroll->ambilPeriodeBerjalan();
 
+                // Notifikasi buka periode baru hanya muncul bila TIDAK ada periode berjalan.
                 $tampilan->with(
                     'notifikasiPeriodeBaru',
-                    ! $adaBulanIni ? [
-                        'kode' => $kodeBulanIni,
+                    $periodeBerjalan === null ? [
+                        'kode' => \App\Support\SiklusPeriodeGaji::kodeDariTanggal($sekarang),
                         'nama_bulan' => $sekarang->translatedFormat('F Y'),
                     ] : null
                 );
@@ -178,6 +179,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $tampilan->with('dataPerusahaan', $dataPerusahaanTerakhir);
+            $tampilan->with('infoAuthor', config('app.author'));
         });
     }
 }

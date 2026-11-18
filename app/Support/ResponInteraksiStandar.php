@@ -7,18 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Standar respon interaksi CRUD (BRIEF_STANDAR_INTERAKSI_DAN_KEAMANAN.md Bab 1.2).
- *
- * Tersedia dua gaya pemakaian yang menghasilkan muatan (payload) identik:
- * - Statis: `ResponInteraksiStandar::sukses(...)` / `::gagal(...)`, dipakai bila
- *   kelas pemanggil tidak memakai trait ini (mis. PayrollController).
- * - Instance: `$this->responSuksesStandar(...)` / `$this->responGalatStandar(...)`,
- *   dipakai controller yang sudah `use ResponInteraksiStandar`.
+ * ============================================================================
+ * TRAIT: STANDAR RESPON TOAST & INTERAKSI PENGGUNA (STANDARD RESPONSE TRAIT)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Format Amplop Surat Pemberitahuan / Notifikasi Standar".
+ * Setiap kali pengguna menekan tombol simpan, ubah, atau hapus di aplikasi,
+ * sistem akan memberikan pesan umpan balik (Toast Notification) di pojok kanan atas:
+ * - Sukses (Warna Hijau): Menghilang otomatis dalam 2 detik dengan animasi slider.
+ * - Gagal / Peringatan (Warna Merah/Kuning): Tetap menyala sampai ditutup manual
+ *   agar staf sempat membaca apa kesalahan inputnya.
+ * 
+ * Fleksibilitas Ganda:
+ * Otomatis mendeteksi apakah permintaan dikirim via popup AJAX (tanpa refresh)
+ * atau reload halaman biasa.
+ * ============================================================================
  */
 trait ResponInteraksiStandar
 {
     /**
-     * Respon sukses dengan URL tujuan yang sudah berbentuk URL (dipakai statis).
+     * Respon Sukses Statis dengan Muatan Toast Terstandarisasi
      *
      * @param  array<string, mixed>  $data
      */

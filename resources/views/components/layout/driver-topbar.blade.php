@@ -1,3 +1,13 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN TOPBAR SUPIR):
+     - Tujuan Komponen: Bilah atas (Topbar) khusus portal supir truk logistik.
+     - Analogi Dunia Nyata: Seperti kaca spion atas: menampilkan NIP supir yang sedang login,
+       jam operasional saat ini, tombol kalender jadwal jalan, dan menu akun supir.
+     - Komponen Penting:
+       * Tampilan NIP supir aktif.
+       * Jam real-time & tanggal Indonesia.
+       * Tombol kalender dan profil akun.
+     ============================================================================== -->
 @php
     $profilSupir = $profilSupir ?? ['nip' => '—'];
 @endphp
@@ -65,15 +75,6 @@
 
             {{-- Tombol Layar Penuh --}}
             <x-ui.tombol-layar-penuh />
-
-            <button
-                type="button"
-                class="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-text-secondary transition-colors hover:bg-surface-container-low hover:text-slate-text-primary"
-                @click="$dispatch('notify-toast', { type: 'success', title: 'Pusat Notifikasi Supir', action: 'NOTIFICATION_CENTER', status: 'UP_TO_DATE', message: 'Status operasional surat jalan dan data buku kasbon Anda sudah mutakhir.' })"
-            >
-                <span class="material-symbols-outlined text-[1.375rem]">notifications</span>
-                <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-net-pay-emerald"></span>
-            </button>
 
             <x-layout.user-dropdown
                 :nama="auth()->user()->name ?? ($profilSupir['name'] ?? 'Supir')"

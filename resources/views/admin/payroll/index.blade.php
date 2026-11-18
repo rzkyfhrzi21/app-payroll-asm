@@ -1,3 +1,26 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN LEMBAR KERJA PAYROLL ADMIN HRD):
+     - Tujuan Halaman: Meja kerja sentral Admin HRD untuk menghitung komisi supir,
+       memeriksa potongan kasbon, uang jalan, dan mengajukan gaji ke Pimpinan.
+     - Analogi Dunia Nyata: Seperti buku besar gaji akhir bulan di kantor logistik batubara:
+       Admin mengecek semua catatan perjalanan ritase truk, menjumlahkan tonase, memotong
+       angsuran kasbon dan bon sparepart bengkel, lalu menyodorkan totalnya ke Direktur
+       untuk disetujui (ACC).
+     - Aturan Otorisasi (Sesuai AGENTS.md):
+       * Admin DILARANG ACC! Admin hanya boleh menghitung ('Hitung Gaji') dan 'Ajukan ke Pimpinan'
+         (mengubah status periode dari 'draft' -> 'pending').
+       * Bila masih ada Surat Jalan berstatus draft/terbit/sedang_dikirim/menunggu_verifikasi,
+         pengajuan akan DIBLOKIR (HTTP 422) sampai seluruh SJ diverifikasi!
+     - Data dari Controller (Admin/PayrollController@index):
+       * $period: Info periode aktif ('code', 'range', 'status', 'catatan_penolakan').
+       * $summary: Ringkasan total gaji bersih, total tonase, total uang jalan, dan kasbon.
+       * $drivers: Daftar baris supir dari tabel `penggajian` join `karyawan`.
+     - Tabel Database Terkait:
+       * `periode_gaji` (status, kode_periode, tanggal_mulai, tanggal_selesai).
+       * `penggajian` (gaji_bersih, gaji_pokok, gaji_komisi, potongan_kasbon, potongan_bpjs).
+       * `ritase` (tonase_kg, uang_jalan, tarif_per_ton, status verifikasi).
+       * `angsuran_kasbon` (potongan cicilan per periode).
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
     $avatarTones = [
@@ -82,7 +105,10 @@
                         Periode Aktif &bull; {{ $period['code'] }}
                     </span>
                     <span class="font-sans text-body-sm font-medium text-white/85">
-                        {{ $period['range'] }} ({{ $period['work_days'] }} Hari Kerja)
+                        {{ $period['range'] }}
+                        @unless ($period['terbuka'])
+                            &bull; {{ $period['work_days'] }} Hari Ada Pengantaran
+                        @endunless
                     </span>
                 </div>
                 <div class="font-display text-headline-md font-bold text-white">
@@ -166,7 +192,11 @@
                             <span class="font-sans text-label-sm font-semibold uppercase">Rentang Tanggal</span>
                             <span class="mt-0.5 font-sans text-body-lg font-bold">{{ $period['range'] }}</span>
                         </div>
-                        <span class="rounded-md bg-surface-container-highest px-2.5 py-1 font-sans text-label-sm font-semibold text-primary">{{ $period['work_days'] }} Hari Kerja</span>
+                        @if ($period['terbuka'])
+                            <span class="rounded-md bg-net-pay-surface px-2.5 py-1 font-sans text-label-sm font-semibold text-net-pay-emerald">Periode Berjalan</span>
+                        @else
+                            <span class="rounded-md bg-surface-container-highest px-2.5 py-1 font-sans text-label-sm font-semibold text-primary">{{ $period['work_days'] }} Hari Ada Pengantaran</span>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 pt-1">
@@ -228,14 +258,28 @@
                     </div>
 
                     <div class="flex shrink-0 flex-col items-end gap-1.5">
-                        <button
-                            type="button"
-                            class="flex items-center gap-2 rounded-lg bg-surface-container-lowest px-5 py-2.5 font-display text-headline-sm font-bold text-primary shadow-lg transition-all hover:bg-surface-container active:scale-[0.98]"
-                            @click="openApproval('approve')"
+                        <form
+                            method="POST"
+                            action="{{ route('admin.payroll.tutup-buku', $period['code']) }}"
+                            class="contents"
                         >
-                            <span class="material-symbols-outlined text-[1.125rem]">send</span>
-                            Ajukan ke Pimpinan
-                        </button>
+                            @csrf
+                            @method('PATCH')
+                            <button
+                                type="submit"
+                                class="flex items-center gap-2 rounded-lg bg-surface-container-lowest px-5 py-2.5 font-display text-headline-sm font-bold text-primary shadow-lg transition-all hover:bg-surface-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                                @disabled(! $period['terbuka'])
+                            >
+                                <span class="material-symbols-outlined text-[1.125rem]">event_available</span>
+                                Tutup Buku &amp; Ajukan ke Pimpinan
+                            </button>
+                        </form>
+                        @if (! $period['terbuka'])
+                            <span class="inline-flex items-center gap-1 rounded-full bg-net-pay-surface px-2.5 py-0.5 font-sans text-label-sm font-semibold text-net-pay-emerald">
+                                <span class="material-symbols-outlined text-[0.875rem]">lock</span>
+                                Periode sudah ditutup buku
+                            </span>
+                        @endif
                         @if ($sjBelumVerifikasi > 0)
                             <span class="inline-flex items-center gap-1 rounded-full bg-warning-surface px-2.5 py-0.5 font-sans text-label-sm font-semibold text-warning-amber">
                                 <span class="material-symbols-outlined text-[0.875rem]">warning</span>
@@ -326,10 +370,8 @@
                     </div>
                 </div>
 
-                <form
-                    method="GET"
-                    action="{{ route('admin.payroll.index') }}"
-                    data-filter-server
+                <div
+                    data-wadah-tabel="penggajian"
                     class="flex flex-wrap items-center gap-2"
                 >
                     <input type="hidden" name="periode" value="{{ $period['code'] }}">
@@ -339,29 +381,28 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="h-9 w-full rounded-lg bg-canvas-bg pl-9 pr-3 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
                             placeholder="Cari nama supir, plat truk..."
                         >
                     </div>
 
                     <div class="relative flex items-center">
-                        <select name="fleet" data-filter-submit class="h-9 appearance-none rounded-lg bg-canvas-bg px-3 pr-8 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <select name="fleet" class="h-9 appearance-none rounded-lg bg-canvas-bg px-3 pr-8 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="all">Semua Armada</option>
                         </select>
                         <span class="material-symbols-outlined pointer-events-none absolute right-2 text-[1.125rem] text-slate-text-secondary">expand_more</span>
                     </div>
 
-                    @if ($adaFilterAktif)
-                        <a
-                            href="{{ route('admin.payroll.index', ['periode' => $period['code']]) }}"
-                            class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-danger-red/25 bg-danger-surface/60 px-3 font-sans text-label-md font-semibold text-danger-red transition-colors hover:bg-danger-surface"
-                        >
-                            <span class="material-symbols-outlined text-[1rem]">filter_alt_off</span>
-                            Reset Filter
-                        </a>
-                    @endif
-                </form>
+                    <button
+                        type="button"
+                        data-tombol-reset-filter
+                        onclick="window.resetTabelAjax('penggajian')"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-danger-red/25 bg-danger-surface/60 px-3 font-sans text-label-md font-semibold text-danger-red transition-colors hover:bg-danger-surface {{ $adaFilterAktif ? '' : 'hidden' }}"
+                    >
+                        <span class="material-symbols-outlined text-[1rem]">filter_alt_off</span>
+                        Reset Filter
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -382,89 +423,14 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-card-border">
-                        @forelse ($rows as $index => $row)
-                            <tr
-                                class="group cursor-pointer transition-colors hover:bg-surface-container-low/60"
-                                @click="openDrawer(@js($row))"
-                            >
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $rows->firstItem() + $loop->index }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <img
-                                            src="{{ $row['foto_profil'] }}"
-                                            alt="{{ $row['initial'] }}"
-                                            loading="lazy"
-                                            onerror="window.tanganiGambarRusak(this, @js($row['initial']))"
-                                            @click.stop="window.bukaLightbox({ url: @js($row['foto_profil']), judul: @js($row['name']), caption: @js($row['plate'] . ' • ' . $row['truck']) })"
-                                            title="Klik untuk memperbesar foto supir"
-                                            class="h-9 w-9 shrink-0 cursor-zoom-in rounded-full object-cover ring-1 ring-card-border transition-transform hover:scale-105"
-                                        >
-                                        <div class="flex min-w-0 flex-col">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="truncate font-display text-headline-sm font-bold transition-colors group-hover:text-primary">{{ $row['name'] }}</span>
-                                                @if ($row['warning'])
-                                                    <span class="h-2 w-2 rounded-full bg-warning-amber" title="{{ $row['warning_note'] }}"></span>
-                                                @endif
-                                            </div>
-                                            <span class="truncate font-sans text-body-sm">{{ $row['plate'] }} &bull; {{ $row['truck'] }}</span>
-                                        </div>
-                                    </div>
-                                </td>
+                    <tbody id="tbodyPayroll" class="divide-y divide-card-border">
+                        @foreach ($rows as $indeksBaris => $row)
+                            @include('components.tabel-baris.penggajian', ['baris' => $row, 'nomor' => $rows->firstItem() + $indeksBaris])
+                        @endforeach
 
-                                <td class="px-4 py-3 text-right">
-                                    <div class="font-display text-headline-sm font-bold tabular-nums">{{ $row['rit'] }} Rit</div>
-                                    <div class="font-sans text-body-sm tabular-nums">{{ $row['tonnage'] }} Ton</div>
-                                </td>
-
-                                <td class="px-4 py-3 text-right font-sans font-semibold tabular-nums">{{ $rp($row['net_result']) }}</td>
-
-                                <td class="px-4 py-3 text-right">
-                                    <div class="inline-flex items-center justify-end gap-1.5">
-                                        <span class="font-display text-headline-sm font-bold tabular-nums">{{ $rp($row['gross_pay']) }}</span>
-                                        @if ($row['warning'])
-                                            <span class="rounded bg-warning-surface px-1.5 py-0.5 font-sans text-label-sm font-bold text-warning-amber" title="{{ $row['warning_note'] }}">&#9888;</span>
-                                        @endif
-                                    </div>
-                                    <div class="font-sans text-label-sm text-slate-text-muted">Gaji komisi sebelum potongan</div>
-                                </td>
-
-                                <td class="px-4 py-3 text-right">
-                                    <div class="font-display text-headline-sm font-bold tabular-nums">-{{ $rp($row['deduction']) }}</div>
-                                    <div class="font-sans text-label-sm">{{ $row['deduction_note'] }}</div>
-                                </td>
-
-                                <td class="px-4 py-3 text-right">
-                                    <div class="font-sans text-body-md font-semibold tabular-nums">{{ $rp($row['trip_money']) }}</div>
-                                    <div class="font-sans text-label-sm font-medium text-net-pay-emerald">Lunas SPK</div>
-                                </td>
-
-                                <td class="px-4 py-3 text-right">
-                                    <span class="inline-block rounded-md bg-net-pay-surface px-2.5 py-1 font-display text-headline-sm font-bold tabular-nums">{{ $rp($row['net_pay']) }}</span>
-                                </td>
-
-                                <td class="px-4 py-3 text-center" @click.stop>
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button type="button" class="btn-aksi-tabel hover:text-slate-text-primary" title="Lihat Slip &amp; Rincian Gaji" @click="openDrawer(@js($row))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-primary" title="Edit Komponen Gaji" @click="openDrawer(@js($row))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:bg-danger-surface hover:text-danger-red"
-                                            title="Keluarkan dari Periode"
-                                            @click="bukaHapusPayroll(@js($row))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                        @if ($rows->isEmpty())
                             <x-ui.table-empty :colspan="9" label="penggajian supir" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
 
                     <tfoot>
@@ -485,7 +451,7 @@
                 </table>
             </div>
 
-            <x-ui.table-pagination :paginator="$rows" :per-page="$perPage" label="supir" />
+            <x-ui.tabel-ajax entitas="penggajian" label="supir" target-id="tbodyPayroll" :kolom="9" :filter="['periode' => $period['code']]" :per-halaman-awal="$perPage" />
         </div>
 
         {{-- Drawer detail slip --}}

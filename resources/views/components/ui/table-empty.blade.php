@@ -1,3 +1,14 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN TABEL KOSONG / EMPTY STATE):
+     - Tujuan Komponen: Menampilkan pesan ramah di dalam baris tabel saat data nihil / kosong,
+       baik karena belum ada data sama sekali atau karena hasil filter pencarian tidak cocok.
+     - Analogi Dunia Nyata: Seperti laci berkas yang saat dibuka ternyata kosong; kita beri
+       catatan pengingat: "Belum ada berkas, silakan tambah baru atau bersihkan saringan pencarian".
+     - Data dari Controller / Props:
+       * $colspan: Lebar bentangan kolom tabel agar pesan berada tepat di tengah (default: 8).
+       * $label: Nama entitas yang sedang dicari (misal: "supir", "surat jalan", "kasbon").
+       * $tampilkanReset: Menampilkan tombol untuk membersihkan kata kunci filter.
+     ============================================================================== -->
 @props([
     'colspan' => 8,
     'label' => 'data',
@@ -17,6 +28,7 @@
             @if ($tampilkanReset)
                 <a
                     href="{{ url()->current() }}"
+                    onclick="if (window.resetTabelAjax) { window.resetTabelAjax(); return false; }"
                     class="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3.5 py-2 font-sans text-label-md font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary"
                 >
                     <span class="material-symbols-outlined text-[1rem]">filter_alt_off</span>

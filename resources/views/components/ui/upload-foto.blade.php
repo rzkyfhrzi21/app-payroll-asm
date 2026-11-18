@@ -1,3 +1,16 @@
+<!-- ======================================================
+     KOMPONEN UI: BIDANG UNGGAH & PRATINJAU FOTO BUKTI (PHOTO UPLOAD WIDGET)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Kamera Digital & Layar Tinjau Foto Fisik".
+     Digunakan saat supir mengunggah foto surat jalan bertanda tangan,
+     admin mengunggah nota bon kuitansi bengkel, atau pimpinan mengunggah logo kantor.
+     Sebelum disimpan ke server, foto langsung ditampilkan di layar pratinjau (preview)
+     agar pengguna yakin gambarnya jelas dan tidak terbalik.
+     
+     Tujuan Penyimpanan:
+     File foto akan dikonversi menjadi .WebP dan disimpan ke dalam folder 'storage/...'.
+====================================================== -->
 @props([
     'id' => 'berkas_foto',
     'name' => 'foto',

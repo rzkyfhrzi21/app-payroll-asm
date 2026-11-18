@@ -1,3 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KASBON & POTONGAN SUPIR):
+     - Tujuan Halaman: Mengelola pinjaman uang muka supir (Kasbon), jadwal angsuran cicilan,
+       serta pencatatan potongan BPJS dan tunjangan bonus supir.
+     - Analogi Dunia Nyata: Seperti buku pinjaman kasbon supir di laci kasir tambang:
+       supir butuh uang darurat sebelum gajian (misal untuk keluarga atau uang saku darurat),
+       perusahaan meminjamkan maksimal Rp 1.000.000, lalu dicicil potong gaji 1 sampai 3 bulan.
+     - Standar Aturan Kasbon (Sesuai AGENTS.md Bab 3.6):
+       * Batas maksimal per pengajuan: Rp 1.000.000 (Kasbon::BATAS_MAKSIMAL).
+       * Tenor maksimal: 3 kali potong gajian (Kasbon::TENOR_MAKSIMAL).
+       * DILARANG menggunakan istilah "plafon" (gunakan "batas kasbon" / "total pinjaman").
+       * Pembagian cicilan: rata, sisa pembulatan rupiah masuk ke angsuran terakhir.
+       * Jadwal disimpan di tabel `angsuran_kasbon`; sisa berkurang saat gaji dicairkan (`terpotong`).
+     - Data dari Controller:
+       * $summary: Total kasbon aktif, sisa pinjaman berjalan, dan estimasi potong gaji bulan ini.
+       * $loans: Paginator daftar kasbon dari tabel `kasbon` join supir dan jadwal angsuran.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 
@@ -117,7 +134,7 @@
                 </button>
             </div>
 
-            <div x-show="tabAktif === 'kasbon'" class="flex flex-col">
+            <div x-show="tabAktif === 'kasbon'" data-wadah-tabel="kasbon" class="flex flex-col">
             <div class="flex flex-col gap-space-md border-b border-card-border p-space-md">
                 <div>
                     <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Daftar Kasbon</h2>
@@ -126,10 +143,7 @@
                     </p>
                 </div>
 
-                <form
-                    method="GET"
-                    action="{{ route('admin.operational.loans.index') }}"
-                    data-filter-server
+                <div
                     class="flex flex-col items-center justify-between gap-space-sm md:flex-row"
                 >
                     <div class="relative w-full md:w-80">
@@ -138,21 +152,20 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="w-full rounded-lg bg-surface py-2 pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-primary-container"
                             placeholder="Cari nama supir, NIP, keterangan..."
                         >
                     </div>
 
                     <div class="flex w-full flex-wrap items-center gap-space-sm md:w-auto">
-                        <select name="supir" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="supir" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Supir: Semua</option>
                             @foreach ($pilihanSupirKasbon as $opsiSupir)
                                 <option value="{{ $opsiSupir['nip'] }}" @selected($filter['supir'] === $opsiSupir['nip'])>{{ $opsiSupir['nama'] }} ({{ $opsiSupir['nip'] }})</option>
                             @endforeach
                         </select>
 
-                        <select name="status" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="status" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Status: Semua</option>
                             <option value="approved" @selected($filter['status'] === 'approved')>Status: Berjalan</option>
                             <option value="lunas" @selected($filter['status'] === 'lunas')>Status: Lunas</option>
@@ -166,7 +179,6 @@
                                 type="date"
                                 name="tanggal_dari"
                                 value="{{ $filter['tanggal_dari'] }}"
-                                data-filter-submit
                                 title="Dari Tanggal Pengajuan"
                                 class="bg-transparent font-sans text-body-sm text-slate-text-primary focus:outline-none"
                             >
@@ -175,23 +187,22 @@
                                 type="date"
                                 name="tanggal_sampai"
                                 value="{{ $filter['tanggal_sampai'] }}"
-                                data-filter-submit
                                 title="Sampai Tanggal Pengajuan"
                                 class="bg-transparent font-sans text-body-sm text-slate-text-primary focus:outline-none"
                             >
                         </div>
 
-                        @if ($adaFilterAktif)
-                            <a
-                                href="{{ route('admin.operational.loans.index') }}"
-                                class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                            >
-                                <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
-                                <span>Reset Filter</span>
-                            </a>
-                        @endif
+                        <button
+                            type="button"
+                            data-tombol-reset-filter
+                            onclick="window.resetTabelAjax('kasbon')"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                        >
+                            <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                            <span>Reset Filter</span>
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <x-ui.tabel-massal
@@ -204,7 +215,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="w-10 px-2 py-3 text-center font-semibold text-slate-text-secondary">
                                 <input
                                     type="checkbox"
@@ -214,6 +224,7 @@
                                     aria-label="Pilih semua kasbon"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Supir</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Tanggal</th>
                             <th class="px-4 py-3 text-right font-semibold text-slate-text-secondary">Pinjaman</th>
@@ -224,113 +235,20 @@
                             <th class="px-4 py-3 text-center font-semibold text-slate-text-secondary">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-card-border font-sans text-financial-table">
-                        @forelse ($rows as $kasbon)
-                            <tr class="transition-colors hover:bg-surface-container-low/60">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $rows->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $kasbon['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih kasbon {{ $kasbon['nama'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-display text-headline-sm font-semibold text-slate-text-primary">{{ $kasbon['nama'] }}</span>
-                                        <span class="font-sans text-label-sm text-slate-text-muted">{{ $kasbon['nip'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-slate-text-secondary">{{ $kasbon['tanggal'] }}</td>
-                                <td class="px-4 py-3 text-right font-semibold tabular-nums text-slate-text-primary">{{ $rp($kasbon['total']) }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex flex-col items-center gap-0.5">
-                                        <span class="font-sans text-body-sm font-bold tabular-nums text-slate-text-primary">{{ $rp($kasbon['angsuran']) }}</span>
-                                        <span class="font-sans text-label-sm text-slate-text-muted">{{ $kasbon['cicilan_selesai'] }}/{{ $kasbon['tenor'] }} kali</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums text-net-pay-emerald">{{ $rp($kasbon['terbayar']) }}</td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums {{ $kasbon['sisa'] > 0 ? 'text-danger-red' : 'text-net-pay-emerald' }}">
-                                    {{ $kasbon['sisa'] > 0 ? $rp($kasbon['sisa']) : 'Lunas' }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold {{ $kasbon['status'] === 'lunas' ? 'bg-net-pay-surface text-net-pay-emerald' : ($kasbon['status'] === 'rejected' ? 'bg-danger-surface text-danger-red' : 'bg-warning-surface text-warning-amber') }}">
-                                        {{ $kasbon['status_label'] }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="relative inline-block text-left" x-data="{ menuAksiTerbuka: false }" @click.outside="menuAksiTerbuka = false">
-                                        <button
-                                            type="button"
-                                            @click="menuAksiTerbuka = !menuAksiTerbuka"
-                                            class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-card-border bg-card-bg px-3 font-sans text-label-md font-semibold text-slate-text-primary shadow-2xs transition-all hover:border-primary/40 hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/40"
-                                            title="Menu Aksi Kasbon"
-                                        >
-                                            <span>Pilih Aksi</span>
-                                            <span class="material-symbols-outlined text-[1.25rem] text-slate-text-secondary transition-transform duration-150" :class="menuAksiTerbuka ? 'rotate-180' : ''">expand_more</span>
-                                        </button>
+                    <tbody id="tbodyKasbon" class="divide-y divide-card-border font-sans text-financial-table">
+                        @foreach ($rows as $indeksBaris => $kasbon)
+                            @include('components.tabel-baris.kasbon', ['baris' => $kasbon, 'nomor' => $rows->firstItem() + $indeksBaris])
+                        @endforeach
 
-                                        <div
-                                            x-show="menuAksiTerbuka"
-                                            x-cloak
-                                            x-transition.origin.top.right
-                                            class="absolute right-0 z-40 mt-1.5 w-52 overflow-hidden rounded-xl border border-card-border bg-card-bg p-1.5 text-left shadow-drawer"
-                                        >
-                                            <button
-                                                type="button"
-                                                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-slate-text-primary transition-colors hover:bg-surface-container-low"
-                                                @click="menuAksiTerbuka = false; bukaDetail(@js($kasbon))"
-                                            >
-                                                <span class="material-symbols-outlined text-[1.25rem] text-slate-text-secondary">visibility</span>
-                                                <span>Detail Kasbon</span>
-                                            </button>
-
-                                            @if ($kasbon['sisa'] > 0 && $kasbon['angsuran_berikut'] !== null)
-                                                <button
-                                                    type="button"
-                                                    class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-semibold text-net-pay-emerald transition-colors hover:bg-net-pay-surface"
-                                                    @click="menuAksiTerbuka = false; bukaPotong(@js($kasbon))"
-                                                >
-                                                    <span class="material-symbols-outlined text-[1.25rem]">price_check</span>
-                                                    <span>Potong Cicilan Ke-{{ $kasbon['angsuran_berikut']['urutan'] }}</span>
-                                                </button>
-                                            @endif
-
-                                            <button
-                                                type="button"
-                                                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-primary transition-colors hover:bg-surface-container-low"
-                                                @click="menuAksiTerbuka = false; bukaEdit(@js($kasbon))"
-                                            >
-                                                <span class="material-symbols-outlined text-[1.25rem]">edit</span>
-                                                <span>Ubah Kasbon</span>
-                                            </button>
-
-                                            <div class="my-1 border-t border-card-border"></div>
-
-                                            <button
-                                                type="button"
-                                                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-danger-red transition-colors hover:bg-danger-surface/60"
-                                                @click="menuAksiTerbuka = false; bukaHapus(@js($kasbon))"
-                                            >
-                                                <span class="material-symbols-outlined text-[1.25rem]">delete</span>
-                                                <span>Hapus Kasbon</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                        @if ($rows->isEmpty())
                             <x-ui.table-empty :colspan="10" label="kasbon supir" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$rows" :per-page="$perPage" label="kasbon" />
+            <x-ui.tabel-ajax entitas="kasbon" label="kasbon" target-id="tbodyKasbon" :kolom="10" :filter="$filter" :per-halaman-awal="$perPage" />
             </div>{{-- /subtab kasbon --}}
 
             {{-- Subtab Potongan BPJS --}}
@@ -386,7 +304,6 @@
                     <table class="w-full border-collapse text-left">
                         <thead>
                             <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                                <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                                 <th class="w-10 px-2 py-3 text-center font-semibold text-slate-text-secondary">
                                     <input
                                         type="checkbox"
@@ -396,6 +313,7 @@
                                         aria-label="Pilih semua supir"
                                     >
                                 </th>
+                                <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                                 <th class="px-4 py-3 font-semibold text-slate-text-secondary">Supir</th>
                                 <th class="px-4 py-3 font-semibold text-slate-text-secondary">NIP</th>
                                 <th class="px-4 py-3 text-center font-semibold text-slate-text-secondary">Status Kerja</th>
@@ -406,7 +324,6 @@
                         <tbody class="divide-y divide-card-border font-sans text-financial-table">
                             @forelse (($daftarKomponenSupir ?? []) as $komponenSupir)
                                 <tr class="transition-colors hover:bg-surface-container-low/60">
-                                    <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $loop->iteration }}</td>
                                     <td class="px-2 py-3 text-center">
                                         <input
                                             type="checkbox"
@@ -417,6 +334,7 @@
                                             aria-label="Pilih supir {{ $komponenSupir['nama'] }}"
                                         >
                                     </td>
+                                    <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $loop->iteration }}</td>
                                     <td class="px-4 py-3">
                                         <span class="font-display text-headline-sm font-semibold text-slate-text-primary">{{ $komponenSupir['nama'] }}</span>
                                     </td>
@@ -781,7 +699,24 @@
         </x-ui.modal-shell>
 
         {{-- Modal Kelola Tunjangan & Bonus Supir --}}
-        @php
+        <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KASBON & POTONGAN SUPIR):
+     - Tujuan Halaman: Mengelola pinjaman uang muka supir (Kasbon), jadwal angsuran cicilan,
+       serta pencatatan potongan BPJS dan tunjangan bonus supir.
+     - Analogi Dunia Nyata: Seperti buku pinjaman kasbon supir di laci kasir tambang:
+       supir butuh uang darurat sebelum gajian (misal untuk keluarga atau uang saku darurat),
+       perusahaan meminjamkan maksimal Rp 1.000.000, lalu dicicil potong gaji 1 sampai 3 bulan.
+     - Standar Aturan Kasbon (Sesuai AGENTS.md Bab 3.6):
+       * Batas maksimal per pengajuan: Rp 1.000.000 (Kasbon::BATAS_MAKSIMAL).
+       * Tenor maksimal: 3 kali potong gajian (Kasbon::TENOR_MAKSIMAL).
+       * DILARANG menggunakan istilah "plafon" (gunakan "batas kasbon" / "total pinjaman").
+       * Pembagian cicilan: rata, sisa pembulatan rupiah masuk ke angsuran terakhir.
+       * Jadwal disimpan di tabel `angsuran_kasbon`; sisa berkurang saat gaji dicairkan (`terpotong`).
+     - Data dari Controller:
+       * $summary: Total kasbon aktif, sisa pinjaman berjalan, dan estimasi potong gaji bulan ini.
+       * $loans: Paginator daftar kasbon dari tabel `kasbon` join supir dan jadwal angsuran.
+     ============================================================================== -->
+@php
             // Daftar ringkas untuk tombol "Atur". Ditulis sebagai teks JS agar
             // tidak ada objek literal langsung di atribut Alpine.
             $opsiTunjanganSupir = collect($daftarKomponenSupir ?? [])

@@ -1,3 +1,14 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PROFIL SUPIR & ARMADA):
+     - Tujuan Halaman: Halaman informasi data pribadi supir, unit armada yang dipegang,
+       rekening bank penerima gaji, serta formulir ganti foto profil dan kata sandi.
+     - Analogi Dunia Nyata: Seperti kartu pengenal supir dan buku pedoman unit truk:
+       supir mengecek apakah plat nomor truknya sudah sesuai, apakah nomor rekening banknya benar,
+       dan memperbarui kata sandi login agar akun tetap aman.
+     - Data dari Controller (Driver/ProfileController@edit):
+       * $profile: Data lengkap supir dari model `Karyawan` join `Truk`.
+       * $user: Akun autentikasi login supir dari tabel `users`.
+     ============================================================================== -->
 @php
     $pengguna = $user ?? auth()->user();
     $toneMap = [
@@ -252,7 +263,18 @@
 
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         @foreach ($truckCompliance as $item)
-                            @php $tone = $toneMap[$item['tone']] ?? $toneMap['slate']; @endphp
+                            <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PROFIL SUPIR & ARMADA):
+     - Tujuan Halaman: Halaman informasi data pribadi supir, unit armada yang dipegang,
+       rekening bank penerima gaji, serta formulir ganti foto profil dan kata sandi.
+     - Analogi Dunia Nyata: Seperti kartu pengenal supir dan buku pedoman unit truk:
+       supir mengecek apakah plat nomor truknya sudah sesuai, apakah nomor rekening banknya benar,
+       dan memperbarui kata sandi login agar akun tetap aman.
+     - Data dari Controller (Driver/ProfileController@edit):
+       * $profile: Data lengkap supir dari model `Karyawan` join `Truk`.
+       * $user: Akun autentikasi login supir dari tabel `users`.
+     ============================================================================== -->
+@php $tone = $toneMap[$item['tone']] ?? $toneMap['slate']; @endphp
                             <div class="flex flex-col justify-between gap-2 rounded-xl p-3.5 {{ $tone['bg'] }}">
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="font-sans text-label-sm font-semibold text-slate-text-secondary">{{ $item['label'] }}</span>

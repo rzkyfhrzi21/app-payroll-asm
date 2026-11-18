@@ -1,3 +1,19 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN CETAK SLIP GAJI FISIK SUPIR):
+     - Tujuan Halaman: Menampilkan lembar fisik Slip Gaji resmi supir siap cetak (Ctrl+P / Printer).
+     - Analogi Dunia Nyata: Seperti amplop slip gaji resmi berlogo perusahaan: berisi rincian
+       hasil angkutan ritase batubara, bagi hasil komisi supir, uang jalan, potongan kasbon,
+       serta stempel dan tanda tangan pemilik perusahaan logistik.
+     - Standar Aturan Desain (Sesuai AGENTS.md Bab 3.2):
+       * DILARANG menampilkan teks persentase komisi ("Komisi 10%"); gunakan label netral
+         seperti "Komisi Supir" atau "Bagi Hasil Komisi Supir".
+       * Seluruh nominal dicetak dalam Rupiah bulat tanpa desimal (BIGINT) seperti `Rp 4.521.485`.
+       * Membaca logo dan tanda tangan pimpinan dari data perusahaan singleton (`DataPerusahaan`).
+     - Data dari Controller:
+       * $supir: Detail supir (nama, NIP, nomor plat unit truk, nomor rekening).
+       * $rincianGaji: Komponen gaji pokok, komisi, uang jalan, kasbon, dan gaji bersih.
+       * $periode: Info kode periode dan tanggal persetujuan gaji.
+     ============================================================================== -->
 @php
     $perusahaanAktif = $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
     $periodeDisetujui = in_array($periode['status_code'] ?? null, ['approved', 'paid'], true);
@@ -19,12 +35,15 @@
 
     $urlLogoPerusahaan = $buatUrlMedia($perusahaanAktif->logo_perusahaan ?? null);
     $urlTtdPemilik = $buatUrlMedia($perusahaanAktif->ttd_pemilik ?? null);
+    $author = $infoAuthor ?? config('app.author', []);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
     <title>Slip Gaji {{ $supir['nama'] }} — {{ $periode['code'] }}</title>
     @vite(['resources/css/app.css'])
     <style>
@@ -245,6 +264,11 @@
                     </div>
                 @endif
             </div>
+        </div>
+
+        {{-- Footer Atribusi Sistem / Author Cetak --}}
+        <div class="border-t border-slate-200 pt-3 text-center text-[10px] text-slate-400">
+            {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }} &bull; Pengembang: {{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})
         </div>
     </div>
 </body>

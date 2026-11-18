@@ -213,22 +213,59 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="flex flex-col gap-4">
+                <form
+                    method="POST"
+                    action="{{ route('profile.update') }}"
+                    enctype="multipart/form-data"
+                    class="flex flex-col gap-4"
+                    x-data="{ fotoPratinjau: '', galatFoto: '' }"
+                >
                     @csrf
                     @method('PATCH')
 
                     <div class="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-card-border bg-surface-container-low/60 p-4">
                         <div class="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-card-border bg-card-bg flex items-center justify-center font-bold text-primary">
+                            {{-- Foto baru yang sedang dipilih langsung dipratinjau; jika belum ada, tampilkan foto tersimpan. --}}
+                            <template x-if="fotoPratinjau !== ''">
+                                <img :src="fotoPratinjau" alt="Pratinjau foto profil baru" class="h-full w-full object-cover">
+                            </template>
                             @if (!empty($user->url_foto_profil))
-                                <img src="{{ $user->url_foto_profil }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
+                                <img x-show="fotoPratinjau === ''" src="{{ $user->url_foto_profil }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
                             @else
-                                <span class="text-xl">{{ $inisial }}</span>
+                                <span x-show="fotoPratinjau === ''" class="text-xl">{{ $inisial }}</span>
                             @endif
                         </div>
                         <div class="flex-1 space-y-1 w-full">
                             <label for="foto_profil" class="font-sans text-label-md font-bold text-slate-text-primary">Foto Profil Pengguna</label>
                             <p class="font-sans text-xs text-slate-text-muted">Format berkas gambar JPG, PNG, atau WEBP (maks. 2 MB).</p>
-                            <input type="file" id="foto_profil" name="foto_profil" accept="image/jpeg,image/png,image/webp" class="w-full text-xs text-slate-text-secondary file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20">
+                            <input
+                                type="file"
+                                id="foto_profil"
+                                name="foto_profil"
+                                accept="image/jpeg,image/png,image/webp"
+                                class="w-full text-xs text-slate-text-secondary file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                x-on:change="
+                                    const berkas = $event.target.files[0] ?? null;
+                                    galatFoto = '';
+                                    fotoPratinjau = '';
+                                    if (! berkas) { return; }
+                                    if (! ['image/jpeg', 'image/png', 'image/webp'].includes(berkas.type)) {
+                                        galatFoto = 'Berkas harus berupa gambar JPG, PNG, atau WEBP.';
+                                        $event.target.value = '';
+                                        return;
+                                    }
+                                    if (berkas.size > 2 * 1024 * 1024) {
+                                        galatFoto = 'Ukuran gambar melebihi 2 MB. Pilih berkas yang lebih kecil.';
+                                        $event.target.value = '';
+                                        return;
+                                    }
+                                    fotoPratinjau = URL.createObjectURL(berkas);
+                                "
+                            >
+                            <p x-show="galatFoto !== ''" x-text="galatFoto" x-cloak class="font-sans text-xs font-semibold text-danger-red"></p>
+                            <p x-show="fotoPratinjau !== ''" x-cloak class="font-sans text-xs font-semibold text-net-pay-emerald">
+                                Pratinjau foto baru siap disimpan.
+                            </p>
                         </div>
                     </div>
 
@@ -324,6 +361,7 @@
                     </div>
                 </form>
             </div>
+        </div>
         </div>
 
         {{-- Konten Tab 2: Keamanan Akun & Ubah Kata Sandi --}}

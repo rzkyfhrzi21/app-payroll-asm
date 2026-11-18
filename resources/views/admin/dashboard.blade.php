@@ -1,14 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DASHBOARD UTAMA ADMIN HRD):
+     - Tujuan Halaman: Pusat kendali operasional harian Admin HRD: menampilkan status kesiapan
+       armada, supir yang belum dapat truk, antrean verifikasi surat jalan, dan ringkasan kasbon.
+     - Analogi Dunia Nyata: Seperti papan pantau di dinding ruang Admin Logistik: melihat berapa
+       truk yang siap jalan, supir mana yang sedang nganggur, surat jalan mana yang menunggu dicek,
+       dan pengingat tutup buku gaji yang akan datang.
+     - Data dari Controller (Admin/DashboardController@index):
+       * $ringkasanArmada: Total truk, truk aktif, supir aktif, dan unit tanpa pasangan.
+       * $antreanTindakan: Daftar hal mendesak yang butuh tindakan Admin (verifikasi SJ, kasbon baru).
+       * $trenBulanan: Data grafik tren ritase dan pengeluaran beberapa bulan terakhir.
+     ============================================================================== -->
 @php
     $rp = fn ($nilai) => 'Rp '.number_format((int) $nilai, 0, ',', '.');
-
-    $toneAntrean = [
-        'primary' => ['bg' => 'bg-primary/10', 'teks' => 'text-primary', 'tautan' => 'text-primary'],
-        'emerald' => ['bg' => 'bg-net-pay-surface', 'teks' => 'text-net-pay-emerald', 'tautan' => 'text-net-pay-emerald'],
-        'amber' => ['bg' => 'bg-warning-surface', 'teks' => 'text-warning-amber', 'tautan' => 'text-warning-amber'],
-        'red' => ['bg' => 'bg-danger-surface', 'teks' => 'text-danger-red', 'tautan' => 'text-danger-red'],
-        'slate' => ['bg' => 'bg-surface-container', 'teks' => 'text-slate-text-secondary', 'tautan' => 'text-slate-text-secondary'],
-    ];
-
     $totalSupir = max(1, (int) $ringkasanArmada['supir_total']);
     $persenSupirAktif = (int) round(($ringkasanArmada['supir_aktif'] / $totalSupir) * 100);
     $totalArmada = max(1, (int) $ringkasanArmada['total']);
@@ -243,61 +246,27 @@
                 </div>
             </div>
 
-        {{-- Antrean kerja & akses cepat --}}
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div class="rounded-xl bg-surface-container-lowest shadow-card lg:col-span-8">
-                <div class="flex items-center justify-between border-b border-card-border px-5 py-4">
-                    <div>
-                        <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Yang Perlu Dikerjakan</h2>
-                        <p class="font-sans text-body-sm text-slate-text-secondary">Pekerjaan yang menunggu tindakan Anda.</p>
-                    </div>
-                    <span class="material-symbols-outlined text-[1.5rem] text-slate-text-muted">task_alt</span>
-                </div>
+        {{-- Akses cepat --}}
+        <div class="rounded-xl bg-surface-container-lowest p-5 shadow-card">
+            <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Akses Cepat</h2>
+            <p class="mt-0.5 font-sans text-body-sm text-slate-text-secondary">Pintasan menu yang sering dipakai.</p>
 
-                <div class="flex flex-col divide-y divide-card-border">
-                    @foreach ($antreanKerja as $pekerjaan)
-                        @php $gaya = $toneAntrean[$pekerjaan['tone']] ?? $toneAntrean['slate']; @endphp
-                        <div class="flex items-start gap-3 px-5 py-4">
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg {{ $gaya['bg'] }} {{ $gaya['teks'] }}">
-                                <span class="material-symbols-outlined text-[1.125rem]">{{ $pekerjaan['ikon'] }}</span>
-                            </span>
-                            <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-                                <span class="font-sans text-body-md font-semibold text-slate-text-primary">{{ $pekerjaan['judul'] }}</span>
-                                <span class="font-sans text-body-sm text-slate-text-secondary">{{ $pekerjaan['keterangan'] }}</span>
-                            </div>
-                            <a
-                                href="{{ $pekerjaan['tautan'] }}"
-                                class="shrink-0 self-center rounded-lg px-2.5 py-1.5 font-sans text-label-md font-semibold {{ $gaya['tautan'] }} transition-colors hover:bg-surface-container-low"
-                            >
-                                {{ $pekerjaan['label_tautan'] }}
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Akses cepat --}}
-            <div class="rounded-xl bg-surface-container-lowest p-5 shadow-card lg:col-span-4">
-                <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Akses Cepat</h2>
-                <p class="mt-0.5 font-sans text-body-sm text-slate-text-secondary">Pintasan menu yang sering dipakai.</p>
-
-                <div class="mt-3 flex flex-col gap-1.5">
-                    @foreach ([
-                        ['ikon' => 'calculate', 'label' => 'Hitung Gaji Periode', 'rute' => route('admin.payroll.index', ['periode' => $period['code']])],
-                        ['ikon' => 'add_circle', 'label' => 'Buat Surat Jalan', 'rute' => route('admin.operational.trips.index')],
-                        ['ikon' => 'badge', 'label' => 'Data Supir', 'rute' => route('admin.master.employees.index')],
-                        ['ikon' => 'receipt_long', 'label' => 'Laporan & Slip Gaji', 'rute' => route('admin.reports.index')],
-                    ] as $akses)
-                        <a
-                            href="{{ $akses['rute'] }}"
-                            class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 font-sans text-body-md font-medium text-slate-text-primary transition-colors hover:bg-surface-container-low"
-                        >
-                            <span class="material-symbols-outlined text-[1.125rem] text-primary">{{ $akses['ikon'] }}</span>
-                            <span>{{ $akses['label'] }}</span>
-                            <span class="material-symbols-outlined ml-auto text-[1rem] text-slate-text-muted">chevron_right</span>
-                        </a>
-                    @endforeach
-                </div>
+            <div class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ([
+                    ['ikon' => 'calculate', 'label' => 'Hitung Gaji Periode', 'rute' => route('admin.payroll.index', ['periode' => $period['code']])],
+                    ['ikon' => 'add_circle', 'label' => 'Buat Surat Jalan', 'rute' => route('admin.operational.trips.index')],
+                    ['ikon' => 'badge', 'label' => 'Data Supir', 'rute' => route('admin.master.employees.index')],
+                    ['ikon' => 'receipt_long', 'label' => 'Laporan & Slip Gaji', 'rute' => route('admin.reports.index')],
+                ] as $akses)
+                    <a
+                        href="{{ $akses['rute'] }}"
+                        class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 font-sans text-body-md font-medium text-slate-text-primary transition-colors hover:bg-surface-container-low"
+                    >
+                        <span class="material-symbols-outlined text-[1.125rem] text-primary">{{ $akses['ikon'] }}</span>
+                        <span>{{ $akses['label'] }}</span>
+                        <span class="material-symbols-outlined ml-auto text-[1rem] text-slate-text-muted">chevron_right</span>
+                    </a>
+                @endforeach
             </div>
         </div>
 

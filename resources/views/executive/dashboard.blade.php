@@ -1,3 +1,16 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DASHBOARD EKSEKUTIF / DIREKSI):
+     - Tujuan Halaman: Pemandangan mata elang (helicopter view) untuk Pimpinan/Owner:
+       memantau omzet angkutan, total kasbon supir, efisiensi uang jalan, antrean otorisasi ACC gaji,
+       serta laba bersih logistik batubara per periode berjalan.
+     - Analogi Dunia Nyata: Seperti panel indikator pesawat di kokpit Direktur:
+       Pimpinan melihat apakah kapal bisnis logistik melaju sehat (omzet naik, biaya terkendali)
+       dan apakah ada permohonan persetujuan gaji supir yang butuh tanda tangan ACC direksi.
+     - Data dari Controller (Executive/DashboardController@index):
+       * $summary: Total omzet kotor, uang jalan, biaya sparepart armada, komisi, dan net pay.
+       * $auditUnit: Unit armada dengan beban sparepart pada periode berjalan.
+       * $period: Info periode aktif yang sedang dievaluasi.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 @endphp
@@ -5,7 +18,7 @@
 <x-executive-layout title="Executive Dashboard">
     <div
         class="flex flex-col gap-6"
-        x-data="executiveDashboard(@js($queue), @js($summary), @js($period))"
+        x-data="executiveDashboard(@js($summary), @js($period))"
     >
         {{-- Breadcrumb + judul + aksi --}}
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -40,9 +53,6 @@
                 >
                     <span class="material-symbols-outlined text-[1.125rem]">verified_user</span>
                     <span>Keputusan Otorisasi</span>
-                    @unless ($sudahAcc)
-                        <span class="ml-0.5 rounded-full bg-danger-red px-1.5 py-0.5 font-sans text-[0.6875rem] font-bold text-white">{{ count($queue) }} Perlu ACC</span>
-                    @endunless
                 </a>
             </div>
         </div>
@@ -65,19 +75,10 @@
                         </span>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-space-lg">
-                    <div class="flex flex-col items-start md:items-end">
-                        <span class="font-sans text-label-sm uppercase tracking-wider">Target Kontrak Bulanan</span>
-                        <div class="flex items-baseline gap-1">
-                            <span class="font-financial-total font-bold tabular-nums">{{ $summary['tonnage'] }}</span>
-                            <span class="font-sans text-body-sm font-semibold text-slate-text-secondary">/ {{ number_format($summary['target'], 0, ',', '.') }} Ton</span>
-                            <span class="ml-1.5 rounded bg-net-pay-surface px-1.5 py-0.5 font-sans text-label-sm font-bold text-net-pay-emerald">{{ $summary['target_pct'] }}</span>
-                        </div>
-                    </div>
-                    <div class="h-2 w-24 shrink-0 overflow-hidden rounded-full bg-surface-container-high">
-                        <div class="h-full rounded-full bg-gradient-to-r from-banner-sky to-banner-indigo" style="width: {{ min(100, max(0, (float) $summary['target_pct'])) }}%"></div>
-                    </div>
+                <div class="flex flex-col items-start gap-0.5 md:items-end">
+                    <span class="font-sans text-label-sm uppercase tracking-wider text-slate-text-secondary">Periode Berjalan</span>
+                    <span class="font-display text-headline-md font-bold text-slate-text-primary">{{ $period['code'] }}</span>
+                    <span class="font-sans text-body-sm text-slate-text-secondary">{{ $summary['drivers'] }} Supir &bull; {{ $summary['rit'] }} Rit</span>
                 </div>
             </div>
         </div>
@@ -136,18 +137,15 @@
                 <div class="flex items-start justify-between">
                     <div class="flex flex-col">
                         <span class="font-sans text-label-sm font-semibold uppercase tracking-wider">Kebutuhan Kas Gaji</span>
-                        <span class="mt-1 font-financial-total font-bold tabular-nums text-primary">{{ $rp($summary['net_pay']) }}</span>
+                        <span class="mt-1 font-financial-total font-bold tabular-nums text-primary">{{ $rp($kebutuhanKasGaji['belum_cair']) }}</span>
                     </div>
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-primary">
-                        <span class="material-symbols-outlined text-[1.375rem]">group</span>
+                        <span class="material-symbols-outlined text-[1.375rem]">account_balance</span>
                     </div>
                 </div>
                 <div class="mt-space-md flex items-center justify-between rounded-lg bg-surface-container-low p-2 pt-space-sm font-sans text-body-sm">
-                    <span class="flex items-center gap-1 font-bold text-slate-text-primary">
-                        <span class="material-symbols-outlined text-[1rem]">{{ $sudahAcc ? 'verified' : 'pending_actions' }}</span>
-                        {{ $sudahAcc ? 'Sudah Diputuskan' : 'Menunggu Otorisasi' }}
-                    </span>
-                    <span class="font-semibold tabular-nums text-slate-text-primary">{{ $summary['drivers'] }} Supir</span>
+                    <span class="font-medium text-slate-text-secondary">Belum Dicairkan &bull; {{ $kebutuhanKasGaji['jumlah_periode'] }} Periode</span>
+                    <span class="font-semibold tabular-nums text-slate-text-primary">Sudah Cair: {{ $rp($kebutuhanKasGaji['sudah_cair']) }}</span>
                 </div>
             </div>
         </div>
@@ -242,7 +240,20 @@
                 </div>
 
                 <div class="relative flex h-56 w-full flex-col justify-end pb-2 pt-4">
-                    @php
+                    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DASHBOARD EKSEKUTIF / DIREKSI):
+     - Tujuan Halaman: Pemandangan mata elang (helicopter view) untuk Pimpinan/Owner:
+       memantau omzet angkutan, total kasbon supir, efisiensi uang jalan, antrean otorisasi ACC gaji,
+       serta laba bersih logistik batubara per periode berjalan.
+     - Analogi Dunia Nyata: Seperti panel indikator pesawat di kokpit Direktur:
+       Pimpinan melihat apakah kapal bisnis logistik melaju sehat (omzet naik, biaya terkendali)
+       dan apakah ada permohonan persetujuan gaji supir yang butuh tanda tangan ACC direksi.
+     - Data dari Controller (Executive/DashboardController@index):
+       * $summary: Total omzet kotor, uang jalan, biaya sparepart armada, komisi, dan net pay.
+       * $auditUnit: Unit armada dengan beban sparepart pada periode berjalan.
+       * $period: Info periode aktif yang sedang dievaluasi.
+     ============================================================================== -->
+@php
                         // Skala grafik dihitung dari data nyata periode terpilih.
                         $nilaiOmzetTren = collect($trend)->pluck('omzet')->all();
                         $omzetMaksTren = max(1, $nilaiOmzetTren === [] ? 0 : max($nilaiOmzetTren));
@@ -377,365 +388,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- Antrean otorisasi --}}
-        <div class="flex flex-col overflow-hidden rounded-xl bg-card-bg shadow-card">
-            <div class="flex flex-col justify-between gap-space-md p-space-lg md:flex-row md:items-center">
-                <div class="flex flex-col">
-                    <div class="flex items-center gap-2">
-                        <h2 class="font-display text-headline-md font-bold text-slate-text-primary">Antrean Otorisasi Payroll Supir</h2>
-                        <span class="rounded-full bg-primary/10 px-2.5 py-0.5 font-sans text-xs font-semibold text-primary">Periode {{ $period['code'] }}</span>
-                    </div>
-                    <p class="mt-0.5 font-sans text-body-sm text-slate-text-secondary">
-                        Tinjauan komprehensif gaji bersih, beban sparepart unit, dan pencocokan kasbon sebelum transfer massal.
-                    </p>
-                </div>
-
-                <div class="flex shrink-0 items-center gap-1.5 rounded-lg bg-surface-container-low p-1">
-                    <button
-                        type="button"
-                        class="rounded-md px-3 py-1.5 font-sans text-body-sm font-medium transition-colors"
-                        :class="queueTab === 'all' ? 'bg-primary font-semibold text-on-primary shadow-sm' : 'text-slate-text-secondary hover:text-slate-text-primary'"
-                        @click="queueTab = 'all'"
-                    >
-                        Semua Supir ({{ count($queue) }})
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-md px-3 py-1.5 font-sans text-body-sm font-medium transition-colors"
-                        :class="queueTab === 'sparepart' ? 'bg-primary font-semibold text-on-primary shadow-sm' : 'text-slate-text-secondary hover:text-slate-text-primary'"
-                        @click="queueTab = 'sparepart'"
-                    >
-                        Ada Beban Sparepart ({{ collect($queue)->where('sparepart', '>', 0)->count() }})
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-md px-3 py-1.5 font-sans text-body-sm font-medium transition-colors"
-                        :class="queueTab === 'bersih' ? 'bg-primary font-semibold text-on-primary shadow-sm' : 'text-slate-text-secondary hover:text-slate-text-primary'"
-                        @click="queueTab = 'bersih'"
-                    >
-                        Tanpa Beban Sparepart ({{ collect($queue)->where('sparepart', '<=', 0)->count() }})
-                    </button>
-                </div>
-            </div>
-
-            <div class="w-full overflow-x-auto">
-                <table class="w-full border-collapse text-left">
-                    <thead>
-                        <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider text-slate-text-secondary">
-                            <th class="px-4 py-3 font-semibold">Supir &amp; Identitas Truk</th>
-                            <th class="px-4 py-3 text-right font-semibold">Rit / Tonase</th>
-                            <th class="px-4 py-3 text-right font-semibold">Omzet Truk</th>
-                            <th class="px-4 py-3 text-right font-semibold">Uang Jalan</th>
-                            <th class="px-4 py-3 text-right font-semibold">Beban Sparepart</th>
-                            <th class="px-4 py-3 text-right font-semibold">Gaji Komisi</th>
-                            <th class="px-4 py-3 text-right font-semibold">Potongan</th>
-                            <th class="px-4 py-3 text-right font-semibold">Gaji Bersih (Net)</th>
-                            <th class="px-4 py-3 text-center font-semibold">Status</th>
-                            <th class="px-4 py-3 text-center font-semibold">Keputusan</th>
-                        </tr>
-                    </thead>
-
-                    <tbody class="divide-y divide-card-border font-financial-table text-slate-text-primary">
-                        @forelse ($queue as $row)
-                            <tr
-                                class="transition-colors hover:bg-surface-container-low/50"
-                                x-show="queueVisible(@js($row['sparepart'] > 0 ? 'sparepart' : 'bersih'))"
-                            >
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-high font-sans text-xs font-bold text-primary">
-                                            {{ $row['initial'] }}
-                                        </div>
-                                        <div class="flex flex-col">
-                                            <span class="font-bold text-slate-text-primary">{{ $row['name'] }}</span>
-                                            <span class="font-sans text-[0.6875rem] text-slate-text-secondary">{{ $row['plate'] }} &bull; {{ $row['truck'] }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums">
-                                    <div class="font-bold">{{ $row['rit'] }} Rit</div>
-                                    <div class="font-sans text-[0.6875rem] font-normal text-slate-text-secondary">{{ $row['tonnage'] }} Ton</div>
-                                </td>
-                                <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ $rp($row['omzet']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-secondary">{{ $rp($row['trip_money']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">
-                                    <span class="font-bold {{ $row['sparepart'] > 0 ? 'text-warning-amber' : 'text-slate-text-secondary' }}">{{ $rp($row['sparepart']) }}</span>
-                                    <div class="font-sans text-[0.625rem] font-medium text-slate-text-muted">{{ $row['sparepart_note'] }}</div>
-                                </td>
-                                <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ $rp($row['commission']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-danger-red">-{{ $rp($row['deduction']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">
-                                    <span class="inline-block rounded bg-net-pay-surface px-2 py-0.5 font-bold text-net-pay-emerald">{{ $rp($row['net_pay']) }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span @class([
-                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-[0.6875rem] font-bold',
-                                        'bg-net-pay-surface text-net-pay-emerald' => $row['tone'] === 'emerald',
-                                        'bg-warning-surface text-warning-amber' => $row['tone'] === 'amber',
-                                    ])>
-                                        <span @class([
-                                            'h-1.5 w-1.5 rounded-full',
-                                            'bg-net-pay-emerald' => $row['tone'] === 'emerald',
-                                            'bg-warning-amber' => $row['tone'] === 'amber',
-                                        ])></span>
-                                        {{ $row['status'] }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1.5">
-                                        <button
-                                            type="button"
-                                            class="rounded bg-card-bg px-2.5 py-1 font-sans text-[0.6875rem] font-semibold text-slate-text-primary shadow-sm transition-colors hover:bg-surface-container-high"
-                                            @click="openDetail(@js($row))"
-                                        >
-                                            Slip Detail
-                                        </button>
-                                        @if (($row['status_kode'] ?? 'draft') === 'draft')
-                                            <button
-                                                type="button"
-                                                class="rounded bg-primary px-2.5 py-1 font-sans text-[0.6875rem] font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container"
-                                                @click="confirmAcc(@js($row['id'] ?? null), @js($row['name']))"
-                                            >
-                                                ACC
-                                            </button>
-                                        @elseif (($row['status_kode'] ?? '') === 'approved')
-                                            <span class="rounded bg-sky-50 px-2 py-0.5 font-sans text-[0.6875rem] font-bold text-sky-700">Sudah Di-ACC</span>
-                                        @else
-                                            <span class="rounded bg-net-pay-surface px-2 py-0.5 font-sans text-[0.6875rem] font-bold text-net-pay-emerald">Sudah Dicairkan</span>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="px-4 py-10 text-center font-sans text-body-sm text-slate-text-muted">
-                                    Belum ada baris penggajian pada periode {{ $period['code'] }}. Jalankan kalkulasi di halaman Payroll Admin.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-
-                    @if (count($queue) > 0)
-                        <tfoot>
-                            <tr class="bg-surface-container font-financial-table font-bold text-slate-text-primary">
-                                <td class="px-4 py-3">TOTAL PERIODE ({{ $summary['drivers'] }} SUPIR)</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $summary['rit'] }} Rit &bull; {{ $summary['tonnage'] }} T</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $rp($summary['omzet']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $rp($summary['trip_money']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-danger-red">{{ $rp($summary['sparepart']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $rp(collect($queue)->sum('commission')) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-danger-red">-{{ $rp(collect($queue)->sum('deduction')) }}</td>
-                                <td class="px-4 py-3 text-right text-body-md font-bold tabular-nums text-net-pay-emerald">{{ $rp($summary['net_pay']) }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="font-sans text-xs text-primary">{{ $sudahAcc ? 'Sudah Di-ACC' : 'Menunggu ACC' }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    @unless ($sudahAcc)
-                                        <button
-                                            type="button"
-                                            class="w-full rounded bg-net-pay-emerald px-3 py-1.5 font-sans text-label-md font-bold uppercase tracking-wider text-on-primary shadow-sm transition-all hover:bg-emerald-600"
-                                            @click="confirmAccBatch()"
-                                        >
-                                            ACC Semua
-                                        </button>
-                                    @endunless
-                                </td>
-                            </tr>
-                        </tfoot>
-                    @endif
-                </table>
-            </div>
-        </div>
-
-
-        {{-- Modal otorisasi --}}
-        <div x-show="approvalOpen" x-cloak @keydown.escape.window="approvalOpen = false" class="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
-            <div class="absolute inset-0 bg-sidebar-dark/70 backdrop-blur-sm" @click="approvalOpen = false"></div>
-
-            <div class="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-card-bg shadow-drawer">
-                <div class="flex items-start justify-between bg-surface-container-low p-space-xl pb-space-md">
-                    <div class="flex items-center gap-2.5">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-banner-indigo text-on-primary shadow-md">
-                            <span class="material-symbols-outlined text-[1.375rem]">verified_user</span>
-                        </div>
-                        <div>
-                            <h2 class="font-display text-headline-md font-bold text-slate-text-primary">Keputusan Otorisasi Payroll</h2>
-                            <p class="font-sans text-body-sm text-slate-text-secondary">Periode {{ $period['code'] }} &bull; {{ $period['range'] }}</p>
-                        </div>
-                    </div>
-                    <button type="button" class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-slate-text-secondary transition-colors hover:bg-danger-surface hover:text-danger-red" @click="approvalOpen = false">
-                        <span class="material-symbols-outlined text-[1.25rem]">close</span>
-                    </button>
-                </div>
-
-                <div class="flex flex-col gap-space-md overflow-y-auto p-space-xl">
-                    <div class="grid grid-cols-1 gap-space-sm sm:grid-cols-3">
-                        <div class="rounded-lg bg-surface-container-low p-3">
-                            <span class="font-sans text-label-sm font-semibold uppercase tracking-wide text-slate-text-secondary">Kebutuhan Kas</span>
-                            <div class="font-display text-headline-sm font-bold tabular-nums text-slate-text-primary">{{ $rp($summary['net_pay']) }}</div>
-                        </div>
-                        <div class="rounded-lg bg-surface-container-low p-3">
-                            <span class="font-sans text-label-sm font-semibold uppercase tracking-wide text-slate-text-secondary">Omzet Bersih</span>
-                            <div class="font-display text-headline-sm font-bold tabular-nums text-slate-text-primary">{{ $rp($summary['omzet']) }}</div>
-                        </div>
-                        <div class="rounded-lg bg-surface-container-low p-3">
-                            <span class="font-sans text-label-sm font-semibold uppercase tracking-wide text-slate-text-secondary">Potongan Terbuku</span>
-                            <div class="font-display text-headline-sm font-bold tabular-nums text-danger-red">-{{ $rp(collect($queue)->sum('deduction')) }}</div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-2.5 rounded-lg bg-surface-container-low p-3.5">
-                        <span class="material-symbols-outlined mt-0.5 shrink-0 text-[1.25rem] text-primary">fact_check</span>
-                        <div class="flex flex-col gap-1">
-                            <p class="font-sans text-body-sm font-semibold text-slate-text-primary">Yang perlu diperiksa sebelum ACC</p>
-                            <ul class="flex flex-col gap-0.5 font-sans text-body-sm text-slate-text-secondary">
-                                <li>&bull; Total kebutuhan kas {{ $rp($summary['net_pay']) }} untuk {{ $summary['drivers'] }} supir.</li>
-                                <li>&bull; Rincian komisi armada {{ $rp($summary['omzet'] - $summary['cash_out']) }} sesudah uang jalan &amp; sparepart.</li>
-                                <li>&bull; Potongan BPJS + cicilan kasbon sebesar {{ $rp(collect($queue)->sum('deduction')) }}.</li>
-                                <li>&bull; Beban sparepart {{ $rp($summary['sparepart']) }} dari {{ count($auditUnit) }} unit dengan biaya bengkel.</li>
-                                <li>&bull; Surat jalan pada periode {{ $period['code'] }} sudah terverifikasi.</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-space-md sm:grid-cols-2">
-                        <button
-                            type="button"
-                            class="flex flex-col items-start gap-1 rounded-xl border-2 p-3.5 text-left transition-colors"
-                            :class="decision === 'approve' ? 'border-net-pay-emerald bg-net-pay-surface/60' : 'border-card-border bg-card-bg hover:bg-surface-container-low'"
-                            @click="decision = 'approve'"
-                        >
-                            <span class="material-symbols-outlined text-net-pay-emerald">check_circle</span>
-                            <span class="font-display text-headline-sm font-bold text-slate-text-primary">Setujui &amp; Cairkan</span>
-                            <span class="font-sans text-body-sm text-slate-text-secondary">Sahkan payroll dan jadwalkan transfer bank.</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="flex flex-col items-start gap-1 rounded-xl border-2 p-3.5 text-left transition-colors"
-                            :class="decision === 'reject' ? 'border-danger-red bg-danger-surface/60' : 'border-card-border bg-card-bg hover:bg-surface-container-low'"
-                            @click="decision = 'reject'"
-                        >
-                            <span class="material-symbols-outlined text-danger-red">assignment_return</span>
-                            <span class="font-display text-headline-sm font-bold text-slate-text-primary">Tolak / Revisi</span>
-                            <span class="font-sans text-body-sm text-slate-text-secondary">Kembalikan ke HRD dengan catatan revisi.</span>
-                        </button>
-                    </div>
-
-                    <div x-show="decision === 'reject'" x-cloak class="flex flex-col gap-1">
-                        <label class="font-sans text-label-sm uppercase tracking-wider">Catatan Revisi untuk HRD</label>
-                        <textarea
-                            x-model="rejectNote"
-                            rows="3"
-                            class="w-full rounded-lg bg-canvas-bg p-3 font-sans text-body-md text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active"
-                            placeholder="Contoh: Mohon lampirkan nota bengkel untuk unit BE 8639 AAU sebelum payroll dicairkan."
-                        ></textarea>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between gap-space-sm bg-surface-container-low p-space-lg">
-                    <span class="font-sans text-label-sm text-slate-text-muted">Otorisator: {{ auth()->user()->name ?? 'Pimpinan' }}</span>
-                    <div class="flex items-center gap-2">
-                        <button type="button" class="rounded-lg bg-card-bg px-4 py-2 font-sans text-body-sm font-semibold text-slate-text-secondary shadow-sm" @click="approvalOpen = false">Batal</button>
-                        <button type="button" class="rounded-lg bg-primary-container px-5 py-2 font-sans text-body-sm font-bold text-on-primary shadow-md" @click="submitDecision()">Kirim Keputusan</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Drawer slip detail --}}
-        <div x-show="detailOpen" x-cloak @keydown.escape.window="detailOpen = false" class="fixed inset-0 z-50" aria-modal="true" role="dialog">
-            <div class="absolute inset-0 bg-sidebar-dark/60 backdrop-blur-sm" @click="detailOpen = false"></div>
-
-            <aside
-                class="absolute right-0 top-0 flex h-full w-full flex-col bg-card-bg shadow-drawer sm:w-[32.5rem]"
-                x-show="detailOpen"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="translate-x-full"
-                x-transition:enter-end="translate-x-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="translate-x-0"
-                x-transition:leave-end="translate-x-full"
-            >
-                <div class="flex items-center justify-between bg-surface-container-low px-space-xl py-space-lg">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-banner-indigo text-on-primary shadow-sm">
-                            <span class="material-symbols-outlined text-[1.375rem]">receipt_long</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <h2 class="font-display text-headline-md font-bold text-slate-text-primary">Rekap Slip Supir</h2>
-                            <span class="font-sans text-label-sm text-slate-text-secondary" x-text="detail ? detail.name + ' • ' + detail.plate : ''"></span>
-                        </div>
-                    </div>
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-text-secondary transition-colors hover:bg-surface-container hover:text-danger-red" @click="detailOpen = false">
-                        <span class="material-symbols-outlined text-[1.25rem]">close</span>
-                    </button>
-                </div>
-
-                <div class="flex flex-1 flex-col gap-space-md overflow-y-auto p-space-xl">
-                    <template x-if="detail">
-                        <div class="flex flex-col gap-space-md">
-                            <div class="grid grid-cols-2 gap-space-sm">
-                                <div class="rounded-lg bg-canvas-bg p-3">
-                                    <span class="font-sans text-label-sm uppercase">Rit / Tonase</span>
-                                    <div class="font-display text-headline-sm font-bold" x-text="detail.rit + ' Rit • ' + detail.tonnage + ' Ton'"></div>
-                                </div>
-                                <div class="rounded-lg bg-canvas-bg p-3">
-                                    <span class="font-sans text-label-sm uppercase">Status Audit</span>
-                                    <div class="font-display text-headline-sm font-bold" x-text="detail.status"></div>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col gap-2 rounded-xl bg-surface-container-low p-4 font-financial-table text-body-sm">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-text-secondary">Omzet Truk</span>
-                                    <span class="font-semibold tabular-nums" x-text="formatRp(detail.omzet)"></span>
-                                </div>
-                                <div class="flex items-center justify-between text-danger-red">
-                                    <span>Uang Jalan</span>
-                                    <span class="font-medium tabular-nums" x-text="'-' + formatRp(detail.trip_money)"></span>
-                                </div>
-                                <div class="flex items-center justify-between text-danger-red">
-                                    <span>Sparepart</span>
-                                    <span class="font-medium tabular-nums" x-text="'-' + formatRp(detail.sparepart)"></span>
-                                </div>
-                                <div class="flex items-center justify-between rounded bg-surface-container px-2 py-1.5 font-bold">
-                                    <span>Hasil Bersih Armada</span>
-                                    <span class="tabular-nums" x-text="formatRp(detail.omzet - detail.trip_money - detail.sparepart)"></span>
-                                </div>
-                                <div class="flex items-center justify-between text-primary">
-                                    <span>Hak Komisi Supir</span>
-                                    <span class="font-bold tabular-nums" x-text="formatRp(detail.commission)"></span>
-                                </div>
-                                <div class="flex items-center justify-between text-danger-red">
-                                    <span>Potongan Kasbon &amp; BPJS</span>
-                                    <span class="font-medium tabular-nums" x-text="'-' + formatRp(detail.deduction)"></span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between rounded-xl bg-net-pay-surface p-space-md">
-                                <span class="font-sans text-label-md uppercase text-slate-text-secondary">Net Pay</span>
-                                <span class="font-display text-headline-lg font-bold tabular-nums text-net-pay-emerald" x-text="formatRp(detail.net_pay)"></span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="flex items-center justify-end gap-space-sm bg-surface-container-low p-space-lg">
-                    <button type="button" class="rounded-lg bg-card-bg px-space-lg py-2 font-sans text-body-md font-medium text-slate-text-primary shadow-sm" @click="detailOpen = false">Tutup</button>
-                    <button
-                        type="button"
-                        x-show="detail && (detail.status_kode === 'draft' || !detail.status_kode)"
-                        class="flex items-center gap-2 rounded-lg bg-primary-container px-space-lg py-2 font-sans text-body-md font-semibold text-on-primary shadow-md"
-                        @click="confirmAcc(detail ? detail.id : null, detail ? detail.name : '')"
-                    >
-                        <span class="material-symbols-outlined text-[1.125rem]">done_all</span>
-                        ACC Supir Ini
-                    </button>
-                </div>
-            </aside>
         </div>
     </div>
 </x-executive-layout>

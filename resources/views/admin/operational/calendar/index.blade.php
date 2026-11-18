@@ -1,3 +1,13 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KALENDER OPERASIONAL):
+     - Tujuan Halaman: Memvisualisasikan kalender operasional hauling batubara, cut-off
+       surat jalan timbangan, serta jadwal verifikasi dan pencairan gaji bulanan.
+     - Analogi Dunia Nyata: Seperti kalender agenda dinding di pos komando logistik:
+       setiap kotak tanggal diberi tanda lingkaran warna (biru untuk jadwal jalan,
+       hijau untuk tanggal gajian, kuning untuk pengingat cut-off surat jalan).
+     - Data dari Controller:
+       * $days: Koleksi hari dalam bulan aktif beserta event/agenda per tanggal.
+     ============================================================================== -->
 @php
     $eventStyles = [
         'hauling' => ['chip' => 'bg-primary/10 text-primary', 'dot' => 'bg-primary'],
@@ -180,7 +190,17 @@
 
                                 <div class="flex flex-col gap-1">
                                     @forelse ($day['events'] as $event)
-                                        @php $style = $eventStyles[$event['type']] ?? $eventStyles['maintenance']; @endphp
+                                        <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KALENDER OPERASIONAL):
+     - Tujuan Halaman: Memvisualisasikan kalender operasional hauling batubara, cut-off
+       surat jalan timbangan, serta jadwal verifikasi dan pencairan gaji bulanan.
+     - Analogi Dunia Nyata: Seperti kalender agenda dinding di pos komando logistik:
+       setiap kotak tanggal diberi tanda lingkaran warna (biru untuk jadwal jalan,
+       hijau untuk tanggal gajian, kuning untuk pengingat cut-off surat jalan).
+     - Data dari Controller:
+       * $days: Koleksi hari dalam bulan aktif beserta event/agenda per tanggal.
+     ============================================================================== -->
+@php $style = $eventStyles[$event['type']] ?? $eventStyles['maintenance']; @endphp
                                         <div class="flex items-center gap-1 rounded px-1.5 py-1 font-sans text-[0.6875rem] font-semibold leading-tight {{ $style['chip'] }}">
                                             <span class="h-1.5 w-1.5 shrink-0 rounded-full {{ $style['dot'] }}"></span>
                                             <span class="mark-dummy truncate">{{ $event['label'] }}</span>

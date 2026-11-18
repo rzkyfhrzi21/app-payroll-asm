@@ -102,6 +102,26 @@ class DataPerusahaanTest extends TestCase
             ->assertJsonValidationErrors(['nama_perusahaan', 'nama_pemilik']);
     }
 
+    public function test_tanggal_berdiri_kosong_tidak_menggagalkan_penyimpanan(): void
+    {
+        $pimpinan = $this->penggunaPimpinan();
+
+        // Browser mengirim string kosong untuk input <input type="date"> yang dibiarkan kosong.
+        // Kolom DATE MySQL menolak '' sehingga dulu memicu QueryException (simpan gagal).
+        $respon = $this->actingAs($pimpinan)->patch('/executive/company', [
+            'nama_perusahaan' => 'pt contoh tanggal kosong',
+            'nama_pemilik' => 'pimpinan contoh',
+            'tanggal_berdiri' => '',
+        ]);
+
+        $respon->assertRedirect(route('executive.company.edit'));
+        $respon->assertSessionHasNoErrors();
+
+        $perusahaan = DataPerusahaan::query()->firstOrFail();
+        $this->assertSame('PT CONTOH TANGGAL KOSONG', $perusahaan->nama_perusahaan);
+        $this->assertNull($perusahaan->tanggal_berdiri);
+    }
+
     public function test_slip_gaji_dan_laporan_menampilkan_data_perusahaan_dari_database(): void
     {
         DataPerusahaan::query()->create([

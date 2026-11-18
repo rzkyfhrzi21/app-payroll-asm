@@ -15,26 +15,46 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Layanan terpusat (Single Source of Truth) untuk perhitungan dan rekonsiliasi
- * gaji supir bulanan berpresisi bilangan bulat Rupiah (BIGINT).
- *
- * Ringkasan rumus berjenjang 4 tahap:
- * 1. total_angkutan_kotor (akumulasi tonase_kg × tarif_per_ton per ritase) - potongan_operasional = angkutan_bersih (Pendapatan)
- * 2. angkutan_bersih - total_uang_jalan - biaya_sparepart = hasil_bersih_armada
- * 3. round(hasil_bersih_armada × persentase_komisi_bp / 10000) = gaji_komisi (default 1000 bp = 10%)
- * 4. gaji_komisi + total_tunjangan - potongan_bpjs - potongan_kasbon - potongan_historis_lain = gaji_bersih
- *
- * Alur otorisasi periode gaji:
- * - Admin/HRD: rekonsiliasiPeriode() pada status `draft`, lalu ajukan (`submit`) ke `pending`
- *   (Admin hanya boleh mengajukan atau menarik pengajuan kembali ke `draft`, DILARANG ACC).
- * - Pimpinan: memeriksa rincian lalu memanggil prosesPersetujuanPeriode() untuk ACC (`approved`)
- *   atau mengembalikan ke Admin untuk revisi (`draft`).
+ * ============================================================================
+ * LAYANAN: JURU HITUNG PUSAT GAJI SUPIR BATUBARA (PAYROLL CALCULATION SERVICE)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Kalkulator Utama & Juru Timbang Gaji Resmi Perusahaan".
+ * Semua rumus matematika penggajian supir batubara dipusatkan di sini
+ * (Single Source of Truth) agar tidak ada perbedaan hitungan antara tampilan
+ * di layar HP supir, layar admin, maupun laporan pimpinan.
+ * 
+ * Perhitungan Menggunakan 4 Tahap Berjenjang (Bebas Koma / Bilangan Bulat Rupiah):
+ * ----------------------------------------------------------------------------
+ * Tahap 1 (Angkutan Bersih):
+ *   total_angkutan_kotor (berat tonase x tarif rute) - potongan_operasional
+ * 
+ * Tahap 2 (Hasil Bersih Armada Truk):
+ *   angkutan_bersih - total_uang_jalan_supir - nota_bon_sparepart_bengkel
+ * 
+ * Tahap 3 (Bagi Hasil Komisi Supir):
+ *   hasil_bersih_armada x persentase_komisi (standar 1000 basis poin = 10,00%)
+ * 
+ * Tahap 4 (Gaji Bersih / Uang Diterima Supir):
+ *   gaji_komisi + total_tunjangan - potongan_bpjs - cicilan_kasbon
+ * 
+ * BATAS WEWENANG OTORISASI:
+ * - Admin/HRD HANYA BOLEH mengajukan draf gaji ('draft' -> 'pending').
+ * - HANYA Pimpinan/Direktur yang berhak memberikan persetujuan ACC ('approved').
+ * ============================================================================
  */
 class PayrollCalculationService
 {
     /**
-     * Hitung seluruh komponen slip gaji supir dengan presisi bilangan bulat Rupiah (BIGINT).
-     * Seluruh hasil tahap dijaga minimal 0 (`max(0, ...)`) agar tidak bernilai negatif.
+     * Hitung Seluruh Komponen Slip Gaji Supir (Presisi Bulat Rupiah BIGINT)
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Hitung Tahap 1: Omzet kotor angkutan dikurangi potongan operasional rute.
+     * (2) Hitung Tahap 2: Angkutan bersih dikurangi uang saku jalan dan nota sparepart truk.
+     * (3) Hitung Tahap 3: Hitung bagi hasil komisi supir (dibulatkan ke Rupiah terdekat).
+     * (4) Hitung Tahap 4: Tambah tunjangan lalu kurangi iuran BPJS dan angsuran kasbon.
+     * (5) Pastikan seluruh nominal tidak ada yang minus (dijaga minimal Rp 0 via max(0, ...)).
      *
      * @param  array<string, int|float|string|null>  $komponen
      * @return array<string, int>
@@ -44,49 +64,44 @@ class PayrollCalculationService
         $totalRit = max(0, (int) ($komponen['total_rit'] ?? 0));
         $totalTonaseKg = max(0, (int) ($komponen['total_tonase_kg'] ?? 0));
 
-        // Tahap 1: Omzet Angkutan Kotor (akumulasi tonase_kg × tarif_per_ton per ritase)
-        // dikurangi Potongan Operasional menghasilkan Pendapatan Angkutan Bersih.
-        $totalAngkutanKotor = max(0, (int) ($komponen['total_angkutan_kotor'] ?? 0));
+        // (1) Tahap 1: Omzet Angkutan Kotor dikurangi Potongan Operasional = Pendapatan Angkutan Bersih
+        $totalAngkutanKotor  = max(0, (int) ($komponen['total_angkutan_kotor'] ?? 0));
         $potonganOperasional = max(0, (int) ($komponen['potongan_operasional'] ?? 0));
-        $angkutanBersih = max(0, $totalAngkutanKotor - $potonganOperasional);
+        $angkutanBersih      = max(0, $totalAngkutanKotor - $potonganOperasional);
 
-        // Tahap 2: Pendapatan Angkutan Bersih dikurangi Total Uang Jalan dan Biaya Sparepart
-        // (dari biaya_operasional kategori sparepart berstatus disetujui) = Hasil Bersih Armada.
-        $totalUangJalan = max(0, (int) ($komponen['total_uang_jalan'] ?? 0));
-        $biayaSparepart = max(0, (int) ($komponen['biaya_sparepart'] ?? 0));
+        // (2) Tahap 2: Angkutan Bersih dikurangi Uang Jalan dan Nota Bon Sparepart = Hasil Bersih Armada
+        $totalUangJalan    = max(0, (int) ($komponen['total_uang_jalan'] ?? 0));
+        $biayaSparepart    = max(0, (int) ($komponen['biaya_sparepart'] ?? 0));
         $hasilBersihArmada = max(0, $angkutanBersih - $totalUangJalan - $biayaSparepart);
 
-        // Tahap 3: Hasil Bersih Armada dikalikan persentase komisi basis poin
-        // (default 1000 bp = 10%, dibagi 10.000) lalu dibulatkan ke Rupiah terdekat = Gaji Komisi.
+        // (3) Tahap 3: Hasil Bersih Armada dikalikan persentase komisi basis poin (1000 bp = 10%)
         $persentaseKomisiBp = max(0, (int) ($komponen['persentase_komisi_bp'] ?? 1000));
-        $gajiKomisi = (int) round(($hasilBersihArmada * $persentaseKomisiBp) / 10000);
+        $gajiKomisi         = (int) round(($hasilBersihArmada * $persentaseKomisiBp) / 10000);
 
-        // Tahap 4: Gaji Komisi ditambah Tunjangan lalu dikurangi Potongan BPJS,
-        // Potongan Kasbon (jadwal angsuran_kasbon), dan Potongan Historis Lain = Gaji Bersih.
-        // Catatan: `potongan_historis_lain` hanya dipakai sebagai faktor koreksi input saat
-        // rekonsiliasi ulang slip lama/impor dan tidak disimpan sebagai kolom terpisah di `penggajian`.
-        $totalTunjangan = max(0, (int) ($komponen['total_tunjangan'] ?? 0));
-        $potonganBpjs = max(0, (int) ($komponen['potongan_bpjs'] ?? 0));
-        $potonganKasbon = max(0, (int) ($komponen['potongan_kasbon'] ?? 0));
+        // (4) Tahap 4: Komisi ditambah Tunjangan lalu dikurangi BPJS dan Cicilan Kasbon = Gaji Bersih
+        $totalTunjangan       = max(0, (int) ($komponen['total_tunjangan'] ?? 0));
+        $potonganBpjs         = max(0, (int) ($komponen['potongan_bpjs'] ?? 0));
+        $potonganKasbon       = max(0, (int) ($komponen['potongan_kasbon'] ?? 0));
         $potonganHistorisLain = max(0, (int) ($komponen['potongan_historis_lain'] ?? 0));
 
+        // (5) Angka final yang akan ditransfer ke rekening supir
         $gajiBersih = max(0, $gajiKomisi + $totalTunjangan - $potonganBpjs - $potonganKasbon - $potonganHistorisLain);
 
         return [
-            'total_rit' => $totalRit,
-            'total_tonase_kg' => $totalTonaseKg,
+            'total_rit'            => $totalRit,
+            'total_tonase_kg'      => $totalTonaseKg,
             'total_angkutan_kotor' => $totalAngkutanKotor,
             'potongan_operasional' => $potonganOperasional,
-            'angkutan_bersih' => $angkutanBersih,
-            'total_uang_jalan' => $totalUangJalan,
-            'biaya_sparepart' => $biayaSparepart,
-            'hasil_bersih_armada' => $hasilBersihArmada,
+            'angkutan_bersih'      => $angkutanBersih,
+            'total_uang_jalan'     => $totalUangJalan,
+            'biaya_sparepart'      => $biayaSparepart,
+            'hasil_bersih_armada'  => $hasilBersihArmada,
             'persentase_komisi_bp' => $persentaseKomisiBp,
-            'gaji_komisi' => $gajiKomisi,
-            'total_tunjangan' => $totalTunjangan,
-            'potongan_bpjs' => $potonganBpjs,
-            'potongan_kasbon' => $potonganKasbon,
-            'gaji_bersih' => $gajiBersih,
+            'gaji_komisi'          => $gajiKomisi,
+            'total_tunjangan'      => $totalTunjangan,
+            'potongan_bpjs'        => $potonganBpjs,
+            'potongan_kasbon'      => $potonganKasbon,
+            'gaji_bersih'          => $gajiBersih,
         ];
     }
 

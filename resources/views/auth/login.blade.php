@@ -181,8 +181,15 @@
                         </div>
                     </form>
 
+                        @php
+                            $author = $infoAuthor ?? config('app.author', []);
+                        @endphp
                         <div class="mt-6 pt-4 border-t border-card-border/60 text-center font-sans text-xs text-slate-text-muted">
-                            &copy; {{ date('Y') }} <strong>{{ $dataPerusahaan->nama_perusahaan ?? config('app.name') }}</strong> &bull; Seluruh hak cipta dilindungi.
+                            &copy; {{ date('Y') }} <strong>{{ $dataPerusahaan->nama_perusahaan ?? config('app.name') }}</strong> &bull;
+                            <button type="button" @click="$dispatch('buka-modal-author')" class="hover:text-primary hover:underline transition-colors">
+                                {{ $author['nama'] ?? 'Nabela Septiara' }}
+                            </button>
+                            &bull; Seluruh hak cipta dilindungi.
                         </div>
                 </div>
             </div>

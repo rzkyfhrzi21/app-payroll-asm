@@ -14,10 +14,35 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: BIAYA OPERASIONAL & BON BENGKEL (TRUCK EXPENSE CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Kotak Arsip Bon Bengkel & Kuitansi Pengeluaran Truk".
+ * Saat truk batubara beroperasi, timbul biaya lapangan seperti pengisian BBM solar,
+ * ganti ban pecah, belanja onderdil (sparepart), struk tol, hingga retribusi resmi.
+ * 
+ * Pengaruh ke Slip Gaji:
+ * Nota biaya kategori 'sparepart' yang disetujui akan diperhitungkan sebagai pengurang
+ * hasil bersih armada truk sebelum dihitung persentase komisi bagi hasil supir.
+ * ============================================================================
+ */
 class TruckExpenseController extends Controller
 {
+    // Menggunakan trait paginasi tabel dan standar notifikasi toast
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Pengeluaran Bon Operasional Armada
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Tentukan periode bulan penggajian aktif.
+     * (2) Tangkap filter pencarian nomor nota, kategori pengeluaran, status, dan unit truk.
+     * (3) Ambil daftar pengeluaran biaya terpaginasi dari database.
+     * (4) Buka tampilan antarmuka 'admin.operational.expenses.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $kodePeriode = $request->query('periode');
@@ -26,24 +51,25 @@ class TruckExpenseController extends Controller
 
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
+            'periode'  => $periode?->kode ?? 'all',
+            'cari'     => $this->ambilKataKunciPencarian($request),
             'kategori' => $this->ambilFilterTeks($request, 'kategori'),
-            'status' => $this->ambilFilterTeks($request, 'status'),
-            'unit' => $this->ambilFilterTeks($request, 'unit'),
+            'status'   => $this->ambilFilterTeks($request, 'status'),
+            'unit'     => $this->ambilFilterTeks($request, 'unit'),
         ];
 
         return view('admin.operational.expenses.index', [
-            'rows' => $layananDataPayroll->barisBiayaOperasionalTerpaginasi($periode, $filter, $perHalaman),
-            'summary' => $layananDataPayroll->ringkasanBiayaOperasionalPeriode($periode),
-            'period' => $layananDataPayroll->formatPeriode($periode),
-            'periodOptions' => $layananDataPayroll->daftarOpsiPeriode(),
-            'trucks' => $layananDataPayroll->pilihanTrukBiaya(),
-            'unitOptions' => $layananDataPayroll->pilihanUnitBiaya($periode),
+            'rows'            => $layananDataPayroll->barisBiayaOperasionalTerpaginasi($periode, $filter, $perHalaman),
+            'summary'         => $layananDataPayroll->ringkasanBiayaOperasionalPeriode($periode),
+            'period'          => $layananDataPayroll->formatPeriode($periode),
+            'periodOptions'   => $layananDataPayroll->daftarOpsiPeriode(),
+            'trucks'          => $layananDataPayroll->pilihanTrukBiaya(),
+            'unitOptions'     => $layananDataPayroll->pilihanUnitBiaya($periode),
             'kategoriOptions' => BiayaOperasional::daftarKategori(),
-            'statusOptions' => BiayaOperasional::daftarStatus(),
-            'periodeAktifId' => $periode?->id,
-            'filter' => $filter,
-            'perPage' => $perHalaman,
+            'statusOptions'   => BiayaOperasional::daftarStatus(),
+            'periodeAktifId'  => $periode?->id,
+            'filter'          => $filter,
+            'perPage'         => $perHalaman,
         ]);
     }
 

@@ -15,34 +15,61 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: TUGAS PENGANTARAN & KONFIRMASI SURAT JALAN (DRIVER TRIP CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Papan Tugas Pengemudi & Loket Serah Terima Surat Jalan Lapangan".
+ * Saat admin kantor menerbitkan surat jalan pengiriman batubara, tugas tersebut
+ * muncul di ponsel supir.
+ * 
+ * Alur Kerja Supir di Lapangan:
+ * 1. Mulai Kirim        : Supir menekan tombol "Mulai Kirim" saat roda truk mulai berputar (status: 'sedang_dikirim').
+ * 2. Tiba di Tujuan     : Saat tiba di pelabuhan/dermaga, supir menekan "Konfirmasi Sampai".
+ * 3. Unggah Bukti Fisik : Supir wajib memotret surat jalan fisik yang sudah ada cap stempel tanda tangan penerima,
+ *    mengisi nama penerima barang, lalu statusnya berubah menjadi 'menunggu_verifikasi' admin.
+ * ============================================================================
+ */
 class TripHistoryController extends Controller
 {
+    // Menggunakan trait respon interaksi standar
     use ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Tugas Surat Jalan Supir
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Identifikasi data supir dari akun pengguna aktif.
+     * (2) Cari tahu buku periode bulan penggajian aktif.
+     * (3) Ambil daftar perjalanan ritase yang ditugaskan kepada supir ini.
+     * (4) Buka tampilan antarmuka 'driver.trips.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $karyawan = $layananDataPayroll->ambilKaryawanUntukPengguna($request->user());
-        $kodeSekarang = \App\Support\SiklusPeriodeGaji::kodeDariTanggal(now());
-        $periodeSekarang = $layananDataPayroll->ambilPeriodeBerdasarkanKode($kodeSekarang);
+        $periodeBerjalan = $layananDataPayroll->ambilPeriodeBerjalan();
         $kodePeriode = $request->query('periode');
         $periode = (is_string($kodePeriode) && trim($kodePeriode) !== '')
-            ? ($layananDataPayroll->ambilPeriodeBerdasarkanKode($kodePeriode) ?? $periodeSekarang ?? $layananDataPayroll->ambilPeriodeTerbaru())
-            : ($periodeSekarang ?? $layananDataPayroll->ambilPeriodeTerbaru());
+            ? ($layananDataPayroll->ambilPeriodeBerdasarkanKode($kodePeriode) ?? $periodeBerjalan ?? $layananDataPayroll->ambilPeriodeTerbaru())
+            : ($periodeBerjalan ?? $layananDataPayroll->ambilPeriodeTerbaru());
         $penggajian = $karyawan === null
             ? null
             : $layananDataPayroll->ambilPenggajianSupir($karyawan, $periode);
 
         return view('driver.trips.index', [
-            'period' => $layananDataPayroll->formatPeriode($periode),
+            'period'         => $layananDataPayroll->formatPeriode($periode),
             'period_options' => $layananDataPayroll->daftarOpsiPeriode(),
-            'profile' => $layananDataPayroll->profilSupir($request->user()),
-            'payroll' => $layananDataPayroll->payrollSupir($penggajian, $karyawan),
-            'trips' => $layananDataPayroll->ritaseSupir($karyawan, $periode),
+            'profile'        => $layananDataPayroll->profilSupir($request->user()),
+            'payroll'        => $layananDataPayroll->payrollSupir($penggajian, $karyawan),
+            'trips'          => $layananDataPayroll->ritaseSupir($karyawan, $periode),
         ]);
     }
 
     /**
-     * Menandai surat jalan mulai dikirim oleh supir (status `terbit` -> `sedang_dikirim`).
+     * Menandai Surat Jalan Mulai Berangkat / Dikirim oleh Supir
+     * Mengubah status dari 'terbit' menjadi 'sedang_dikirim'.
      */
     public function mulaiPengiriman(
         Request $permintaan,

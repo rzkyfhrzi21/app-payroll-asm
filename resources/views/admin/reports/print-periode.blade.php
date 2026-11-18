@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN CETAK REKAPITULASI PENGGAJIAN PERIODE):
+     - Tujuan Halaman: Menampilkan dokumen cetak Rekapitulasi Penggajian Seluruh Supir
+       dalam format lembar kerja horizontal (landscape) siap audit atau daftar transfer bank.
+     - Analogi Dunia Nyata: Seperti lembar rekap besar akuntansi yang ditandatangani Direktur
+       sebelum uang gaji ditransfer serentak lewat payroll bank (daftar nama supir, bank,
+       nomor rekening, dan take home pay bersih masing-masing supir).
+     - Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2):
+       * Dokumen ini hanya sah dicetak jika periode sudah disetujui ('approved' / 'paid').
+     - Data dari Controller:
+       * $periode: Info kode periode, rentang tanggal kerja, dan tanggal persetujuan.
+       * $daftarSupir: Seluruh baris supir dengan total ritase, tonase, dan gaji bersih.
+       * $ringkasan: Total kas keluar perusahaan untuk periode bersangkutan.
+     ============================================================================== -->
 @php
     $perusahaanAktif = $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
     $periodeDisetujui = in_array($periode['status_code'] ?? null, ['approved', 'paid'], true);
@@ -19,12 +33,15 @@
 
     $urlLogoPerusahaan = $buatUrlMedia($perusahaanAktif->logo_perusahaan ?? null);
     $urlTtdPemilik = $buatUrlMedia($perusahaanAktif->ttd_pemilik ?? null);
+    $author = $infoAuthor ?? config('app.author', []);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
     <title>Rekapitulasi Penggajian Supir — Periode {{ $periode['code'] }}</title>
     @vite(['resources/css/app.css'])
     <style>
@@ -190,6 +207,11 @@
                     </div>
                 @endif
             </div>
+        </div>
+
+        {{-- Footer Atribusi Sistem / Author Cetak --}}
+        <div class="border-t border-slate-200 pt-3 text-center text-[10px] text-slate-400">
+            {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }} &bull; Pengembang: {{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})
         </div>
     </div>
 </body>

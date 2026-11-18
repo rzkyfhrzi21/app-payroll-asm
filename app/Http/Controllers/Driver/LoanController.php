@@ -13,19 +13,44 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: KASBON & CICILAN MANDIRI SUPIR (DRIVER LOAN CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Buku Tabungan Pinjaman & Formulir Pengajuan Kasbon Supir".
+ * Lewat layar ponselnya, supir dapat mengecek berapa sisa pinjaman kasbonnya
+ * yang masih berjalan, melihat jadwal kapan saja gajinya akan dipotong,
+ * serta mengajukan pinjaman uang baru jika ada keperluan darurat keluarga.
+ * 
+ * Keamanan Pengajuan:
+ * Supir wajib memasukkan kata sandi akunnya saat mengajukan pinjaman untuk
+ * memastikan tidak ada orang lain yang menyalahgunakan ponsel supir.
+ * ============================================================================
+ */
 class LoanController extends Controller
 {
+    // Menggunakan trait respon interaksi standar
     use ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Halaman Riwayat Kasbon & Jadwal Cicilan Supir
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Identifikasi supir dari akun login yang aktif.
+     * (2) Ambil ringkasan kasbon (total pinjaman, sisa utang, dan status).
+     * (3) Ambil riwayat mutasi dan jadwal kupon cicilan per bulan gajian.
+     * (4) Buka tampilan 'driver.loans.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $karyawan = $layananDataPayroll->ambilKaryawanUntukPengguna($request->user());
-        $kodeSekarang = \App\Support\SiklusPeriodeGaji::kodeDariTanggal(now());
-        $periodeSekarang = $layananDataPayroll->ambilPeriodeBerdasarkanKode($kodeSekarang);
+        $periodeBerjalan = $layananDataPayroll->ambilPeriodeBerjalan();
         $kodePeriode = $request->query('periode');
         $periode = (is_string($kodePeriode) && trim($kodePeriode) !== '')
-            ? ($layananDataPayroll->ambilPeriodeBerdasarkanKode($kodePeriode) ?? $periodeSekarang ?? $layananDataPayroll->ambilPeriodeTerbaru())
-            : ($periodeSekarang ?? $layananDataPayroll->ambilPeriodeTerbaru());
+            ? ($layananDataPayroll->ambilPeriodeBerdasarkanKode($kodePeriode) ?? $periodeBerjalan ?? $layananDataPayroll->ambilPeriodeTerbaru())
+            : ($periodeBerjalan ?? $layananDataPayroll->ambilPeriodeTerbaru());
         $penggajian = $karyawan === null
             ? null
             : $layananDataPayroll->ambilPenggajianSupir($karyawan, $periode);
@@ -33,13 +58,17 @@ class LoanController extends Controller
         $ringkasanKasbon = $layananDataPayroll->kasbonSupir($karyawan, $periode);
 
         return view('driver.loans.index', [
-            'period' => $layananDataPayroll->formatPeriode($periode),
-            'profile' => $layananDataPayroll->profilSupir($request->user()),
-            'loan' => $ringkasanKasbon,
+            'period'    => $layananDataPayroll->formatPeriode($periode),
+            'profile'   => $layananDataPayroll->profilSupir($request->user()),
+            'loan'      => $ringkasanKasbon,
             'mutations' => $layananDataPayroll->mutasiKasbon($karyawan, $ringkasanKasbon),
-            'schedule' => $layananDataPayroll->jadwalKasbon($ringkasanKasbon, $periode),
+            'schedule'  => $layananDataPayroll->jadwalKasbon($ringkasanKasbon, $periode),
         ]);
     }
+
+    /**
+     * Mencetak Surat Lembaran Rincian Kasbon Supir
+     */
     public function cetak(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $karyawan = $layananDataPayroll->ambilKaryawanUntukPengguna($request->user());
@@ -51,12 +80,12 @@ class LoanController extends Controller
         $ringkasanKasbon = $layananDataPayroll->kasbonSupir($karyawan, $periode);
 
         return view('driver.loans.print', [
-            'karyawan' => $karyawan,
-            'periode' => $periode,
-            'profile' => $layananDataPayroll->profilSupir($request->user()),
-            'loan' => $ringkasanKasbon,
+            'karyawan'  => $karyawan,
+            'periode'   => $periode,
+            'profile'   => $layananDataPayroll->profilSupir($request->user()),
+            'loan'      => $ringkasanKasbon,
             'mutations' => $layananDataPayroll->mutasiKasbon($karyawan, $ringkasanKasbon),
-            'schedule' => $layananDataPayroll->jadwalKasbon($ringkasanKasbon, $periode),
+            'schedule'  => $layananDataPayroll->jadwalKasbon($ringkasanKasbon, $periode),
         ]);
     }
 

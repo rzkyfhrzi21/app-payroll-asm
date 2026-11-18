@@ -17,19 +17,45 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: SIMULASI HITUNG GAJI MANDIRI SUPIR (SALARY SIMULATION CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Kalkulator & Papan Coret-Coretan Target Kerja Supir".
+ * Supir batubara sering membuat target pribadi:
+ * "Bulan depan ada kebutuhan anak sekolah, kalau saya narik 25 rit ke Dermaga Kertapati
+ * dengan rata-rata 30 ton per rit, berapa uang bersih yang akan saya kantongi?".
+ * 
+ * Penggunaan Mandiri:
+ * Supir dapat menyimpan hasil coret-coretan ini untuk motivasi kerja harian.
+ * Data di sini bersifat pribadi dan TIDAK AKAN mengubah pembukuan resmi kantor.
+ * ============================================================================
+ */
 class SalarySimulationController extends Controller
 {
+    // Menggunakan trait respon interaksi standar
     use ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Halaman Kalkulator Simulasi Gaji
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Pastikan akun yang login benar-benar supir tambang aktif.
+     * (2) Ambil daftar rute perjalanan aktif beserta tarif per ton dan uang jalannya.
+     * (3) Ambil riwayat simulasi yang pernah disimpan supir sebelumnya.
+     * (4) Buka tampilan antarmuka 'driver.simulation.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $karyawan = $layananDataPayroll->ambilKaryawanUntukPengguna($request->user());
         abort_if($karyawan === null, 403, 'Akun Anda belum terhubung dengan data karyawan supir aktif.');
 
-        $kodeSekarang = SiklusPeriodeGaji::kodeDariTanggal(now());
+        $periodeBerjalan = $layananDataPayroll->ambilPeriodeBerjalan();
         $periode = $request->query('periode')
             ? $layananDataPayroll->ambilPeriodeBerdasarkanKode($request->query('periode'))
-            : ($layananDataPayroll->ambilPeriodeBerdasarkanKode($kodeSekarang) ?? $layananDataPayroll->ambilPeriodeTerbaru());
+            : ($periodeBerjalan ?? $layananDataPayroll->ambilPeriodeTerbaru());
 
         // Master rute aktif untuk pilihan dropdown
         $daftarRute = Rute::query()
@@ -37,13 +63,13 @@ class SalarySimulationController extends Controller
             ->orderBy('kode')
             ->get(['id', 'kode', 'material', 'tarif_per_ton', 'uang_jalan_default', 'jarak_km', 'alamat_asal', 'alamat_tujuan'])
             ->map(fn (Rute $rute): array => [
-                'id' => $rute->id,
-                'nama' => $rute->kode.($rute->material ? ' - '.$rute->material : ''),
+                'id'            => $rute->id,
+                'nama'          => $rute->kode.($rute->material ? ' - '.$rute->material : ''),
                 'tarif_per_ton' => (int) $rute->tarif_per_ton,
-                'uang_jalan' => (int) ($rute->uang_jalan_default ?? 0),
-                'jarak_km' => (int) $rute->jarak_km,
-                'kota_asal' => $rute->alamat_asal ?? '-',
-                'kota_tujuan' => $rute->alamat_tujuan ?? '-',
+                'uang_jalan'    => (int) ($rute->uang_jalan_default ?? 0),
+                'jarak_km'      => (int) $rute->jarak_km,
+                'kota_asal'     => $rute->alamat_asal ?? '-',
+                'kota_tujuan'   => $rute->alamat_tujuan ?? '-',
             ])
             ->values()
             ->all();

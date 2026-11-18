@@ -1,3 +1,18 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MASTER TARIF RUTE & JALUR ANGKUTAN):
+     - Tujuan Halaman: Menetapkan koridor trayek pengiriman batubara dari mulut tambang
+       (pit/stockpile asal) hingga pelabuhan/dermaga (jetty/pabrik tujuan).
+     - Analogi Dunia Nyata: Seperti daftar ongkos trayek angkutan: berapa kilometer jarak
+       tempuh jalan tambang, berapa upah angkut per tonase batubara (tarif_per_ton),
+       dan berapa jatah uang jalan supir (uang saku solar & konsumsi) untuk setiap ritase.
+     - Standar Aturan Master Rute (Sesuai AGENTS.md Bab 3.2 & 3.5):
+       * Tarif dan uang jalan disimpan dalam nominal rupiah bulat (`BIGINT`).
+       * Alamat asal dan alamat tujuan ditulis lengkap (textarea).
+       * Rute yang sudah terikat dengan surat jalan (ritase) tidak boleh dihapus sembarangan.
+     - Data dari Controller (Admin/Master/RouteController@index):
+       * $summary: Total rute aktif, rata-rata tarif per ton, dan rata-rata jarak tempuh KM.
+       * $routes: Paginator daftar rute dari tabel `rute`.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 
@@ -67,7 +82,7 @@
         </div>
 
         {{-- Tabel rute --}}
-        <div class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
+        <div data-wadah-tabel="rute" class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
             <div class="flex flex-col gap-space-md border-b border-card-border p-space-md">
                 <div>
                     <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Tabel Tarif Rute</h2>
@@ -77,10 +92,7 @@
                     </p>
                 </div>
 
-                <form
-                    method="GET"
-                    action="{{ route('admin.master.routes.index') }}"
-                    data-filter-server
+                <div
                     class="flex flex-col items-center justify-between gap-space-sm md:flex-row"
                 >
                     <div class="relative w-full md:w-80">
@@ -89,37 +101,36 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="w-full rounded-lg bg-surface py-2 pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-primary-container"
                             placeholder="Cari kode rute, material, asal/tujuan..."
                         >
                     </div>
 
                     <div class="flex w-full flex-wrap items-center gap-space-sm md:w-auto">
-                        <select name="material" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="material" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Material: Semua</option>
                             @foreach ($materialOptions as $mat)
                                 <option value="{{ $mat }}" @selected($filter['material'] === $mat)>Material: {{ $mat }}</option>
                             @endforeach
                         </select>
 
-                        <select name="status" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="status" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Status: Semua</option>
                             <option value="aktif" @selected($filter['status'] === 'aktif')>Status: Aktif</option>
                             <option value="nonaktif" @selected($filter['status'] === 'nonaktif')>Status: Nonaktif</option>
                         </select>
 
-                        @if ($adaFilterAktif)
-                            <a
-                                href="{{ route('admin.master.routes.index') }}"
-                                class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                            >
-                                <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
-                                <span>Reset Filter</span>
-                            </a>
-                        @endif
+                        <button
+                            type="button"
+                            data-tombol-reset-filter
+                            onclick="window.resetTabelAjax('rute')"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                        >
+                            <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                            <span>Reset Filter</span>
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <x-ui.tabel-massal
@@ -132,7 +143,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="w-10 px-2 py-3 text-center font-semibold text-slate-text-secondary">
                                 <input
                                     type="checkbox"
@@ -142,6 +152,7 @@
                                     aria-label="Pilih semua rute"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Kode Rute</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Material</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Asal &rarr; Tujuan</th>
@@ -154,73 +165,20 @@
                             <th class="px-4 py-3 text-center font-semibold text-slate-text-secondary">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-card-border font-sans text-financial-table">
-                        @forelse ($routes as $rute)
-                            <tr class="transition-colors hover:bg-surface-container-low/60">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $routes->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $rute['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih rute {{ $rute['code'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3">
-                                    <button type="button" class="rounded bg-surface-container-high px-2 py-0.5 font-sans text-label-sm font-bold text-primary hover:bg-primary hover:text-on-primary" @click="bukaDetailRute(@js($rute))">{{ $rute['code'] }}</button>
-                                </td>
-                                <td class="px-4 py-3 font-semibold text-slate-text-primary">{{ $rute['name'] }}</td>
-                                <td class="px-4 py-3">
-                                    @if ($rute['alamat_asal'] !== '' || $rute['alamat_tujuan'] !== '')
-                                        <div class="flex flex-col gap-0.5 font-sans text-body-sm">
-                                            <span class="text-slate-text-primary">{{ $rute['alamat_asal'] !== '' ? $rute['alamat_asal'] : '—' }}</span>
-                                            <span class="flex items-center gap-1 text-slate-text-muted">
-                                                <span class="material-symbols-outlined text-[0.875rem]">south</span>
-                                                {{ $rute['alamat_tujuan'] !== '' ? $rute['alamat_tujuan'] : '—' }}
-                                            </span>
-                                        </div>
-                                    @else
-                                        <span class="font-sans text-body-sm text-slate-text-muted">Belum diisi</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">
-                                    {{ $rute['jarak_km'] !== null ? number_format($rute['jarak_km'], 0, ',', '.').' KM' : '—' }}
-                                </td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-slate-text-primary">{{ $rp($rute['rate']) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ $rp($rute['trip_money']) }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold {{ $rute['status'] === 'aktif' ? 'bg-net-pay-surface text-net-pay-emerald' : 'bg-surface-container text-slate-text-secondary' }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $rute['status'] === 'aktif' ? 'bg-net-pay-emerald' : 'bg-slate-text-muted' }}"></span>
-                                        {{ ucfirst($rute['status']) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ number_format($rute['ritase_count'], 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ $rute['tonase'] }} Ton</td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button type="button" class="btn-aksi-tabel hover:text-slate-text-primary" title="Lihat Detail Rute" @click="bukaDetailRute(@js($rute))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-primary" title="Ubah Rute" @click="bukaEditRute(@js($rute))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-danger-red" title="Hapus Rute" @click="bukaHapusRute(@js($rute))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                    <tbody id="tbodyRute" class="divide-y divide-card-border font-sans text-financial-table">
+                        @foreach ($routes as $indeksBaris => $rute)
+                            @include('components.tabel-baris.rute', ['baris' => $rute, 'nomor' => $routes->firstItem() + $indeksBaris])
+                        @endforeach
+
+                        @if ($routes->isEmpty())
                             <x-ui.table-empty :colspan="12" label="tarif rute" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$routes" :per-page="$perPage" label="rute" />
+            <x-ui.tabel-ajax entitas="rute" label="rute" target-id="tbodyRute" :kolom="12" :filter="$filter" :per-halaman-awal="$perPage" />
         </div>
 
         {{-- ============ MODAL TAMBAH TARIF RUTE ============ --}}

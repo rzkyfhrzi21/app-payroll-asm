@@ -1,3 +1,13 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN CETAK BUKU KASBON SUPIR):
+     - Tujuan Halaman: Dokumen fisik Buku Kasbon & Jadwal Cicilan Supir siap cetak kertas A4.
+     - Analogi Dunia Nyata: Lembaran perjanjian dan kartu cicilan kasbon yang ditandatangani
+       oleh supir dan bagian keuangan perusahaan sebagai bukti tertulis pengambilan uang muka.
+     - Data dari Controller:
+       * $karyawan: Data supir peminjam.
+       * $kasbon: Data pinjaman pokok dari tabel `kasbon`.
+       * $angsuran: Jadwal potongan gaji dari tabel `angsuran_kasbon`.
+     ============================================================================== -->
 @php
     $perusahaanAktif = $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
     $tanggalHariIni = now()->translatedFormat('d F Y');
@@ -15,12 +25,15 @@
     };
 
     $urlLogoPerusahaan = $buatUrlMedia($perusahaanAktif->logo_perusahaan ?? null);
+    $author = $infoAuthor ?? config('app.author', []);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
     <title>Buku Kasbon Supir — {{ $karyawan?->nama_lengkap ?? 'Supir' }}</title>
     @vite(['resources/css/app.css'])
     <style>
@@ -214,6 +227,11 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        {{-- Footer Atribusi Sistem / Author Cetak --}}
+        <div class="border-t border-slate-200 pt-3 text-center text-[10px] text-slate-400">
+            {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }} &bull; Pengembang: {{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})
         </div>
     </div>
 </body>

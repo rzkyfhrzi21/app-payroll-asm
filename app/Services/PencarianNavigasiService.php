@@ -9,13 +9,21 @@ use App\Models\Truk;
 use Illuminate\Support\Collection;
 
 /**
- * Katalog halaman (berdasarkan route web) untuk pencarian global di topbar.
- * Hasil dibatasi sesuai peran pengguna yang sedang login.
+ * ============================================================================
+ * LAYANAN: KATALOG NAVIGASI PENCARIAN GLOBAL (GLOBAL SEARCH SERVICE)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Buku Direktori / Peta Penunjuk Jalan di Pintu Lobi".
+ * Ketika pengguna mengetik kata kunci apa pun di bilah atas aplikasi (topbar),
+ * layanan ini mencari rute menu atau data yang cocok, lalu hanya memperlihatkan
+ * menu yang boleh diakses sesuai kartu identitas (role) pengguna tersebut.
+ * ============================================================================
  */
 class PencarianNavigasiService
 {
     /**
-     * Daftar halaman yang dapat dicari, dikelompokkan menurut peran.
+     * Daftar Halaman yang Dapat Dicari (Dikelompokkan Menurut Peran)
      *
      * @return array<int, array<string, mixed>>
      */

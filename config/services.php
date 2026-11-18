@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    // Gateway WhatsApp Fonnte (https://fonnte.com) untuk notifikasi slip gaji supir.
+    // Token didapat dari dashboard Fonnte: Device -> Token. Kosong = fitur WA nonaktif.
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+        'url' => env('FONNTE_URL', 'https://api.fonnte.com/send'),
+        'aktif' => env('FONNTE_AKTIF', true),
+        'timeout' => (int) env('FONNTE_TIMEOUT', 15),
+    ],
+
 ];

@@ -1,3 +1,18 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN TOPBAR ADMIN HRD):
+     - Tujuan Komponen: Bilah navigasi atas (Topbar Header) untuk Admin HRD yang melayang
+       di bagian atas layar (fixed left-0 right-0 top-0 z-30).
+     - Analogi Dunia Nyata: Seperti jam dan papan kendali di atas meja kasir/pos kontrol:
+       ada tombol buka/tutup laci menu samping, kotak pencarian cepat (Ctrl+K),
+       jam dinding digital real-time, tombol layar penuh, tombol kalender, dan akun user.
+     - Fitur Utama:
+       * Tombol Toggle Sidebar (Desktop & Mobile).
+       * Global Search (Ctrl+K): mencari rute, menu, nama supir, atau nomor plat armada.
+       * Widget Jam & Tanggal Real-Time (Alpine jamRealtime).
+       * Tombol Layar Penuh komponen bersama x-ui.tombol-layar-penuh.
+       * Tombol Buka Panel Kalender Operasional (Alpine calendarPanelOpen).
+       * Profil Pengguna & Logout lewat komponen x-layout.user-dropdown.
+     ============================================================================== -->
 @php
     $periodeAktif = $periodeAktif ?? ['code' => '—', 'range' => 'Belum ada periode'];
 @endphp
@@ -159,15 +174,6 @@
                 title="Buka Kalender Operasional"
             >
                 <span class="material-symbols-outlined text-[1.25rem] text-banner-indigo">calendar_month</span>
-            </button>
-
-            <button
-                type="button"
-                class="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-text-secondary transition-colors hover:bg-surface-container-low hover:text-slate-text-primary"
-                @click="$dispatch('notify-toast', { type: 'success', title: 'Pusat Notifikasi Sistem', action: 'NOTIFICATION_CENTER', status: 'UP_TO_DATE', message: 'Seluruh sinkronisasi data pengantaran, kasbon, dan rekap payroll berada dalam kondisi mutakhir.' })"
-            >
-                <span class="material-symbols-outlined text-[1.25rem]">notifications</span>
-                <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-net-pay-emerald"></span>
             </button>
 
             <x-layout.user-dropdown

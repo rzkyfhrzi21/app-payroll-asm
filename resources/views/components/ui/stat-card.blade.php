@@ -1,3 +1,11 @@
+<!-- ======================================================
+     KOMPONEN UI: KARTU METRIK STATISTIK UTAMA (STAT CARD)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Papan Indikator Spedometer Angka Penting".
+     Menampilkan ringkasan angka besar seperti Total Gaji Bersih Periode,
+     Total Ritase Selesai, Jumlah Kasbon Berjalan, atau Jumlah Armada Siap Jalan.
+====================================================== -->
 @props([
     'label',
     'value',

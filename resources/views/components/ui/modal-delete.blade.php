@@ -1,3 +1,16 @@
+<!-- ======================================================
+     KOMPONEN UI: KONFIRMASI HAPUS DATA & INTEGRITAS RELASI (MODAL DELETE)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Pintu Palang Pengaman Penghapusan Dokumen Kantor".
+     Sebelum data master (seperti data supir atau nomor truk) dihapus,
+     komponen ini mengecek apakah supir/truk tersebut masih memiliki transaksi berjalan:
+     - Jika data masih terikat ke surat jalan (ritase) atau kasbon, tombol Hapus otomatis
+       TERKUNCI dan muncul penjelasan alasan hukum auditnya.
+     - Disediakan alternatif tombol "Nonaktifkan" agar transaksi lama tetap aman.
+     - Jika data benar-benar bebas relasi, pengguna wajib mencentang persetujuan
+       sebelum tombol Hapus Permanen bisa diklik.
+====================================================== -->
 @props([
     'name',
     'title' => 'Hapus Data?',

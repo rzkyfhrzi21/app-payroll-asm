@@ -22,15 +22,28 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Mengubah data penggajian dari database menjadi bentuk array yang
- * dipakai oleh tampilan Blade (admin payroll, portal supir, data master).
+ * ============================================================================
+ * LAYANAN: PUSAT PENYEDIA DATA PENGGAJIAN (PAYROLL DATA SERVICE)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Gudang Arsip & Juru Rangkum Data Keuangan".
+ * Controller tidak perlu pusing menulis query SQL panjang untuk menghitung
+ * total ritase, total komisi supir, sisa kasbon, atau komposisi truk di garasi.
+ * Juru rangkum ini yang bertugas mengambil data mentah dari database, menyaringnya
+ * sesuai hak akses, lalu menyajikan bentuk data rapi yang siap ditampilkan
+ * pada layar Blade (Admin, Supir, maupun Eksekutif Pimpinan).
+ * 
+ * Fitur Penyelamat Kinerja (Singgahan / Cache Request):
+ * Mengingat satu halaman web bisa memanggil data supir berulang kali (di tabel,
+ * kartu statistik, dan header), layanan ini menyimpan hasil hitungan sementara
+ * di memori agar database tidak lelah dieksekusi berkali-kali.
+ * ============================================================================
  */
 class PayrollDataService
 {
     /**
-     * Cache hasil dalam satu request. Halaman supir memanggil service ini dari
-     * controller dan beberapa view composer, sehingga tanpa cache query
-     * agregat (SUM tonase, COUNT hari ritase) dieksekusi berkali-kali.
+     * Wadah Singgahan Sementara (Memory Cache Request)
      *
      * @var array<string, mixed>
      */
@@ -61,13 +74,32 @@ class PayrollDataService
     public function ambilPeriodeTerbaru(): ?PeriodeGaji
     {
         if (! array_key_exists('periode_terbaru', $this->singgahan)) {
-            $this->singgahan['periode_terbaru'] = PeriodeGaji::query()
-                ->orderByDesc('tanggal_selesai')
+            // Utamakan periode berjalan (tanggal_selesai NULL) agar input surat jalan
+            // baru selalu masuk ke periode yang sedang dibuka Admin.
+            $this->singgahan['periode_terbaru'] = $this->ambilPeriodeBerjalan()
+                ?? PeriodeGaji::query()
+                    ->orderByDesc('tanggal_mulai')
+                    ->orderByDesc('id')
+                    ->first();
+        }
+
+        return $this->singgahan['periode_terbaru'];
+    }
+
+    /**
+     * Periode yang masih berjalan (belum ditutup buku / tanggal_selesai NULL).
+     */
+    public function ambilPeriodeBerjalan(): ?PeriodeGaji
+    {
+        if (! array_key_exists('periode_berjalan', $this->singgahan)) {
+            $this->singgahan['periode_berjalan'] = PeriodeGaji::query()
+                ->whereNull('tanggal_selesai')
+                ->orderByDesc('tanggal_mulai')
                 ->orderByDesc('id')
                 ->first();
         }
 
-        return $this->singgahan['periode_terbaru'];
+        return $this->singgahan['periode_berjalan'];
     }
 
     public function ambilPeriodeBerdasarkanKode(?string $kodePeriode): ?PeriodeGaji
@@ -108,6 +140,7 @@ class PayrollDataService
                 'status' => 'Belum Ada Data',
                 'status_code' => null,
                 'pay_date' => '—',
+                'terbuka' => false,
             ];
         }
 
@@ -117,19 +150,29 @@ class PayrollDataService
             return $this->singgahan[$kunciSinggahan];
         }
 
-        $jumlahHariKerja = Ritase::query()
+        // Jumlah tanggal yang benar-benar ada pengantarannya (bukan hari kalender).
+        $jumlahHariPengantaran = Ritase::query()
             ->where('id_periode_gaji', $periode->id)
             ->distinct()
             ->count('tanggal_ritase');
 
+        // Periode berjalan (belum tutup buku) ditampilkan "{mulai} — Sekarang".
+        $periodeTerbuka = $periode->tanggal_selesai === null;
+        $labelRentang = $periodeTerbuka
+            ? $this->formatTanggal($periode->tanggal_mulai).' — Sekarang'
+            : $this->formatRentangTanggal($periode->tanggal_mulai, $periode->tanggal_selesai);
+
         return $this->singgahan[$kunciSinggahan] = [
             'code' => $periode->kode,
-            'range' => $this->formatRentangTanggal($periode->tanggal_mulai, $periode->tanggal_selesai),
-            'cut_off' => $this->formatTanggal($periode->tanggal_selesai?->copy()->addDay()),
-            'work_days' => (int) $jumlahHariKerja,
+            'range' => $labelRentang,
+            'cut_off' => $periodeTerbuka
+                ? 'Belum ditutup'
+                : $this->formatTanggal($periode->tanggal_selesai?->copy()->addDay()),
+            'work_days' => (int) $jumlahHariPengantaran,
             'status' => $this->labelStatusPeriode($periode->status),
             'status_code' => $periode->status,
             'pay_date' => $this->formatTanggal($periode->tanggal_bayar),
+            'terbuka' => $periodeTerbuka,
         ];
     }
 
@@ -245,6 +288,11 @@ class PayrollDataService
                             ->orWhere('merek_model', 'like', "%{$kataKunci}%");
                     });
             });
+        }
+
+        // Batas data milik supir yang sedang login (dipakai endpoint AJAX peran supir).
+        if (array_key_exists('id_karyawan', $filter) && $filter['id_karyawan'] !== null) {
+            $kueri->where('penggajian.id_karyawan', (int) $filter['id_karyawan']);
         }
 
         $paginator = $kueri
@@ -410,6 +458,11 @@ class PayrollDataService
                     ->orWhere('merek_model', 'like', "%{$kataKunci}%")
                     ->orWhereHas('karyawan', fn (Builder $supir) => $supir->where('nama_lengkap', 'like', "%{$kataKunci}%"));
             });
+        }
+
+        // Batas data milik supir yang sedang login (dipakai endpoint AJAX peran supir).
+        if (array_key_exists('id_karyawan', $filter) && $filter['id_karyawan'] !== null) {
+            $kueri->where('id_karyawan', (int) $filter['id_karyawan']);
         }
 
         return $kueri
@@ -778,6 +831,11 @@ class PayrollDataService
             });
         }
 
+        // Batas data milik supir yang sedang login (dipakai endpoint AJAX peran supir).
+        if (array_key_exists('id_karyawan', $filter) && $filter['id_karyawan'] !== null) {
+            $kueri->where('id_karyawan', (int) $filter['id_karyawan']);
+        }
+
         return $kueri
             ->orderByDesc('id')
             ->paginate($perHalaman)
@@ -901,7 +959,6 @@ class PayrollDataService
 
         $kueri = $this->kueriRitaseOperasional($periode);
         $this->terapkanFilterRitase($kueri, $filter);
-
         return $kueri
             ->orderByDesc('id')
             ->paginate($perHalaman)
@@ -956,6 +1013,11 @@ class PayrollDataService
 
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggalSampai) === 1) {
             $kueri->whereDate('tanggal_ritase', '<=', $tanggalSampai);
+        }
+
+        // Batas data milik supir yang sedang login (dipakai endpoint AJAX peran supir).
+        if (array_key_exists('id_karyawan', $filter) && $filter['id_karyawan'] !== null) {
+            $kueri->where('id_karyawan', (int) $filter['id_karyawan']);
         }
 
         if ($kataKunci !== '') {
@@ -2960,9 +3022,6 @@ class PayrollDataService
         $margin = max(0, $omzet - $cashOut - $gajiBersih);
         $marginPct = $omzet > 0 ? number_format($margin / $omzet * 100, 1, '.', '').'%' : '0.0%';
         $totalTonaseKg = (int) $daftarPenggajian->sum('total_tonase_kg');
-        $totalTon = round($totalTonaseKg / 1000, 2);
-        $targetTon = max(1000, (int) ceil($totalTon / 500) * 500);
-        $targetPct = $targetTon > 0 ? number_format(min(100, $totalTon / $targetTon * 100), 1, '.', '').'%' : '0.0%';
 
         $jumlahAnomali = $daftarPenggajian->filter(fn (Penggajian $p) => (int) $p->biaya_sparepart > 5000000 || (int) $p->potongan_kasbon > (int) $p->gaji_komisi)->count();
         $jumlahSupir = $daftarPenggajian->count();
@@ -2990,8 +3049,6 @@ class PayrollDataService
             'margin_pct' => $marginPct,
             'net_pay' => $gajiBersih,
             'drivers' => $jumlahSupir,
-            'target' => $targetTon,
-            'target_pct' => $targetPct,
             'pending_acc' => $sudahAcc ? 0 : $jumlahAnomali,
             'audit_ready' => $sudahAcc ? $jumlahSupir : max(0, $jumlahSupir - $jumlahAnomali),
         ];
@@ -3298,9 +3355,25 @@ class PayrollDataService
             ? 'ACC '.($periode?->tanggal_bayar?->format('d/m') ?? now()->format('d/m'))
             : 'Pending';
 
-        return $daftarPenggajian->map(function (Penggajian $penggajian) use ($labelAcc): array {
+        // Rute yang dilalui tiap supir dipakai untuk filter "Rute" pada laporan Pimpinan.
+        $rutePerKaryawan = $periode !== null
+            ? Ritase::query()
+                ->with('rute')
+                ->where('id_periode_gaji', $periode->id)
+                ->get(['id_karyawan', 'id_rute'])
+                ->groupBy('id_karyawan')
+            : collect();
+
+        return $daftarPenggajian->map(function (Penggajian $penggajian) use ($labelAcc, $rutePerKaryawan): array {
             $karyawan = $penggajian->karyawan;
             $truk = $penggajian->truk;
+            $daftarRute = $rutePerKaryawan
+                ->get($penggajian->id_karyawan, collect())
+                ->pluck('rute.kode')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
 
             return [
                 'name' => $karyawan?->nama_lengkap ?? 'Tanpa Nama',
@@ -3315,8 +3388,10 @@ class PayrollDataService
                 'bpjs' => (int) $penggajian->potongan_bpjs,
                 'kasbon' => (int) $penggajian->potongan_kasbon,
                 'net' => (int) $penggajian->gaji_bersih,
+                'model_truk' => $truk?->merek_model ?? '—',
                 'bank' => $karyawan?->nama_bank ?? 'MANDIRI',
                 'account' => $karyawan?->nomor_rekening ?? '—',
+                'rute' => $daftarRute,
                 'acc' => $labelAcc,
             ];
         })->values()->all();
@@ -3356,6 +3431,67 @@ class PayrollDataService
             'jumlah_supir' => $jumlahSupir,
             'nilai_kas' => $nilaiKas,
             'kode_periode' => $kodePeriode ?? ($this->ambilPeriodeTerbaru()?->kode ?? '—'),
+        ];
+    }
+
+    /**
+     * Kebutuhan kas gaji seluruh periode (bukan hanya periode terpilih).
+     *
+     * Dipakai kartu "Kebutuhan Kas Gaji" di Dashboard Pimpinan agar angkanya
+     * mencerminkan total kewajiban transfer lintas periode yang sudah dihitung,
+     * dipisah menurut status pencairan (belum cair vs sudah cair).
+     *
+     * @return array<string, mixed>
+     */
+    public function kebutuhanKasGajiSeluruhPeriode(): array
+    {
+        if (array_key_exists('kebutuhan_kas_gaji_semua_periode', $this->singgahan)) {
+            return $this->singgahan['kebutuhan_kas_gaji_semua_periode'];
+        }
+
+        $daftarPeriode = PeriodeGaji::query()
+            ->orderByDesc('tanggal_selesai')
+            ->orderByDesc('id')
+            ->get();
+
+        $totalBelumCair = 0;
+        $totalSudahCair = 0;
+        $jumlahPeriode = 0;
+        $jumlahPeriodeBelumCair = 0;
+        $jumlahSupir = 0;
+
+        foreach ($daftarPeriode as $periode) {
+            $baris = $this->ambilPenggajianPeriode($periode);
+
+            if ($baris->isEmpty()) {
+                continue;
+            }
+
+            $jumlahPeriode++;
+            $jumlahSupir = max($jumlahSupir, $baris->count());
+
+            $belumCair = (int) $baris
+                ->filter(fn (Penggajian $penggajian): bool => $penggajian->status !== 'paid')
+                ->sum('gaji_bersih');
+            $sudahCair = (int) $baris
+                ->filter(fn (Penggajian $penggajian): bool => $penggajian->status === 'paid')
+                ->sum('gaji_bersih');
+
+            $totalBelumCair += $belumCair;
+            $totalSudahCair += $sudahCair;
+
+            if ($belumCair > 0) {
+                $jumlahPeriodeBelumCair++;
+            }
+        }
+
+        return $this->singgahan['kebutuhan_kas_gaji_semua_periode'] = [
+            'total' => $totalBelumCair,
+            'belum_cair' => $totalBelumCair,
+            'sudah_cair' => $totalSudahCair,
+            'jumlah_periode' => $jumlahPeriode,
+            'jumlah_periode_belum_cair' => $jumlahPeriodeBelumCair,
+            'jumlah_supir_maksimal' => $jumlahSupir,
         ];
     }
 
@@ -3720,6 +3856,31 @@ class PayrollDataService
      */
     public function barisRitaseRentangTanggal(?string $tanggalDari, ?string $tanggalSampai): array
     {
+        return $this->kueriRitaseRentangTanggal($tanggalDari, $tanggalSampai)
+            ->get()
+            ->map(fn (Ritase $ritase) => $this->petakanBarisRitase($ritase, $ritase->periodeGaji?->kode ?? '—'))
+            ->all();
+    }
+
+    /**
+     * Versi terpaginasi rentang tanggal: dipakai endpoint AJAX ketika pengguna
+     * memfilter tanggal yang bisa melintasi batas periode gaji.
+     *
+     * @param  array<string, mixed>  $filter
+     */
+    public function barisRitaseRentangTanggalTerpaginasi(?string $tanggalDari, ?string $tanggalSampai, array $filter, int $perHalaman): LengthAwarePaginator
+    {
+        $kueri = $this->kueriRitaseRentangTanggal($tanggalDari, $tanggalSampai);
+        $this->terapkanFilterRitase($kueri, $filter);
+
+        return $kueri
+            ->paginate($perHalaman)
+            ->withQueryString()
+            ->through(fn (Ritase $ritase) => $this->petakanBarisRitase($ritase, $ritase->periodeGaji?->kode ?? '—'));
+    }
+
+    private function kueriRitaseRentangTanggal(?string $tanggalDari, ?string $tanggalSampai): Builder
+    {
         $kueri = Ritase::query()
             ->with([
                 'karyawan:id,nama_lengkap,nomor_induk_karyawan',
@@ -3739,9 +3900,7 @@ class PayrollDataService
             $kueri->whereDate('tanggal_ritase', '<=', $tanggalSampai);
         }
 
-        return $kueri->get()
-            ->map(fn (Ritase $ritase) => $this->petakanBarisRitase($ritase, $ritase->periodeGaji?->kode ?? '—'))
-            ->all();
+        return $kueri;
     }
 
     private function statusEfektifBarisPenggajian(Penggajian $penggajian, ?PeriodeGaji $periode): string

@@ -204,4 +204,22 @@ class LogikaBisnisTest extends TestCase
         $this->assertSame('Draf Perhitungan', $format['status']);
         $this->assertStringContainsString('Feb 2026', $format['cut_off']);
     }
+
+    public function test_siklus_periode_dapat_mengonversi_kode_periode_ke_tanggal_awal_bulan(): void
+    {
+        $nov = \App\Support\SiklusPeriodeGaji::tanggalDariKode('Nov-26');
+        $this->assertNotNull($nov);
+        $this->assertSame('2026-11-01', $nov->toDateString());
+
+        $des = \App\Support\SiklusPeriodeGaji::tanggalDariKode('Des-26');
+        $this->assertNotNull($des);
+        $this->assertSame('2026-12-01', $des->toDateString());
+
+        $jan = \App\Support\SiklusPeriodeGaji::tanggalDariKode('Jan-26');
+        $this->assertNotNull($jan);
+        $this->assertSame('2026-01-01', $jan->toDateString());
+
+        $this->assertNull(\App\Support\SiklusPeriodeGaji::tanggalDariKode(''));
+        $this->assertNull(\App\Support\SiklusPeriodeGaji::tanggalDariKode('TIDAK_VALID'));
+    }
 }

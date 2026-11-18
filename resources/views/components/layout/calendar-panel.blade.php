@@ -1,3 +1,14 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PANEL KALENDER OPERASIONAL):
+     - Tujuan Komponen: Laci geser (Slide-over Drawer) kalender dari sisi kanan layar
+       yang dapat dipanggil dari sidebar atau topbar di seluruh halaman.
+     - Analogi Dunia Nyata: Seperti kalender dinding besar yang ditempel di kantor logistik:
+       memperlihatkan tanggal merah, hari libur nasional Indonesia, dan tanggal penting
+       siklus tutup buku gaji (tanggal 1 hingga akhir bulan).
+     - Interaksi & Event:
+       * Terbuka saat `calendarPanelOpen = true`.
+       * Menutup dengan menekan tombol ESC, tombol silang, atau klik di luar panel (backdrop).
+     ============================================================================== -->
 {{-- Panel Kalender Nasional sebelah kanan, dapat dipanggil dari sidebar kiri di seluruh halaman --}}
 <div
     x-cloak

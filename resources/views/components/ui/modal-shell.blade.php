@@ -1,3 +1,17 @@
+<!-- ======================================================
+     KOMPONEN UI: KERANGKA JENDELA POPUP (MODAL SHELL)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Bingkai Jendela Popup (Dialog Box)".
+     Saat admin mengklik tombol Tambah Data, Edit, atau Detail,
+     bingkai ini melayang di tengah layar dengan latar belakang gelap buram.
+     
+     Fitur Utama:
+     - Lapisan zIndex bertingkat: modal di atas modal (misal: modal jenis truk
+       di atas modal truk induk) tanpa tabrakan visual.
+     - Menutup otomatis saat tombol Escape ditekan atau area luar diklik.
+     - Header fleksibel dengan ikon simbol, judul, subjudul, dan tombol silang (x).
+====================================================== -->
 @props([
     'name',
     'title' => '',

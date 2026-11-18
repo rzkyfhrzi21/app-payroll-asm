@@ -12,10 +12,40 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+
+/**
+ * ============================================================================
+ * CONTROLLER: TINJAUAN & OTORISASI GAJI PIMPINAN (EXECUTIVE PAYROLL REVIEW)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Meja Tanda Tangan Basah & Pulpen Sakti Direktur Utama".
+ * Setelah staf admin selesai menghitung seluruh ritase dan mengajukan draf gaji,
+ * bundel dokumen tersebut diletakkan di meja pimpinan ini.
+ * 
+ * Hak Prerogatif Pimpinan:
+ * 1. Memberikan ACC (Persetujuan) : Bisa disetujui satu per satu (satuan),
+ *    beberapa supir via centang checkbox, atau sekaligus "ACC Semua" ('approved').
+ * 2. Menolak / Mengembalikan Draf : Jika ada angka yang mencurigakan (misal bon
+ *    sparepart janggal), pimpinan menolak draf tersebut kembali ke status 'draft'
+ *    disertai catatan alasan penolakan agar admin memperbaikinya.
+ * 3. Eksekusi Pencairan Dana     : Menekan tombol "Cairkan Gaji" ('paid') yang
+ *    otomatis memotong jadwal cicilan kasbon periode berjalan dan mengurangi utang supir.
+ * ============================================================================
+ */
 class PayrollReviewController extends Controller
 {
+    // Menggunakan trait respon interaksi notifikasi toast standar
     use ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Halaman Tinjauan Penggajian Pimpinan
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Cek apakah pimpinan sudah memilih kode periode di URL (?periode=...).
+     * (2) Jika belum memilih, tampilkan kartu daftar periode pengajuan lebih dulu.
+     * (3) Jika sudah memilih periode, tampilkan lembar verifikasi lengkap per supir.
+     */
     public function index(Request $permintaan, PayrollDataService $layananDataPayroll): View
     {
         $kodePeriode = $permintaan->query('periode');
@@ -33,6 +63,9 @@ class PayrollReviewController extends Controller
         return view('executive.payroll.index', $this->dataTampilan($periode, $layananDataPayroll));
     }
 
+    /**
+     * Membuka Detail Penggajian Satu Periode Tertentu
+     */
     public function show(string $period, PayrollDataService $layananDataPayroll): View
     {
         $periode = $layananDataPayroll->ambilPeriodeBerdasarkanKode($period);
@@ -128,6 +161,21 @@ class PayrollReviewController extends Controller
                 judul: 'Otorisasi Gagal',
                 aksi: 'EXECUTIVE_APPROVE_NOT_FOUND',
                 kodeHttp: 404,
+            );
+        }
+
+        // Kewenangan Pimpinan bersifat otorisasi atas pengajuan Admin HRD.
+        // Periode yang masih draf berarti Admin belum mengajukan, jadi tidak boleh di-ACC.
+        if ($periodeModel->status === 'draft') {
+            return $this->responGalatStandar(
+                permintaan: $permintaan,
+                ruteTujuan: 'executive.payroll.index',
+                pesan: "Periode {$periodeModel->kode} belum diajukan oleh Admin HRD. Minta Admin menyelesaikan verifikasi surat jalan lalu mengajukan periode terlebih dahulu.",
+                judul: 'Otorisasi ACC Ditolak',
+                aksi: 'EXECUTIVE_APPROVE_NOT_SUBMITTED',
+                statusKode: 'PERIOD_NOT_SUBMITTED',
+                kodeHttp: 422,
+                parameterRute: ['periode' => $periodeModel->kode],
             );
         }
 
@@ -289,6 +337,19 @@ class PayrollReviewController extends Controller
                 judul: 'ACC Batch Gagal',
                 aksi: 'EXECUTIVE_BATCH_APPROVE_NOT_FOUND',
                 kodeHttp: 404,
+            );
+        }
+
+        if ($periodeModel->status === 'draft') {
+            return $this->responGalatStandar(
+                permintaan: $permintaan,
+                ruteTujuan: 'executive.payroll.index',
+                pesan: "Periode {$periodeModel->kode} belum diajukan oleh Admin HRD sehingga belum dapat di-ACC.",
+                judul: 'ACC Batch Ditolak',
+                aksi: 'EXECUTIVE_BATCH_APPROVE_NOT_SUBMITTED',
+                statusKode: 'PERIOD_NOT_SUBMITTED',
+                kodeHttp: 422,
+                parameterRute: ['periode' => $periodeModel->kode],
             );
         }
 
@@ -472,6 +533,9 @@ class PayrollReviewController extends Controller
             );
         }
 
+        // Baris yang benar-benar berubah menjadi `paid` pada aksi ini; dipakai untuk notifikasi.
+        $idPencairan = $kueriSiapCair->pluck('id')->map(fn (mixed $id): int => (int) $id)->all();
+
         try {
             $periodeTerbaru = $layananKalkulasi->cairkanPeriode($periodeModel, (int) auth()->id(), $daftarId);
         } catch (ValidationException $galatValidasi) {
@@ -488,15 +552,21 @@ class PayrollReviewController extends Controller
             );
         }
 
+        // Notifikasi slip gaji ke email (SMTP) & WhatsApp (Fonnte) masing-masing supir.
+        // Kegagalan kirim tidak membatalkan pencairan; hanya dicatat di log.
+        $ringkasanNotifikasi = app(\App\Services\NotifikasiPencairanGajiService::class)
+            ->kirimUntukPenggajian($periodeTerbaru, $idPencairan);
+
         return $this->responSuksesStandar(
             permintaan: $permintaan,
             ruteTujuan: 'executive.payroll.index',
-            pesan: "Pencairan dana gaji periode {$periodeTerbaru->kode} berhasil diproses dan cicilan kasbon periode berjalan telah ditandai terpotong.",
+            pesan: "Pencairan dana gaji periode {$periodeTerbaru->kode} berhasil diproses dan cicilan kasbon periode berjalan telah ditandai terpotong. Notifikasi terkirim ke {$ringkasanNotifikasi['email_terkirim']} email dan {$ringkasanNotifikasi['wa_terkirim']} WhatsApp supir.",
             judul: 'Pencairan Dana Berhasil',
             aksi: 'EXECUTIVE_DISBURSE_PAYROLL',
             dataTambahan: [
                 'periode' => $periodeTerbaru->kode,
                 'status' => $periodeTerbaru->status,
+                'notifikasi' => $ringkasanNotifikasi,
             ],
             parameterRute: ['periode' => $periodeTerbaru->kode],
         );

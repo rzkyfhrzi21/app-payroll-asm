@@ -8,7 +8,10 @@
 
     @php
         $pageTitle = html_entity_decode((string) ($title ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $author = $infoAuthor ?? config('app.author', []);
     @endphp
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
 
     <title>{{ $pageTitle !== '' ? $pageTitle.' — ' : '' }}{{ !empty($dataPerusahaan?->kode_perusahaan) ? $dataPerusahaan->kode_perusahaan.' • ' : '' }}{{ config('app.name') }}</title>
     <link rel="icon" type="image/x-icon" href="{{ !empty($dataPerusahaan?->url_logo) ? $dataPerusahaan->url_logo : asset('favicon.svg') }}">
@@ -57,6 +60,7 @@
 >
     <x-ui.toast-stack />
     <x-ui.lightbox />
+    <x-ui.modal-author />
 
     <div class="min-h-screen bg-canvas-bg">
         <x-layout.admin-sidebar />
@@ -103,8 +107,17 @@
                     {{ $slot }}
 
                     {{-- Footer Copyright Global --}}
-                    <footer class="mt-auto border-t border-card-border/80 pt-6 pb-2 text-center font-sans text-xs text-slate-text-muted">
-                        &copy; {{ date('Y') }} <strong>{{ $dataPerusahaan->nama_perusahaan ?? config('app.name') }}</strong> &bull; Seluruh hak cipta dilindungi undang-undang.
+                    <footer class="mt-auto border-t border-card-border/80 pt-6 pb-2 text-center font-sans text-xs text-slate-text-muted space-y-1">
+                        <div>
+                            &copy; {{ date('Y') }} <strong>{{ $dataPerusahaan->nama_perusahaan ?? config('app.name') }}</strong> &bull; {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}
+                        </div>
+                        <div>
+                            Dikembangkan oleh
+                            <button type="button" @click="$dispatch('buka-modal-author')" class="font-semibold text-primary hover:underline">
+                                {{ $author['nama'] ?? 'Nabela Septiara' }}
+                            </button>
+                            (NPM: {{ $author['npm'] ?? '2311050052' }})
+                        </div>
                     </footer>
                 </div>
             </main>

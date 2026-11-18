@@ -3,8 +3,16 @@
 namespace App\Support;
 
 /**
- * Aturan kata sandi akun pengguna: minimal 8 karakter serta wajib memuat
- * huruf, angka, dan karakter khusus.
+ * ============================================================================
+ * HELPER: STANDAR ATURAN KEKUATAN KATA SANDI (PASSWORD POLICY HELPER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Standar Kunci Gembok Rumah yang Kokoh".
+ * Agar akun aplikasi tidak mudah ditebak oleh orang iseng, helper ini mewajibkan
+ * setiap kata sandi memiliki panjang minimal 8 karakter, serta harus mengandung
+ * kombinasi huruf, angka, dan simbol (misal: "Drv#4829").
+ * ============================================================================
  */
 final class AturanKataSandi
 {

@@ -1,3 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MASTER UNIT ARMADA TRUK):
+     - Tujuan Halaman: Mengelola armada truk pengangkut batubara, penugasan supir pemegang,
+       serta manajemen jenis truk (kapasitas tonase) di dalam modal bersarang.
+     - Analogi Dunia Nyata: Seperti garasi pangkalan armada: ada papan inventaris nomor polisi
+       truk (misal Dump Truck Tronton Hino/Fuso), siapa supir yang memegang kuncinya,
+       dan berapa total muatan batubara yang pernah diangkut unit tersebut.
+     - Standar Aturan Master Truk (Sesuai AGENTS.md Bab 3.2, 3.4, 3.5):
+       * Larangan Konsep Vendor: Seluruh armada adalah milik perusahaan sendiri.
+       * DILARANG membuat halaman master terpisah untuk Jenis Truk; CRUD jenis truk
+         disediakan di dalam jendela modal bersarang (`modalJenis`).
+       * Truk yang sudah memiliki jejak surat jalan (ritase) tidak boleh dihapus.
+     - Data dari Controller (Admin/Master/TruckController@index):
+       * $summary: Total armada, unit aktif, dan unit yang sudah dipasangkan dengan supir.
+       * $truckComposition: Data irisan donat SVG native untuk komposisi jenis truk.
+       * $trucks: Paginator daftar armada dari tabel `truk` join jenis truk dan supir.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 
@@ -82,7 +99,7 @@
         </div>
 
         {{-- Tabel unit --}}
-        <div class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
+        <div data-wadah-tabel="truk" class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
             <div class="flex flex-col gap-space-md border-b border-card-border p-space-md">
                 <div class="flex flex-wrap items-center justify-between gap-space-sm">
                     <div>
@@ -94,10 +111,7 @@
                     <span class="rounded-full bg-surface-container px-2.5 py-0.5 font-sans text-label-sm font-semibold text-primary">{{ $summary['total'] }} Unit</span>
                 </div>
 
-                <form
-                    method="GET"
-                    action="{{ route('admin.master.trucks.index') }}"
-                    data-filter-server
+                <div
                     class="flex flex-col items-center justify-between gap-space-sm md:flex-row"
                 >
                     <div class="relative w-full md:w-80">
@@ -106,36 +120,35 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="w-full rounded-lg bg-surface py-2 pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-primary-container"
                             placeholder="Cari nopol, model truk, supir..."
                         >
                     </div>
 
                     <div class="flex w-full flex-wrap items-center gap-space-sm md:w-auto">
-                        <select name="status" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="status" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Status: Semua</option>
                             <option value="aktif" @selected($filter['status'] === 'aktif')>Status: Aktif</option>
                             <option value="nonaktif" @selected($filter['status'] === 'nonaktif')>Status: Nonaktif</option>
                         </select>
 
-                        <select name="penugasan" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                        <select name="penugasan" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                             <option value="all">Penugasan: Semua</option>
                             <option value="terpakai" @selected($filter['penugasan'] === 'terpakai')>Sudah Ada Supir</option>
                             <option value="kosong" @selected($filter['penugasan'] === 'kosong')>Tanpa Supir</option>
                         </select>
 
-                        @if ($adaFilterAktif)
-                            <a
-                                href="{{ route('admin.master.trucks.index') }}"
-                                class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                            >
-                                <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
-                                <span>Reset Filter</span>
-                            </a>
-                        @endif
+                        <button
+                            type="button"
+                            data-tombol-reset-filter
+                            onclick="window.resetTabelAjax('truk')"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                        >
+                            <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                            <span>Reset Filter</span>
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <x-ui.tabel-massal
@@ -148,7 +161,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="w-10 px-2 py-3 text-center font-semibold text-slate-text-secondary">
                                 <input
                                     type="checkbox"
@@ -158,6 +170,7 @@
                                     aria-label="Pilih semua unit armada"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Nomor Polisi</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Jenis</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Merek &amp; Model</th>
@@ -168,75 +181,20 @@
                             <th class="px-4 py-3 text-center font-semibold text-slate-text-secondary">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-card-border font-sans text-financial-table">
-                        @forelse ($trucks as $truk)
-                            <tr class="transition-colors hover:bg-surface-container-low/60">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $trucks->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $truk['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih unit {{ $truk['nomor_polisi'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3">
-                                    <button type="button" class="font-display text-headline-sm font-semibold tabular-nums text-primary hover:underline" @click="bukaDetailTruk(@js($truk))">{{ $truk['nomor_polisi'] }}</button>
-                                </td>
-                                <td class="px-4 py-3">
-                                    @if ($truk['nama_jenis'] !== '')
-                                        <span class="rounded bg-surface-container-high px-2 py-0.5 font-sans text-label-sm font-semibold text-primary">{{ $truk['nama_jenis'] }}</span>
-                                    @else
-                                        <span class="font-sans text-label-sm text-slate-text-muted">—</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-slate-text-primary">{{ $truk['merek_model'] }}</td>
-                                <td class="px-4 py-3">
-                                    @if ($truk['nama_supir'] !== '')
-                                        <div class="flex flex-col">
-                                            <span class="font-semibold text-slate-text-primary">{{ $truk['nama_supir'] }}</span>
-                                            <span class="font-sans text-label-sm text-slate-text-muted">{{ $truk['nip_supir'] }}</span>
-                                        </div>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-warning-surface px-2 py-0.5 font-sans text-label-sm font-semibold text-warning-amber">
-                                            <span class="material-symbols-outlined text-[0.875rem]">person_off</span>
-                                            Belum ada supir
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold {{ $truk['status'] === 'aktif' ? 'bg-net-pay-surface text-net-pay-emerald' : 'bg-surface-container text-slate-text-secondary' }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $truk['status'] === 'aktif' ? 'bg-net-pay-emerald' : 'bg-slate-text-muted' }}"></span>
-                                        {{ ucfirst($truk['status']) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ number_format($truk['ritase_count'], 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ $truk['tonase'] }} Ton</td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button type="button" class="btn-aksi-tabel hover:text-slate-text-primary" title="Detail Unit" @click="bukaDetailTruk(@js($truk))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-primary" title="Ubah Unit" @click="bukaEditTruk(@js($truk))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-danger-red" title="Hapus Unit" @click="bukaHapusTruk(@js($truk))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                    <tbody id="tbodyTruk" class="divide-y divide-card-border font-sans text-financial-table">
+                        @foreach ($trucks as $indeksBaris => $truk)
+                            @include('components.tabel-baris.truk', ['baris' => $truk, 'nomor' => $trucks->firstItem() + $indeksBaris])
+                        @endforeach
+
+                        @if ($trucks->isEmpty())
                             <x-ui.table-empty :colspan="11" label="unit armada" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$trucks" :per-page="$perPage" label="unit armada" />
+            <x-ui.tabel-ajax entitas="truk" label="unit armada" target-id="tbodyTruk" :kolom="11" :filter="$filter" :per-halaman-awal="$perPage" />
         </div>
 
         {{-- ============ MODAL TAMBAH UNIT ============ --}}

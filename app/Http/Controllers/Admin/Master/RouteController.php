@@ -14,33 +14,66 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: MASTER RUTE & TARIF ANGKUTAN (ROUTE MASTER CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Papan Penetapan Trayek Jalur & Tarif Angkut Batubara".
+ * Di sinilah kantor menetapkan rute perjalanan dari mulut tambang menuju ke dermaga
+ * atau pabrik pembeli. Setiap rute memiliki jarak tempuh (km), tarif sewa angkutan
+ * per ton yang dibayar klien, serta standar uang saku jalan (uang jalan) yang akan
+ * dibawa supir saat berangkat.
+ * ============================================================================
+ */
 class RouteController extends Controller
 {
+    // Menggunakan trait paginasi tabel dan standar notifikasi toast
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Master Jalur & Tarif Rute
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Baca kata kunci pencarian dan filter material dari URL.
+     * (2) Ambil daftar rute terpaginasi dari PayrollDataService.
+     * (3) Ambil ringkasan statistik jalur (rute aktif dan jenis muatan).
+     * (4) Buka tampilan 'admin.master.routes.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
-            'status' => $this->ambilFilterTeks($request, 'status'),
+            'cari'     => $this->ambilKataKunciPencarian($request),
+            'status'   => $this->ambilFilterTeks($request, 'status'),
             'material' => $this->ambilFilterTeks($request, 'material'),
         ];
 
         return view('admin.master.routes.index', [
-            'routes' => $layananDataPayroll->daftarRuteTerpaginasi($filter, $perHalaman),
-            'summary' => $layananDataPayroll->ringkasanRute(),
+            'routes'          => $layananDataPayroll->daftarRuteTerpaginasi($filter, $perHalaman),
+            'summary'         => $layananDataPayroll->ringkasanRute(),
             'materialOptions' => $layananDataPayroll->pilihanMaterialRute(),
-            'filter' => $filter,
-            'perPage' => $perHalaman,
+            'filter'          => $filter,
+            'perPage'         => $perHalaman,
         ]);
     }
 
+    /**
+     * Menyimpan Data Tarif Rute Baru
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Validasi input formulir (kode, material, tarif per ton, uang jalan, alamat).
+     * (2) Simpan baris rute baru ke database (teks otomatis diubah ke HURUF BESAR).
+     * (3) Berikan respon notifikasi toast sukses (mendukung AJAX modal atau redirect).
+     */
     public function store(StoreRuteRequest $permintaan): RedirectResponse|JsonResponse
     {
+        // (1) & (2) Buat rute baru
         $ruteBaru = Rute::create($permintaan->validated());
         $tarifFormatted = 'Rp '.number_format((int) $ruteBaru->tarif_per_ton, 0, ',', '.');
 
+        // (3) Kembalikan notifikasi sukses
         return $this->responSuksesStandar(
             permintaan: $permintaan,
             ruteTujuan: 'admin.master.routes.index',

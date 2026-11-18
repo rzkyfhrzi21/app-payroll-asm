@@ -719,8 +719,12 @@ export const pasangFormAjaxModal = () => {
 
         const diDalamModal = Boolean(form.closest('[role="dialog"]'));
         const pakaiAjaxEksplisit = form.hasAttribute('data-ajax-post');
-        const adalahImporExcel = Boolean(form.querySelector('input[name="berkas_migrasi"]'));
-        const abaikanAjax = form.hasAttribute('data-no-ajax') || adalahImporExcel;
+        const targetTabBaru = form.getAttribute('target') === '_blank';
+        const adalahImporExcel =
+            Boolean(form.querySelector('input[name="berkas_migrasi"]')) ||
+            Boolean(form.querySelector('input[name="berkas_excel"]')) ||
+            targetTabBaru;
+        const abaikanAjax = form.hasAttribute('data-no-ajax') || targetTabBaru || adalahImporExcel;
 
         if ((!diDalamModal && !pakaiAjaxEksplisit) || abaikanAjax) {
             return;

@@ -4,37 +4,57 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PEMBUATAN SURAT JALAN / RITASE BARU
+ * ==============================================================================
+ * Kelas ini bekerja seperti loket penimbangan dan penerbitan tiket jalan:
+ * 1. Hanya Admin HRD/Operasional yang berhak membuat Surat Jalan baru (`authorize`).
+ * 2. Memeriksa kelayakan data perjalanan batubara:
+ *    - Supir, truk, dan rute harus terdaftar di database (`exists`).
+ *    - Muatan batubara harus masuk akal (antara 0.01 ton hingga maksimal 100 ton).
+ *    - Foto surat jalan bertanda tangan maksimal 10 lembar (masing-masing maks 2 MB).
+ *    - Status harus salah satu dari 6 status resmi (`draft`, `terbit`, `sedang_dikirim`, dll).
+ * ==============================================================================
+ */
 class StoreRitaseRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang boleh menambah Surat Jalan.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
     }
 
+    /**
+     * Aturan validasi input formulir surat jalan baru.
+     */
     public function rules(): array
     {
+        // Mendukung upload foto satuan maupun banyak foto (array)
         $aturanFoto = is_array($this->file('foto_surat_jalan')) || is_array($this->input('foto_surat_jalan'))
             ? [
-                'foto_surat_jalan' => ['nullable', 'array', 'max:10'],
-                'foto_surat_jalan.*' => ['file', 'image', 'max:2048'],
+                'foto_surat_jalan' => ['nullable', 'array', 'max:10'],            // Maksimal 10 foto sekaligus
+                'foto_surat_jalan.*' => ['file', 'image', 'max:2048'],           // Maksimal 2 MB per file
             ]
             : [
-                'foto_surat_jalan' => ['nullable', 'file', 'image', 'max:2048'],
+                'foto_surat_jalan' => ['nullable', 'file', 'image', 'max:2048'],  // Upload 1 foto maksimal 2 MB
             ];
 
         return array_merge([
-            'id_periode_gaji' => ['required', 'integer', 'exists:periode_gaji,id'],
-            'id_karyawan' => ['required', 'integer', 'exists:karyawan,id'],
-            'id_truk' => ['required', 'integer', 'exists:truk,id'],
-            'id_rute' => ['required', 'integer', 'exists:rute,id'],
-            'tanggal_ritase' => ['required', 'date'],
-            'jumlah_rit' => ['required', 'integer', 'min:1', 'max:20'],
-            'tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],
-            'tarif_per_ton' => ['nullable', 'integer', 'min:1'],
-            'uang_jalan' => ['nullable', 'integer', 'min:0'],
-            'nama_penerima' => ['nullable', 'string', 'max:120'],
+            'id_periode_gaji' => ['required', 'integer', 'exists:periode_gaji,id'], // Wajib terikat ke periode aktif
+            'id_karyawan' => ['required', 'integer', 'exists:karyawan,id'],         // Supir harus terdaftar
+            'id_truk' => ['required', 'integer', 'exists:truk,id'],                 // Unit armada harus terdaftar
+            'id_rute' => ['required', 'integer', 'exists:rute,id'],                 // Jalur hauling harus ada
+            'tanggal_ritase' => ['required', 'date'],                               // Tanggal keberangkatan
+            'jumlah_rit' => ['required', 'integer', 'min:1', 'max:20'],             // Jumlah trip dalam 1 DO
+            'tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],         // Berat muatan batubara (Ton)
+            'tarif_per_ton' => ['nullable', 'integer', 'min:1'],                    // Tarif angkut rupiah bulat
+            'uang_jalan' => ['nullable', 'integer', 'min:0'],                       // Uang jalan kas/solar
+            'nama_penerima' => ['nullable', 'string', 'max:120'],                   // Nama petugas timbangan penerima
             'status' => ['required', 'in:draft,terbit,sedang_dikirim,menunggu_verifikasi,terverifikasi,dibatalkan'],
-            'hapus_foto' => ['nullable', 'array'],
+            'hapus_foto' => ['nullable', 'array'],                                  // Daftar foto lama yang mau dibuang
             'hapus_foto.*' => ['string', 'max:255'],
         ], $aturanFoto);
     }

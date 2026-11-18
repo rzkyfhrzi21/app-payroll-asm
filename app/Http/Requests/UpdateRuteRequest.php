@@ -5,13 +5,27 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PERUBAHAN TRAYEK RUTE ANGKUTAN
+ * ==============================================================================
+ * Kelas ini memeriksa perubahan data koridor rute (misal penyesuaian tarif per ton
+ * karena kenaikan harga solar, atau perubahan uang jalan default).
+ * ==============================================================================
+ */
 class UpdateRuteRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang boleh mengedit trayek rute.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
     }
 
+    /**
+     * Aturan validasi pembaruan rute.
+     */
     public function rules(): array
     {
         $rute = $this->route('route');
@@ -20,15 +34,15 @@ class UpdateRuteRequest extends FormRequest
             'kode' => [
                 'required', 'string', 'max:20',
                 'regex:/^[A-Z0-9-]+$/',
-                Rule::unique('rute', 'kode')->ignore($rute?->id),
+                Rule::unique('rute', 'kode')->ignore($rute?->id), // Abaikan id rute sendiri
             ],
-            'material' => ['required', 'string', 'max:50'],
-            'tarif_per_ton' => ['required', 'integer', 'min:1'],
-            'uang_jalan_default' => ['required', 'integer', 'min:0'],
-            'jarak_km' => ['nullable', 'integer', 'min:0', 'max:100000'],
-            'alamat_asal' => ['nullable', 'string', 'max:150'],
-            'alamat_tujuan' => ['nullable', 'string', 'max:150'],
-            'status' => ['required', 'in:aktif,nonaktif'],
+            'material' => ['required', 'string', 'max:50'],       // Jenis muatan batubara
+            'tarif_per_ton' => ['required', 'integer', 'min:1'],  // Tarif per ton baru
+            'uang_jalan_default' => ['required', 'integer', 'min:0'], // Uang jalan standar baru
+            'jarak_km' => ['nullable', 'integer', 'min:0', 'max:100000'], // Jarak KM
+            'alamat_asal' => ['nullable', 'string', 'max:150'],   // Alamat muat
+            'alamat_tujuan' => ['nullable', 'string', 'max:150'], // Alamat bongkar
+            'status' => ['required', 'in:aktif,nonaktif'],        // Status rute aktif/tutup
         ];
     }
 

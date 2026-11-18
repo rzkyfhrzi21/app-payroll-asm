@@ -12,10 +12,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: KELOLA PROFIL & IDENTITAS PERUSAHAAN (COMPANY PROFILE CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Ruang Pengaturan Akta, Kop Surat, & Stempel Resmi Kantor".
+ * Hanya akun Pimpinan/Direktur yang memiliki hak akses untuk mengelola data ini.
+ * Informasi yang diatur di sini (seperti logo kantor, tanda tangan digital pimpinan,
+ * nomor rekening resmi, dan alamat PT) akan otomatis disematkan pada setiap
+ * cetakan lembar slip gaji supir dan laporan keuangan eksekutif.
+ * ============================================================================
+ */
 class CompanyProfileController extends Controller
 {
+    // Menggunakan trait respon interaksi standar notifikasi toast
     use ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Formulir Pengaturan Profil Perusahaan
+     */
     public function edit(): View
     {
         return view('executive.company.index', [
@@ -23,6 +40,16 @@ class CompanyProfileController extends Controller
         ]);
     }
 
+    /**
+     * Memperbarui Informasi Identitas Resmi Perusahaan
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Validasi isian formulir (nama PT, nama pimpinan, jabatan, rekening, alamat).
+     * (2) Ambil atau siapkan baris data tunggal perusahaan (Singleton).
+     * (3) Jika ada file logo baru diunggah, simpan format WebP dan hapus berkas logo lama.
+     * (4) Jika ada file tanda tangan baru, simpan format WebP dan hapus berkas ttd lama.
+     * (5) Simpan seluruh data ke database dan kirimkan notifikasi toast sukses.
+     */
     public function update(
         UpdateDataPerusahaanRequest $permintaan,
         StandarMediaGambarService $layananMediaGambar,
@@ -62,7 +89,6 @@ class CompanyProfileController extends Controller
 
         $perusahaan->fill($atributSimpan);
         $perusahaan->save();
-
         return $this->responSuksesStandar(
             permintaan: $permintaan,
             ruteTujuan: 'executive.company.edit',

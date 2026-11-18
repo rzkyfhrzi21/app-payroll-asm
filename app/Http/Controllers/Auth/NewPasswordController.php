@@ -14,10 +14,22 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: PEMBUATAN KATA SANDI BARU (NEW PASSWORD CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Bengkel Ganti Kunci Gembok Baru".
+ * Saat pengguna lupa kata sandi dan mengklik link rahasia (token) yang dikirimkan
+ * ke email mereka, layar ini akan terbuka. Pengguna diminta membuat kata sandi baru
+ * yang kuat, mengonfirmasinya, dan sistem akan menggantikan kunci lama dengan yang baru.
+ * ============================================================================
+ */
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Menampilkan Formulir Pembuatan Kata Sandi Baru
      */
     public function create(Request $request): View
     {
@@ -25,7 +37,13 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * Handle an incoming new password request.
+     * Menyimpan Kata Sandi Baru yang Telah Divalidasi
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Validasi token rahasia, email, dan kekuatan kata sandi baru.
+     * (2) Cek keaslian token reset melalui Password broker Laravel.
+     * (3) Jika sah, enkripsi kata sandi baru (Hash) dan simpan ke database.
+     * (4) Picu event PasswordReset dan arahkan kembali ke halaman login.
      *
      * @throws ValidationException
      */

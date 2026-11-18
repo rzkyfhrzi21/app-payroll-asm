@@ -15,57 +15,85 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * ============================================================================
+ * CONTROLLER: MESIN INTERAKSI TABEL AJAX ADMIN (TABLE INTERACTION ENGINE)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Pelayan Cepat Saji di Balik Meja Kasir (AJAX Table Engine)".
+ * Ketika staf admin mengetik nama supir di kotak pencarian atau mengklik judul
+ * kolom tabel untuk mengurutkan data (sorting A-Z), layar web tidak perlu di-refresh
+ * secara lambat. Pelayan ini bekerja di belakang layar mengambilkan baris-baris
+ * data yang diminta dalam sekejap mata.
+ * 
+ * Standar Keamanan & Performa Tinggi:
+ * 1. Anti SQL-Injection: Hanya mengizinkan sorting pada kolom-kolom yang terdaftar resmi (Whitelist).
+ * 2. Anti Lemot (Anti N+1): Seluruh relasi data truk dan supir ditarik sekaligus (Eager Loading).
+ * 3. Batas Aman: Pengambilan data dibatasi per halaman agar server tidak jebol.
+ * ============================================================================
+ */
 class InteraksiTabelController extends Controller
 {
     /**
-     * Endpoint terpusat interaksi tabel Admin berbasis AJAX POST (BRIEF Bab 4.1, Bab 8.2, Bab 9).
-     * Menerapkan Whitelist Kolom Sorting ketat (anti-SQLi), Eager Loading (anti-N+1),
-     * pemilihan kolom spesifik (anti-overfetching), dan Hard Limit Pagination maksimal 50 baris.
+     * Pintu Utama Permintaan Data Tabel AJAX
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Kenali entitas tabel apa yang diminta (supir, truk, rute, ritase, biaya, kasbon, atau gaji).
+     * (2) Tangkap kata kunci pencarian dan pilihan filter dari browser.
+     * (3) Tentukan arah urutan data (Naik/ASC atau Turun/DESC).
+     * (4) Jalankan query database yang aman sesuai entitas yang dituju.
+     * (5) Bungkus baris data beserta informasi halaman (halaman ke berapa, total baris) ke dalam format JSON.
      */
     public function __invoke(Request $permintaan): JsonResponse
     {
+        // (1) Identifikasi entitas tabel tujuan
         $entitas = strtolower((string) $permintaan->input('entitas', 'karyawan'));
         $kataKunci = trim((string) $permintaan->input('cari', ''));
         $filter = is_array($permintaan->input('filter')) ? $permintaan->input('filter') : [];
 
+        // (2) Baca konfigurasi paginasi dan filter
         $statusFilter = trim((string) ($filter['status'] ?? $permintaan->input('status', 'all')));
         $perHalamanInput = (int) ($permintaan->input('per_halaman') ?: $permintaan->input('per_page', 25));
         $perHalaman = min(max($perHalamanInput, 1), 100);
         $halaman = max((int) ($permintaan->input('halaman') ?: $permintaan->input('page', 1)), 1);
         $permintaan->merge(['page' => $halaman]);
 
+        // (3) Kunci arah urutan data hanya boleh ASC atau DESC (keamanan whitelist)
         $arahDiizinkan = ['ASC', 'DESC'];
         $arahUrut = in_array(strtoupper((string) $permintaan->input('sort_dir', 'DESC')), $arahDiizinkan, true)
             ? strtoupper((string) $permintaan->input('sort_dir', 'DESC'))
             : 'DESC';
 
+        // (4) Panggil pembuat query yang sesuai dengan entitasnya
         $paginator = match ($entitas) {
-            'truk' => $this->queryTabelTruk($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            'rute' => $this->queryTabelRute($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            'ritase' => $this->queryTabelRitase($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'truk'                      => $this->queryTabelTruk($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'rute'                      => $this->queryTabelRute($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'ritase'                    => $this->queryTabelRitase($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
             'biaya', 'biaya_operasional' => $this->queryTabelBiaya($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            'kasbon' => $this->queryTabelKasbon($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            'periode_gaji', 'laporan' => $this->queryTabelPeriodeGaji($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            'penggajian', 'payroll' => $this->queryTabelPenggajian($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
-            default => $this->queryTabelKaryawan($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'kasbon'                    => $this->queryTabelKasbon($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'periode_gaji', 'laporan'   => $this->queryTabelPeriodeGaji($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            'penggajian', 'payroll'     => $this->queryTabelPenggajian($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
+            default                     => $this->queryTabelKaryawan($permintaan, $kataKunci, $statusFilter, $filter, $arahUrut, $perHalaman),
         };
 
+        // (5) Kirim kembali data dalam format JSON standar
         return response()->json([
-            'success' => true,
-            'type' => 'success',
-            'title' => 'Data Tabel Dimuat',
-            'action' => 'FETCH_TABEL_'.strtoupper($entitas),
-            'status' => 'COMPLETED',
-            'message' => 'Berhasil memuat data tabel '.$entitas.'.',
-            'data' => [
+            'success'   => true,
+            'type'      => 'success',
+            'title'     => 'Data Tabel Dimuat',
+            'action'    => 'FETCH_TABEL_'.strtoupper($entitas),
+            'status'    => 'COMPLETED',
+            'message'   => 'Berhasil memuat data tabel '.$entitas.'.',
+            'data'      => [
                 'rows' => $paginator->items(),
                 'meta' => [
                     'current_page' => $paginator->currentPage(),
-                    'last_page' => $paginator->lastPage(),
-                    'per_page' => $paginator->perPage(),
-                    'total' => $paginator->total(),
-                    'from' => $paginator->firstItem() ?? 0,
-                    'to' => $paginator->lastItem() ?? 0,
+                    'last_page'    => $paginator->lastPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                    'from'         => $paginator->firstItem() ?? 0,
+                    'to'           => $paginator->lastItem() ?? 0,
                 ],
             ],
             'timestamp' => now()->toIso8601String(),

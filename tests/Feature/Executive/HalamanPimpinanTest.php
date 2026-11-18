@@ -111,6 +111,7 @@ class HalamanPimpinanTest extends TestCase
     public function test_otorisasi_acc_mengembalikan_json_standar_dan_mengubah_status(): void
     {
         $periode = $this->siapkanPeriodePenggajian();
+        $periode->update(['status' => 'pending']);
         $this->actingAs($this->penggunaPimpinan());
 
         $respon = $this->patchJson('/executive/payroll/'.$periode->kode.'/approve')
@@ -125,6 +126,30 @@ class HalamanPimpinanTest extends TestCase
 
         $this->assertSame('approved', $periode->refresh()->status);
         $this->assertNotNull($periode->tanggal_bayar);
+    }
+
+    public function test_pimpinan_tidak_bisa_acc_periode_yang_belum_diajukan_admin(): void
+    {
+        $periode = $this->siapkanPeriodePenggajian();
+        $this->actingAs($this->penggunaPimpinan());
+
+        // Periode masih draf: Admin HRD belum mengajukan, jadi ACC Pimpinan ditolak.
+        $this->patchJson('/executive/payroll/'.$periode->kode.'/approve')
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('action', 'EXECUTIVE_APPROVE_NOT_SUBMITTED');
+
+        $this->postJson('/executive/payroll/'.$periode->kode.'/approve-batch')
+            ->assertStatus(422)
+            ->assertJsonPath('action', 'EXECUTIVE_BATCH_APPROVE_NOT_SUBMITTED');
+
+        $this->assertSame('draft', $periode->refresh()->status);
+        $this->assertSame('draft', $periode->penggajian()->first()?->status);
+
+        // Halaman tidak menawarkan tombol ACC selama periode belum diajukan.
+        $html = $this->get('/executive/payroll?periode='.$periode->kode)->assertOk()->getContent();
+        $this->assertStringContainsString('Menunggu Pengajuan Admin HRD', $html);
+        $this->assertStringNotContainsString('ACC Semua yang Valid', $html);
     }
 
     public function test_penolakan_pimpinan_mengembalikan_periode_ke_draf(): void

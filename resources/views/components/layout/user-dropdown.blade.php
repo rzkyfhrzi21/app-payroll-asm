@@ -1,3 +1,14 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN DROPDOWN PENGGUNA):
+     - Tujuan Komponen: Menu lungsur (Dropdown) di pojok kanan atas untuk melihat identitas
+       pengguna yang sedang login, mengubah profil, dan keluar akun (Logout aman via POST).
+     - Analogi Dunia Nyata: Seperti lencana pengenal di dada seragam: saat ditekan, muncul
+       opsi buka profil dan tombol serah kunci pos keluar kantor (logout).
+     - Data Props:
+       * $nama: Nama lengkap pengguna (otomatis diubah menjadi inisial 2 huruf untuk avatar).
+       * $peran: Hak akses (Admin HRD, Pimpinan, Supir).
+       * $ruteDashboard & $ruteProfil: Tautan rute sesuai peran pengguna.
+     ============================================================================== -->
 @props([
     'nama' => 'Pengguna',
     'peran' => 'Pengguna',
@@ -84,6 +95,15 @@
                 <span class="material-symbols-outlined text-[1.25rem] text-banner-indigo">account_circle</span>
                 <span>Profile</span>
             </a>
+
+            <button
+                type="button"
+                @click="$dispatch('buka-modal-author'); menuAkunTerbuka = false"
+                class="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left font-sans text-body-md font-semibold text-slate-text-primary transition-colors hover:bg-surface-container-low"
+            >
+                <span class="material-symbols-outlined text-[1.25rem] text-net-pay-emerald">school</span>
+                <span>Tentang Pengembang</span>
+            </button>
         </div>
 
         <div class="my-1.5 border-t border-card-border"></div>

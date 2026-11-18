@@ -98,8 +98,8 @@ class HalamanAdminTest extends TestCase
     }
 
     /**
-     * BRIEF Bab 3.3: input pencarian memakai debounce (Alpine) atau
-     * data-filter-debounce (form server-side), dan ada Reset Filter saat filter aktif.
+     * BRIEF Bab 3.3: input pencarian memakai debounce (Alpine, atau 300ms pada
+     * komponen tabel AJAX), dan tombol Reset Filter selalu tersedia.
      */
     public function test_pencarian_memakai_debounce_dan_tombol_reset_filter(): void
     {
@@ -109,7 +109,10 @@ class HalamanAdminTest extends TestCase
         foreach (['/admin/master/employees', '/admin/operational/trips', '/admin/reports'] as $alamat) {
             $html = $this->get($alamat)->assertOk()->getContent();
 
-            $memakaiDebounce = str_contains($html, 'debounce.300ms') || str_contains($html, 'data-filter-debounce');
+            $memakaiDebounce = str_contains($html, 'debounce.300ms')
+                || str_contains($html, 'data-filter-debounce')
+                || str_contains($html, 'tabelAjaxServer');
+
             $this->assertTrue($memakaiDebounce, "Debounce pencarian tidak ada pada {$alamat}.");
 
             // Reset Filter muncul otomatis ketika ada filter aktif (AGENTS.md 3.7).

@@ -1,3 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN SIDEBAR ADMIN HRD):
+     - Tujuan Komponen: Navigasi bilah samping (Sidebar) untuk pengguna bertipe Admin/HRD.
+       Mengatur pintu masuk ke seluruh modul: Keuangan & Audit, Operasional Pengantaran,
+       dan Manajemen Master Armada Truk.
+     - Analogi Dunia Nyata: Seperti lemari arsip kerja berlabel di samping meja Admin:
+       rak atas untuk berkas Gaji & Laporan, rak tengah untuk Surat Jalan & Kasbon,
+       dan rak bawah untuk data pokok supir, truk, serta rute tambang.
+     - Struktur Grup Menu:
+       * Keuangan & Audit: Dashboard, Payroll, Laporan & Slip Gaji.
+       * Operasional Pengantaran: Operasional Pengantaran (Surat Jalan), Pengeluaran, Kasbon, Kalender.
+       * Master & Armada: Data Supir, Unit Armada Truk, Tarif Rute & Jalur.
+     - Fitur Anti-FOUC & Responsif:
+       * Menyimpan status ciut (collapsed) di `localStorage.admin_sidebar_collapsed`
+         sehingga saat halaman dibuka ulang, posisi sidebar tidak berkedip.
+       * Di bagian bawah terdapat kartu ringkasan periode aktif ($ringkasanKasbonAdmin).
+     ============================================================================== -->
 @php
     $menuGroups = [
         [

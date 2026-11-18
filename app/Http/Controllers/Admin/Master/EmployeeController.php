@@ -21,42 +21,69 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: MASTER SUPIR & KARYAWAN (EMPLOYEE MASTER CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Buku Pendaftaran & Tata Usaha Personalia (Supir & Staf)".
+ * Di sinilah admin mendaftarkan supir baru yang bergabung dengan armada tambang,
+ * membuatkan akun login mereka, mencatat nomor rekening bank untuk transfer gaji,
+ * menentukan besaran bagi hasil komisi supir, serta mengatur potongan iuran BPJS.
+ * 
+ * Aturan Penting:
+ * Supir yang sudah memiliki jejak transaksi surat jalan (ritase) atau kasbon
+ * TIDAK BOLEH dihapus sembarangan dari sistem agar riwayat pembukuannya tidak hilang.
+ * ============================================================================
+ */
 class EmployeeController extends Controller
 {
+    // Menggunakan trait pembantu tabel dan respon notifikasi standar
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Master Karyawan / Supir
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Baca kata kunci pencarian, filter status kerja, dan filter kepemilikan unit truk.
+     * (2) Ambil data supir terpaginasi dari PayrollDataService (anti-lemot server-side).
+     * (3) Ambil ringkasan total supir aktif dan truk yang siap beroperasi.
+     * (4) Buka tampilan 'admin.master.employees.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
+            'cari'   => $this->ambilKataKunciPencarian($request),
             'status' => $this->ambilFilterTeks($request, 'status'),
-            'unit' => $this->ambilFilterTeks($request, 'unit'),
+            'unit'   => $this->ambilFilterTeks($request, 'unit'),
         ];
 
         return view('admin.master.employees.index', [
-            'employees' => $layananDataPayroll->dataKaryawanMasterTerpaginasi($filter, $perHalaman),
-            'summary' => $layananDataPayroll->ringkasanMaster(),
-            'routes' => $layananDataPayroll->daftarRute(),
+            'employees'        => $layananDataPayroll->dataKaryawanMasterTerpaginasi($filter, $perHalaman),
+            'summary'          => $layananDataPayroll->ringkasanMaster(),
+            'routes'           => $layananDataPayroll->daftarRute(),
             'truckComposition' => $layananDataPayroll->komposisiTruk(),
-            'daftarAkun' => $this->daftarAkunStaf(),
-            'peranTersedia' => $this->peranYangBolehDikelola(),
-            'filter' => $filter,
-            'perPage' => $perHalaman,
+            'daftarAkun'       => $this->daftarAkunStaf(),
+            'peranTersedia'    => $this->peranYangBolehDikelola(),
+            'filter'           => $filter,
+            'perPage'          => $perHalaman,
         ]);
     }
 
     /**
-     * Data rincian untuk sub tab modal detail supir (dipanggil via AJAX).
+     * Data Rincian untuk Modal Detail Supir (Dipanggil via AJAX)
+     * Mengambil ringkasan performa kerja supir, pengeluaran nota bon, dan riwayat cicilan kasbon.
      */
     public function detailSupir(Karyawan $employee, PayrollDataService $layananDataPayroll): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data' => [
-                'ringkasan' => $layananDataPayroll->ringkasanDetailSupir($employee->id),
+            'data'    => [
+                'ringkasan'   => $layananDataPayroll->ringkasanDetailSupir($employee->id),
                 'pengeluaran' => $layananDataPayroll->pengeluaranPerSupir($employee->id),
-                'kasbon' => $layananDataPayroll->kasbonPerSupir($employee->id),
+                'kasbon'      => $layananDataPayroll->kasbonPerSupir($employee->id),
             ],
         ]);
     }

@@ -12,10 +12,26 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: PERMINTAAN TAUTAN LUPA KATA SANDI (FORGOT PASSWORD CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Kotak Surat Darurat Lupa Kunci Rumah".
+ * Jika pengguna tidak bisa masuk karena lupa kata sandinya, mereka cukup memasukkan
+ * alamat email kantor mereka di sini. Sistem akan mengirimkan surat elektronik
+ * berisi tautan rahasia sekali pakai untuk mereset kata sandi.
+ * 
+ * Keamanan Anti Serangan Bot (Rate Limiting):
+ * Permintaan dibatasi maksimal 5 kali percobaan dalam 15 menit agar server
+ * tidak dibanjiri spam oleh pihak yang tidak bertanggung jawab.
+ * ============================================================================
+ */
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Display the password reset link request view.
+     * Menampilkan Formulir Permintaan Reset Kata Sandi
      */
     public function create(): View
     {
@@ -23,7 +39,13 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
+     * Memproses Pengiriman Tautan Reset Kata Sandi ke Email
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Validasi format alamat email yang diketik pengguna.
+     * (2) Terapkan pembatasan rate limiter (maksimal 5 kali percobaan per IP dan email).
+     * (3) Minta broker kata sandi Laravel mengirimkan tautan reset ke inbox email.
+     * (4) Kembalikan respon sukses atau pesan kesalahan jika email tidak ditemukan.
      *
      * @throws ValidationException
      */

@@ -1,3 +1,13 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN TOMBOL FULLSCREEN):
+     - Tujuan Komponen: Tombol di topbar untuk memperbesar tampilan aplikasi ke satu layar penuh
+       (Fullscreen API bawaan browser), sangat berguna bagi operator timbangan atau kasir gaji.
+     - Analogi Dunia Nyata: Seperti saklar proyektor di ruang pemantauan logistik: sekali pencet,
+       semua bilah menu browser tersembunyi sehingga layar fokus penuh ke data penting perusahaan.
+     - Interaksi & Event:
+       * Menggunakan Alpine.js dan memanggil `document.documentElement.requestFullscreen()`.
+       * Memantau event browser 'fullscreenchange' agar ikon berubah otomatis saat tombol ESC ditekan.
+     ============================================================================== -->
 @props([
     'judul' => 'Layar Penuh',
 ])

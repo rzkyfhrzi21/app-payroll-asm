@@ -1,3 +1,13 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN LAPORAN FINANSIAL EKSEKUTIF):
+     - Tujuan Halaman: Pusat laporan keuangan dan audit laba-rugi penggajian supir untuk Pimpinan.
+     - Analogi Dunia Nyata: Seperti buku laporan keuangan bulanan yang diserahkan ke komisaris:
+       menampilkan neraca kas pengeluaran gaji supir, total ritase batubara yang berhasil
+       dikirim ke dermaga, efisiensi konsumsi uang jalan, dan perbandingan antar bulan.
+     - Data dari Controller (Executive/FinancialReportController@index):
+       * $daftarPeriode: Daftar seluruh periode untuk dipilih oleh pimpinan.
+       * $ringkasan: Total kas keluar, omzet, dan tonase dari periode terpilih.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 @endphp
@@ -169,10 +179,14 @@
                 <div class="min-w-[15rem] flex-1">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">calendar_today</span>
-                        <select class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active">
-                            <option>Januari 2026 ({{ $period['range'] }})</option>
-                            <option>Desember 2025 (21 Jul - 20 Agu 2025)</option>
-                            <option>November 2025 (21 Jun - 20 Jul 2025)</option>
+                        <select
+                            x-on:change="window.location.href = '{{ route('executive.reports.index') }}?periode=' + encodeURIComponent($event.target.value)"
+                            class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                            aria-label="Pilih periode laporan"
+                        >
+                            @foreach ($periodOptions as $opsiPeriode)
+                                <option value="{{ $opsiPeriode['kode'] }}" @selected($opsiPeriode['kode'] === $period['code'])>{{ $opsiPeriode['label'] }}</option>
+                            @endforeach
                         </select>
                         <span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">arrow_drop_down</span>
                     </div>
@@ -181,10 +195,14 @@
                 <div class="min-w-[15rem] flex-1">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">local_shipping</span>
-                        <select class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active">
-                            <option>Semua Model Unit</option>
+                        <select
+                            x-model="modelUnit"
+                            class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                            aria-label="Filter model unit armada"
+                        >
+                            <option value="">Semua Model Unit</option>
                             @foreach ($modelArmada as $model)
-                                <option>{{ $model['name'] }}</option>
+                                <option value="{{ $model['name'] }}">{{ $model['name'] }} ({{ $model['fleet'] }} unit)</option>
                             @endforeach
                         </select>
                         <span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">arrow_drop_down</span>
@@ -194,19 +212,29 @@
                 <div class="min-w-[13.75rem] flex-1">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">alt_route</span>
-                        <select class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active">
-                            <option>Semua Rute (MIP-PORT, MIP-36, TAL-PORT)</option>
-                            <option>Rute 01: Lokasi Pengantaran → Port Batubara (145 KM)</option>
-                            <option>Rute 02: MIP → Stockpile 36 (78 KM)</option>
-                            <option>Rute 03: Lokasi TAL → Port Dermaga (110 KM)</option>
+                        <select
+                            x-model="ruteTerpilih"
+                            class="h-10 w-full appearance-none rounded-lg bg-card-bg pl-9 pr-8 font-sans text-body-sm text-slate-text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                            aria-label="Filter rute pengantaran"
+                        >
+                            <option value="">Semua Rute</option>
+                            @foreach (collect($rows)->pluck('rute')->flatten()->filter()->unique()->sort() as $kodeRute)
+                                <option value="{{ $kodeRute }}">{{ $kodeRute }}</option>
+                            @endforeach
                         </select>
                         <span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">arrow_drop_down</span>
                     </div>
                 </div>
 
-                <button type="button" class="flex h-10 items-center gap-1 rounded-lg bg-surface-container-high px-3 font-sans text-body-sm text-slate-text-secondary transition-colors hover:text-slate-text-primary" @click="search = ''; window.location.href='{{ route('executive.reports.index', ['periode' => $period['code']]) }}'">
+                <button
+                    type="button"
+                    x-show="filterLaporanAktif"
+                    x-cloak
+                    class="flex h-10 items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
+                    @click="resetFilterLaporan()"
+                >
                     <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
-                    Reset
+                    Reset Filter
                 </button>
             </div>
         </div>
@@ -365,89 +393,89 @@
         </div>
 
         {{-- Tabel rincian per supir --}}
-        <div class="rounded-xl bg-card-bg p-space-xl shadow-card">
-            <div class="mb-space-lg flex flex-col justify-between gap-space-md md:flex-row md:items-center">
+        <div class="flex flex-col overflow-hidden rounded-xl bg-card-bg shadow-card">
+            <div class="flex flex-col justify-between gap-space-md border-b border-card-border p-space-lg md:flex-row md:items-center">
                 <div class="flex flex-wrap items-center gap-space-md">
                     <div class="flex items-center gap-2">
                         <span class="h-3 w-3 rounded-full bg-net-pay-emerald"></span>
-                        <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">Rincian Rekap Payroll Per Supir (Bagi Hasil Komisi Supir)</h2>
+                        <h2 class="font-display text-headline-sm font-bold text-slate-text-primary">
+                            Rincian Rekap Payroll Per Supir &bull; Periode {{ $period['code'] }}
+                        </h2>
                     </div>
-                    <span class="rounded-full bg-surface-container-high px-2.5 py-0.5 font-sans text-label-sm font-semibold text-banner-indigo">35 Awak Terdaftar</span>
+                    <span class="rounded-full bg-surface-container-high px-2.5 py-0.5 font-sans text-label-sm font-semibold text-banner-indigo">
+                        {{ count($rows) }} Supir &bull; {{ $period['range'] }}
+                    </span>
                 </div>
 
-                <div class="flex items-center gap-space-sm">
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1rem] text-slate-text-muted">search</span>
-                        <input
-                            type="text"
-                            x-model="search"
-                            class="h-9 w-full rounded-lg bg-canvas-bg pl-9 pr-3 font-sans text-body-sm text-slate-text-primary shadow-sm placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active md:w-64"
-                            placeholder="Cari NIP, supir, nopol..."
-                        >
-                    </div>
-                    <a href="{{ route('admin.reports.periode.export', $period['code']) }}" class="flex h-9 items-center gap-1.5 rounded-lg bg-surface-container-low px-3 font-sans text-body-sm font-medium text-slate-text-primary transition-colors hover:bg-surface-container">
-                        <span class="material-symbols-outlined text-[1rem]">download</span>
-                        CSV
-                    </a>
+                <div class="relative w-full md:w-72">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1rem] text-slate-text-muted">search</span>
+                    <input
+                        type="text"
+                        x-model.debounce.300ms="search"
+                        class="h-9 w-full rounded-lg bg-canvas-bg pl-9 pr-3 font-sans text-body-sm text-slate-text-primary shadow-sm placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                        placeholder="Cari NIP, nama supir, nopol..."
+                    >
                 </div>
             </div>
 
-            <div class="overflow-x-auto rounded-lg">
+            <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-left font-financial-table">
                     <thead>
-                        <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="px-3 py-3 text-left">NIP &amp; Supir</th>
-                            <th class="px-2 py-3 text-left">Plat Truk &amp; Model</th>
-                            <th class="px-2 py-3 text-right">Rit</th>
-                            <th class="px-2 py-3 text-right">Tonase</th>
-                            <th class="px-2 py-3 text-right">Omzet Truk</th>
-                            <th class="px-2 py-3 text-right">UJ Cair</th>
-                            <th class="px-2 py-3 text-right">Sparepart</th>
-                            <th class="px-2 py-3 text-right">Gaji Komisi</th>
-                            <th class="px-2 py-3 text-right">BPJS</th>
-                            <th class="px-2 py-3 text-right">Kasbon</th>
-                            <th class="px-3 py-3 text-right">Net Transfer</th>
-                            <th class="px-2 py-3 text-left">Bank &amp; Rekening</th>
-                            <th class="px-3 py-3 text-center">Status ACC</th>
+                        <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider text-slate-text-secondary">
+                            <th class="w-14 px-4 py-3 text-center font-semibold">No</th>
+                            <th class="px-3 py-3 font-semibold">NIP &amp; Supir</th>
+                            <th class="px-3 py-3 font-semibold">Plat Truk &amp; Model</th>
+                            <th class="px-2 py-3 text-right font-semibold">Rit</th>
+                            <th class="px-2 py-3 text-right font-semibold">Tonase</th>
+                            <th class="px-2 py-3 text-right font-semibold">Omzet Truk</th>
+                            <th class="px-2 py-3 text-right font-semibold">UJ Cair</th>
+                            <th class="px-2 py-3 text-right font-semibold">Sparepart</th>
+                            <th class="px-2 py-3 text-right font-semibold">Gaji Komisi</th>
+                            <th class="px-2 py-3 text-right font-semibold">BPJS</th>
+                            <th class="px-2 py-3 text-right font-semibold">Kasbon</th>
+                            <th class="px-3 py-3 text-right font-semibold">Net Transfer</th>
+                            <th class="px-3 py-3 font-semibold">Bank &amp; Rekening</th>
+                            <th class="px-3 py-3 text-center font-semibold">Status ACC</th>
                         </tr>
                     </thead>
 
-                    <tbody class="text-slate-text-primary">
-                        @foreach ($rows as $row)
+                    <tbody class="divide-y divide-card-border text-slate-text-primary">
+                        @forelse ($rows as $row)
                             <tr
                                 class="transition-colors hover:bg-surface-container-low/60"
-                                x-show="rowVisible(@js($row['name']), @js($row['nip']), @js($row['plate']))"
+                                x-show="rowVisible(@js($row['name']), @js($row['nip']), @js($row['plate']), @js($row['model_truk'] ?? ''), @js($row['rute'] ?? []))"
                             >
-                                <td class="px-3 py-2.5">
+                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $loop->iteration }}</td>
+                                <td class="px-3 py-3">
                                     <div class="flex flex-col">
                                         <span class="font-bold text-slate-text-primary">{{ $row['name'] }}</span>
                                         <span class="font-sans text-label-sm text-slate-text-muted">{{ $row['nip'] }}</span>
                                     </div>
                                 </td>
-                                <td class="px-2 py-2.5">
+                                <td class="px-3 py-3">
                                     <div class="flex flex-col">
                                         <span class="font-semibold text-slate-text-primary">{{ $row['plate'] }}</span>
-                                        <span class="font-sans text-label-sm text-slate-text-muted">{{ $row['model_truk'] ?? '' }}</span>
+                                        <span class="font-sans text-label-sm text-slate-text-muted">{{ $row['model_truk'] ?? '—' }}</span>
                                     </div>
                                 </td>
-                                <td class="px-2 py-2.5 text-right font-medium">{{ $row['rit'] }} Rit</td>
-                                <td class="px-2 py-2.5 text-right font-medium">{{ $row['tonnage'] }} T</td>
-                                <td class="px-2 py-2.5 text-right font-medium text-slate-text-secondary">{{ $rp($row['omzet']) }}</td>
-                                <td class="px-2 py-2.5 text-right font-medium text-slate-text-secondary">{{ $rp($row['trip_money']) }}</td>
-                                <td class="px-2 py-2.5 text-right font-medium text-danger-red">-{{ $rp($row['sparepart']) }}</td>
-                                <td class="px-2 py-2.5 text-right font-semibold">{{ $rp($row['gross']) }}</td>
-                                <td class="px-2 py-2.5 text-right text-slate-text-muted">-{{ $rp($row['bpjs']) }}</td>
-                                <td class="px-2 py-2.5 text-right font-medium text-warning-amber">-{{ $rp($row['kasbon']) }}</td>
-                                <td class="px-3 py-2.5 text-right">
-                                    <span class="rounded bg-net-pay-surface px-2 py-0.5 font-bold text-net-pay-emerald">{{ $rp($row['net']) }}</span>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums">{{ $row['rit'] }} Rit</td>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums">{{ $row['tonnage'] }} T</td>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums text-slate-text-secondary">{{ $rp($row['omzet']) }}</td>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums text-slate-text-secondary">{{ $rp($row['trip_money']) }}</td>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums text-danger-red">-{{ $rp($row['sparepart']) }}</td>
+                                <td class="px-2 py-3 text-right font-semibold tabular-nums">{{ $rp($row['gross']) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums text-slate-text-muted">-{{ $rp($row['bpjs']) }}</td>
+                                <td class="px-2 py-3 text-right font-medium tabular-nums text-warning-amber">-{{ $rp($row['kasbon']) }}</td>
+                                <td class="px-3 py-3 text-right">
+                                    <span class="rounded bg-net-pay-surface px-2 py-0.5 font-bold tabular-nums text-net-pay-emerald">{{ $rp($row['net']) }}</span>
                                 </td>
-                                <td class="px-2 py-2.5">
+                                <td class="px-3 py-3">
                                     <div class="flex flex-col">
                                         <span class="font-medium text-slate-text-primary">{{ $row['bank'] }} &bull; {{ $row['account'] }}</span>
                                         <span class="font-sans text-label-sm text-slate-text-muted">a.n {{ $row['name'] }}</span>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2.5 text-center">
+                                <td class="px-3 py-3 text-center">
                                     @if ($row['acc'] === 'Pending')
                                         <span class="inline-flex items-center gap-1 rounded-full bg-warning-surface px-2 py-0.5 font-sans text-[0.625rem] font-bold uppercase tracking-wider text-warning-amber">
                                             <span class="material-symbols-outlined text-[0.75rem]">pending</span> Pending
@@ -459,29 +487,42 @@
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="14" class="px-4 py-10 text-center font-sans text-body-sm text-slate-text-muted">
+                                    Belum ada baris penggajian pada periode {{ $period['code'] }}.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
 
-                    <tfoot>
-                        <tr class="bg-surface-container font-financial-table font-bold text-slate-text-primary">
-                            <td class="px-3 py-3" colspan="2">TOTAL {{ count($rows) }} SUPIR</td>
-                            <td class="px-2 py-3 text-right tabular-nums">{{ collect($rows)->sum('rit') }} Rit</td>
-                            <td class="px-2 py-3 text-right text-slate-text-secondary">-</td>
-                            <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('omzet')) }}</td>
-                            <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('trip_money')) }}</td>
-                            <td class="px-2 py-3 text-right tabular-nums text-danger-red">-{{ $rp(collect($rows)->sum('sparepart')) }}</td>
-                            <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('gross')) }}</td>
-                            <td class="px-2 py-3 text-right tabular-nums text-slate-text-muted">-{{ $rp(collect($rows)->sum('bpjs')) }}</td>
-                            <td class="px-2 py-3 text-right tabular-nums text-warning-amber">-{{ $rp(collect($rows)->sum('kasbon')) }}</td>
-                            <td class="px-3 py-3 text-right tabular-nums text-net-pay-emerald">{{ $rp(collect($rows)->sum('net')) }}</td>
-                            <td class="px-2 py-3 text-center font-sans text-label-sm text-slate-text-secondary" colspan="2">Auto-Sync Bank</td>
-                        </tr>
-                    </tfoot>
+                    @if (count($rows) > 0)
+                        <tfoot>
+                            <tr class="bg-surface-container font-financial-table font-bold text-slate-text-primary">
+                                <td class="px-3 py-3" colspan="2">TOTAL {{ count($rows) }} SUPIR</td>
+                                <td class="px-3 py-3 font-sans text-label-sm text-slate-text-secondary">Periode {{ $period['code'] }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums">{{ collect($rows)->sum('rit') }} Rit</td>
+                                <td class="px-2 py-3 text-right text-slate-text-secondary">—</td>
+                                <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('omzet')) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('trip_money')) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums text-danger-red">-{{ $rp(collect($rows)->sum('sparepart')) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums">{{ $rp(collect($rows)->sum('gross')) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums text-slate-text-muted">-{{ $rp(collect($rows)->sum('bpjs')) }}</td>
+                                <td class="px-2 py-3 text-right tabular-nums text-warning-amber">-{{ $rp(collect($rows)->sum('kasbon')) }}</td>
+                                <td class="px-3 py-3 text-right tabular-nums text-net-pay-emerald">{{ $rp(collect($rows)->sum('net')) }}</td>
+                                <td class="px-3 py-3 text-center font-sans text-label-sm text-slate-text-secondary" colspan="2">Total Transfer Bank</td>
+                            </tr>
+                        </tfoot>
+                    @endif
                 </table>
             </div>
 
-            <div class="mt-space-md flex flex-col items-center justify-between gap-space-sm pt-space-sm font-sans text-body-sm text-slate-text-muted sm:flex-row">
-                <span>Menampilkan <strong class="text-slate-text-primary">{{ count($rows) }}</strong> entri supir pada periode {{ $period['code'] }} ({{ $period['range'] }})</span>
+            <div class="flex flex-col items-center justify-between gap-space-sm border-t border-card-border bg-surface-container-low p-space-md font-sans text-body-sm text-slate-text-muted sm:flex-row">
+                <span>
+                    Menampilkan <strong class="text-slate-text-primary" x-text="jumlahTerlihat"></strong>
+                    dari <strong class="text-slate-text-primary">{{ count($rows) }}</strong> supir pada periode
+                    {{ $period['code'] }} ({{ $period['range'] }})
+                </span>
                 <a
                     href="{{ route('executive.payroll.index', ['periode' => $period['code']]) }}"
                     class="flex items-center gap-1 font-semibold text-banner-indigo hover:underline"

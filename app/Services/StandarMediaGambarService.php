@@ -8,12 +8,25 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Layanan standar keamanan upload gambar (maks 2 MB, inspeksi MIME finfo_file,
- * penolakan ekstensi eksekusi berbahaya, dan konversi otomatis ke .webp).
+ * ============================================================================
+ * LAYANAN: PENGELOLA FOTO & KEAMANAN MEDIA GAMBAR (MEDIA IMAGE SERVICE)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Satpam Pemeriksa Barang Bawaan & Tukang Kompres Foto Fisik".
+ * Supir di lapangan sering mengirim foto surat jalan atau foto profil berukuran besar (kamera HP canggih).
+ * Jika disimpan mentah-mentah, harddisk server akan cepat penuh dan website jadi lemot.
+ * 
+ * Tugas Satpam & Kompresor Ini:
+ * 1. Menolak file berbahaya: Memeriksa isi biner file agar file virus/skrip jahat tidak bisa masuk.
+ * 2. Membatasi ukuran maksimal 2 MB.
+ * 3. Mengubah otomatis foto ke format .WebP terkompresi yang jernih tetapi sangat ringan.
+ * ============================================================================
  */
 class StandarMediaGambarService
 {
-    public const BATAS_MAKSIMAL_BYTE = 2097152; // 2 MB (2048 KB)
+    // Batas maksimal ukuran berkas gambar: 2 MB (2.097.152 bytes)
+    public const BATAS_MAKSIMAL_BYTE = 2097152;
 
     /**
      * @var array<int, string>

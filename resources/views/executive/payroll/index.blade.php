@@ -1,3 +1,21 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 @endphp
@@ -72,13 +90,32 @@
             @endif
         </div>
     @else
-    @php
+    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
         $catatanPenolakan = $permintaanAcc['catatan_penolakan'] ?? $period['catatan_penolakan'] ?? null;
         $jumlahSudahAcc = (int) ($permintaanAcc['jumlah_sudah_acc'] ?? collect($rows)->whereIn('status_kode', ['approved', 'paid'])->count());
         $jumlahSudahCair = (int) ($permintaanAcc['jumlah_sudah_cair'] ?? collect($rows)->where('status_kode', 'paid')->count());
         $periodeDisetujui = in_array($periodeModel?->status ?? '', ['approved', 'paid'], true) || ($permintaanAcc['sudah_acc'] ?? false);
         $periodePaid = ($periodeModel?->status ?? '') === 'paid';
-        $adaBelumAcc = ! $periodeDisetujui && (count($rows) === 0 || collect($rows)->contains(fn ($baris) => ($baris['status_kode'] ?? 'draft') === 'draft'));
+        $periodeDiajukan = (bool) ($permintaanAcc['ada_pengajuan'] ?? false) || in_array($periodeModel?->status ?? '', ['pending', 'approved'], true);
+        $adaBelumAcc = $periodeDiajukan && ! $periodeDisetujui && (count($rows) === 0 || collect($rows)->contains(fn ($baris) => ($baris['status_kode'] ?? 'draft') === 'draft'));
         $adaSiapCair = $periodeDisetujui && ! $periodePaid && (($permintaanAcc['siap_cair'] ?? false) || collect($rows)->contains(fn ($baris) => ($baris['status_kode'] ?? 'draft') === 'approved'));
         $semuaSudahCair = $periodePaid || (count($rows) > 0 && $jumlahSudahCair >= count($rows));
     @endphp
@@ -172,7 +209,70 @@
             </div>
 
         </div>
-        @kpi_cards
+        {{-- Ringkasan angka kunci periode terpilih --}}
+        <div class="grid grid-cols-1 gap-space-lg sm:grid-cols-2 xl:grid-cols-4">
+            <div class="flex flex-col justify-between rounded-xl bg-card-bg p-space-lg shadow-card">
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Total Kas Diajukan</span>
+                        <span class="mt-1 font-financial-total font-bold tabular-nums text-net-pay-emerald">{{ $rp($permintaanAcc['total_kas']) }}</span>
+                    </div>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-net-pay-surface text-net-pay-emerald">
+                        <span class="material-symbols-outlined text-[1.375rem]">payments</span>
+                    </span>
+                </div>
+                <div class="mt-space-md rounded-lg bg-surface-container-low/60 p-2 font-sans text-body-sm text-slate-text-secondary">
+                    {{ $permintaanAcc['jumlah_supir'] }} supir pada periode {{ $period['code'] }}
+                </div>
+            </div>
+
+            <div class="flex flex-col justify-between rounded-xl bg-card-bg p-space-lg shadow-card">
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Omzet Angkutan Bersih</span>
+                        <span class="mt-1 font-financial-total font-bold tabular-nums text-slate-text-primary">{{ $rp($summary['omzet']) }}</span>
+                    </div>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-banner-indigo">
+                        <span class="material-symbols-outlined text-[1.375rem]">trending_up</span>
+                    </span>
+                </div>
+                <div class="mt-space-md rounded-lg bg-surface-container-low/60 p-2 font-sans text-body-sm text-slate-text-secondary">
+                    {{ $summary['rit'] }} rit &bull; {{ $summary['tonnage'] }} ton
+                </div>
+            </div>
+
+            <div class="flex flex-col justify-between rounded-xl bg-card-bg p-space-lg shadow-card">
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Uang Jalan &amp; Sparepart</span>
+                        <span class="mt-1 font-financial-total font-bold tabular-nums text-danger-red">{{ $rp($summary['cash_out']) }}</span>
+                    </div>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-danger-surface text-danger-red">
+                        <span class="material-symbols-outlined text-[1.375rem]">account_balance_wallet</span>
+                    </span>
+                </div>
+                <div class="mt-space-md flex items-center justify-between rounded-lg bg-surface-container-low/60 p-2 font-sans text-body-sm text-slate-text-secondary">
+                    <span>U. Jalan: <strong class="text-slate-text-primary">{{ $rp($summary['trip_money']) }}</strong></span>
+                    <span>Servis: <strong class="text-warning-amber">{{ $rp($summary['sparepart']) }}</strong></span>
+                </div>
+            </div>
+
+            <div class="flex flex-col justify-between rounded-xl bg-card-bg p-space-lg shadow-card">
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Total Potongan</span>
+                        <span class="mt-1 font-financial-total font-bold tabular-nums text-warning-amber">{{ $rp($summary['deduction']) }}</span>
+                    </div>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-warning-surface text-warning-amber">
+                        <span class="material-symbols-outlined text-[1.375rem]">receipt_long</span>
+                    </span>
+                </div>
+                <div class="mt-space-md flex items-center justify-between rounded-lg bg-surface-container-low/60 p-2 font-sans text-body-sm text-slate-text-secondary">
+                    <span>BPJS: <strong class="text-slate-text-primary">{{ $rp($summary['bpjs']) }}</strong></span>
+                    <span>Kasbon: <strong class="text-slate-text-primary">{{ $rp($summary['kasbon']) }}</strong></span>
+                </div>
+            </div>
+        </div>
 
         @if (! empty($catatanPenolakan))
             <div class="flex items-start gap-3 rounded-xl border border-danger-red/30 bg-danger-surface px-4 py-3.5 text-danger-red">
@@ -251,7 +351,7 @@
                             <span class="material-symbols-outlined text-[1.125rem]">description</span>
                             Lihat Laporan Gaji
                         </a>
-                    @else
+                    @elseif ($permintaanAcc['ada_pengajuan'])
                         <button
                             type="button"
                             class="flex items-center gap-2 rounded-lg bg-net-pay-emerald px-4 py-2 font-sans text-body-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-emerald-600"
@@ -268,11 +368,42 @@
                             <span class="material-symbols-outlined text-[1.125rem]">assignment_return</span>
                             Tolak / Minta Revisi
                         </button>
+                    @else
+                        {{-- Admin HRD belum mengajukan periode ini: Pimpinan tidak diberi tombol ACC. --}}
+                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-surface-container px-3.5 py-2 font-sans text-body-sm font-semibold text-slate-text-secondary">
+                            <span class="material-symbols-outlined text-[1rem]">hourglass_top</span>
+                            Menunggu Pengajuan Admin HRD
+                        </span>
+                        <a
+                            href="{{ route('executive.payroll.index', ['periode' => $permintaanAcc['kode_periode']]) }}"
+                            class="flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2 font-sans text-body-sm font-semibold text-slate-text-primary shadow-sm transition-colors hover:bg-surface-container"
+                        >
+                            <span class="material-symbols-outlined text-[1.125rem]">refresh</span>
+                            Muat Ulang Status
+                        </a>
                     @endif
                 </div>
             </div>
 
-            @php
+            <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                 $adaBarisPengajuan = ($permintaanAcc['jumlah_supir'] ?? 0) > 0;
                 $totalKomisiPengajuan = (int) ($permintaanAcc['komisi'] ?? 0);
                 $totalTunjanganPengajuan = (int) ($permintaanAcc['tunjangan'] ?? 0);
@@ -442,6 +573,7 @@
                             <th class="w-10 px-4 py-3 text-center">
                                 <input type="checkbox" class="h-4 w-4 cursor-pointer rounded text-sidebar-active focus:ring-0" :checked="semuaTerpilih" @change="toggleAll($event.target.checked)">
                             </th>
+                            <th class="w-14 px-4 py-3 text-center">No</th>
                             <th class="px-4 py-3">Supir &amp; Plat Truk</th>
                             <th class="px-4 py-3 text-right">Rit / Tonase</th>
                             <th class="px-4 py-3 text-right">Omzet Angkutan</th>
@@ -456,7 +588,25 @@
 
                     <tbody class="divide-y divide-surface-container-low">
                         @foreach ($rows as $index => $row)
-                            @php
+                            <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                                 $idPenggajianBaris = $row['id'] ?? null;
                                 $statusKodeBaris = $row['status_kode'] ?? 'draft';
                             @endphp
@@ -473,6 +623,7 @@
                                         @disabled($statusKodeBaris === 'paid' || empty($idPenggajianBaris))
                                     >
                                 </td>
+                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2.5">
                                         <div @class([
@@ -513,7 +664,25 @@
                                         <div class="font-sans text-[0.6875rem] font-medium text-net-pay-emerald">+ Tunjangan {{ $rp($row['tunjangan']) }}</div>
                                     @endif
                                 </td>
-                                @php
+                                <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                                     $potonganHistorisBaris = (int) ($row['potongan_historis'] ?? 0);
                                     $penambahanHistorisBaris = (int) ($row['penambahan_historis'] ?? 0);
                                     $totalPotonganBaris = (int) ($row['bpjs'] ?? 0) + (int) ($row['kasbon'] ?? 0) + $potonganHistorisBaris;
@@ -531,7 +700,25 @@
                                     <span class="inline-block rounded bg-net-pay-surface px-2 py-0.5 font-bold text-net-pay-emerald">{{ $rp($row['net_pay']) }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    @php
+                                    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                                         $labelStatusBaris = match ($statusKodeBaris) {
                                             'paid' => 'Sudah Dicairkan',
                                             'approved' => 'Disetujui (Siap Cair)',
@@ -562,7 +749,7 @@
                                         >
                                             Review
                                         </button>
-                                        @if ($statusKodeBaris === 'draft')
+                                        @if ($statusKodeBaris === 'draft' && $periodeDiajukan)
                                             <button
                                                 type="button"
                                                 class="rounded bg-net-pay-emerald px-2.5 py-1 font-sans text-[0.6875rem] font-bold text-on-primary transition-colors hover:bg-emerald-600 disabled:opacity-60"
@@ -571,6 +758,8 @@
                                             >
                                                 ACC
                                             </button>
+                                        @elseif ($statusKodeBaris === 'draft')
+                                            <span class="rounded bg-surface-container px-2 py-1 font-sans text-[0.6875rem] font-semibold text-slate-text-secondary" title="Admin HRD belum mengajukan periode ini">Belum Diajukan</span>
                                         @elseif ($statusKodeBaris === 'approved')
                                             <button
                                                 type="button"
@@ -592,7 +781,25 @@
                     </tbody>
 
                     <tfoot>
-                        @php
+                        <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                             $totalOmzetKotorTabel = (int) collect($rows)->sum(fn ($baris) => (int) ($baris['omzet_kotor'] ?? $baris['omzet'] ?? 0));
                             $totalPotonganOperasionalTabel = (int) collect($rows)->sum('potongan_operasional');
                             $totalSparepartTabel = (int) collect($rows)->sum('sparepart');
@@ -1018,7 +1225,25 @@
                         Seluruh baris penggajian periode <strong class="text-slate-text-primary">{{ $period['code'] }}</strong>
                         akan disahkan sekaligus oleh Pimpinan beserta tanggal pembayaran hari ini.
                     </p>
-                    @php
+                    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
+     - Tujuan Halaman: Meja otorisasi sakral Direktur / Pimpinan: memeriksa satu per satu
+       hasil hitungan gaji supir yang diajukan Admin HRD, memberikan persetujuan (ACC),
+       menolak/mengembalikan revisi dengan catatan, atau mengeksekusi Pencairan Dana (Disbursement).
+     - Analogi Dunia Nyata: Seperti map disposisi persetujuan transfer uang di meja Direktur Utama:
+       Direktur meneliti apakah hitungan tonase dan komisi supir sudah wajar. Jika setuju,
+       Direktur mencap ACC (atau ACC Massal) lalu mengklik "Cairkan Dana" agar uang ditransfer.
+     - Standar Aturan Otorisasi (Sesuai AGENTS.md Bab 3.2 & 3.8):
+       * HANYA peran `pimpinan` yang boleh menyetujui (`approved`) atau mencairkan (`paid`).
+       * Mendukung ACC Bertahap: satuan per supir, massal via centang checkbox, atau ACC Semua.
+       * Penolakan/revisi wajib menyertakan alasan tertulis (`catatan_penolakan`).
+       * Pencairan dana (`paid`) otomatis memotong angsuran kasbon (`terpotong`) dan melunasi sisa kasbon!
+     - Data dari Controller (Executive/PayrollReviewController@index):
+       * $periodeTerpilih: Periode yang sedang dibuka dan diperiksa.
+       * $summary: Ringkasan total cash requirement (uang kas yang harus disiapkan bank).
+       * $drivers: Baris supir dengan status 'draft', 'pending', 'approved', atau 'paid'.
+     ============================================================================== -->
+@php
                         $adaBarisModal = ($permintaanAcc['jumlah_supir'] ?? 0) > 0;
                         $totalKomisiModal = (int) ($permintaanAcc['komisi'] ?? 0);
                         $totalTunjanganModal = (int) ($permintaanAcc['tunjangan'] ?? 0);

@@ -1,3 +1,19 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN RIWAYAT PENGANTARAN & SURAT JALAN SUPIR):
+     - Tujuan Halaman: Catatan riwayat seluruh surat jalan (DO) yang pernah dijalankan oleh supir,
+       status perjalanan (Terbit, Sedang Dikirim, Menunggu Verifikasi, Terverifikasi), dan uang jalan.
+     - Analogi Dunia Nyata: Seperti buku saku jalan supir di dalam kabin truk: supir mencatat
+       setiap keberangkatan, menekan tombol "Mulai Kirim" saat berangkat, dan mengunggah foto bukti
+       surat jalan bertanda tangan saat tiba di pelabuhan/pabrik tujuan.
+     - Alur Status di Halaman Ini:
+       * `terbit`: Tombol "Mulai Kirim" aktif.
+       * `sedang_dikirim`: Tombol "Konfirmasi Sampai" aktif (wajib upload foto & nama penerima).
+       * `menunggu_verifikasi`: Menunggu pemeriksaan oleh Admin HRD di kantor.
+       * `terverifikasi`: Selesai dan otomatis masuk hitungan gaji!
+     - Data dari Controller (Driver/TripHistoryController@index):
+       * $trips: Daftar surat jalan supir dari tabel `ritase`.
+       * $payroll: Ringkasan total rit, tonase timbangan, dan uang jalan periode ini.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
     $subtotalTonnage = collect($trips)->sum(fn ($trip) => (float) str_replace(',', '.', $trip['tonnage']));
@@ -154,7 +170,23 @@
                                 </td>
                                 <td class="px-4 py-3 text-right font-bold tabular-nums text-net-pay-emerald">{{ $rp($trip['trip_money']) }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    @php
+                                    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN RIWAYAT PENGANTARAN & SURAT JALAN SUPIR):
+     - Tujuan Halaman: Catatan riwayat seluruh surat jalan (DO) yang pernah dijalankan oleh supir,
+       status perjalanan (Terbit, Sedang Dikirim, Menunggu Verifikasi, Terverifikasi), dan uang jalan.
+     - Analogi Dunia Nyata: Seperti buku saku jalan supir di dalam kabin truk: supir mencatat
+       setiap keberangkatan, menekan tombol "Mulai Kirim" saat berangkat, dan mengunggah foto bukti
+       surat jalan bertanda tangan saat tiba di pelabuhan/pabrik tujuan.
+     - Alur Status di Halaman Ini:
+       * `terbit`: Tombol "Mulai Kirim" aktif.
+       * `sedang_dikirim`: Tombol "Konfirmasi Sampai" aktif (wajib upload foto & nama penerima).
+       * `menunggu_verifikasi`: Menunggu pemeriksaan oleh Admin HRD di kantor.
+       * `terverifikasi`: Selesai dan otomatis masuk hitungan gaji!
+     - Data dari Controller (Driver/TripHistoryController@index):
+       * $trips: Daftar surat jalan supir dari tabel `ritase`.
+       * $payroll: Ringkasan total rit, tonase timbangan, dan uang jalan periode ini.
+     ============================================================================== -->
+@php
                                         $kodeStatusTrip = $trip['status_kode'] ?? '';
                                         $labelStatusTrip = match ($kodeStatusTrip) {
                                             'terbit' => 'Terbit (Siap Dikirim)',
@@ -185,7 +217,23 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    @php
+                                    <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN RIWAYAT PENGANTARAN & SURAT JALAN SUPIR):
+     - Tujuan Halaman: Catatan riwayat seluruh surat jalan (DO) yang pernah dijalankan oleh supir,
+       status perjalanan (Terbit, Sedang Dikirim, Menunggu Verifikasi, Terverifikasi), dan uang jalan.
+     - Analogi Dunia Nyata: Seperti buku saku jalan supir di dalam kabin truk: supir mencatat
+       setiap keberangkatan, menekan tombol "Mulai Kirim" saat berangkat, dan mengunggah foto bukti
+       surat jalan bertanda tangan saat tiba di pelabuhan/pabrik tujuan.
+     - Alur Status di Halaman Ini:
+       * `terbit`: Tombol "Mulai Kirim" aktif.
+       * `sedang_dikirim`: Tombol "Konfirmasi Sampai" aktif (wajib upload foto & nama penerima).
+       * `menunggu_verifikasi`: Menunggu pemeriksaan oleh Admin HRD di kantor.
+       * `terverifikasi`: Selesai dan otomatis masuk hitungan gaji!
+     - Data dari Controller (Driver/TripHistoryController@index):
+       * $trips: Daftar surat jalan supir dari tabel `ritase`.
+       * $payroll: Ringkasan total rit, tonase timbangan, dan uang jalan periode ini.
+     ============================================================================== -->
+@php
                                         $terkunciTrip = (bool) ($trip['terkunci'] ?? false);
                                         $bisaMulaiKirim = ! $terkunciTrip && $kodeStatusTrip === 'terbit';
                                         $bisaKonfirmasiSampai = ! $terkunciTrip && in_array($kodeStatusTrip, ['terbit', 'sedang_dikirim', 'menunggu_verifikasi'], true);

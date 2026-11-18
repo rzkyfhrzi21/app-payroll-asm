@@ -151,6 +151,7 @@ Setelah server aktif, akses aplikasi melalui peramban web di: `http://127.0.0.1:
 
 ### Akun Uji Coba Default (Kredensial Simulasi):
 
+- **Akun Admin Pengembang (Author `.env`):** `septiaranabila559@gmail.com` (atau sesuai `AUTHOR_EMAIL`) | Kata Sandi: `password`
 - **Akun Admin HRD:** `admin@payroll.test` | Kata Sandi: `password`
 - **Akun Pimpinan Direksi:** `pimpinan@payroll.test` | Kata Sandi: `password`
 - **Akun Supir:** `supir@payroll.test` | Kata Sandi: `password`
@@ -175,3 +176,22 @@ php ..\Zzz\cek-layanan-payroll.php
 :: Verifikasi status HTTP 200 seluruh rute sistem
 php ..\Zzz\verifikasi-halaman.php
 ```
+
+---
+
+## 8. Identitas Peneliti / Pengembang & Konfigurasi `.env` (`AUTHOR_*`)
+
+Identitas peneliti/pengembang dikelola melalui variabel environment `.env` (dibaca lewat `config('app.author')` di `config/app.php` dan dibagikan ke seluruh tampilan melalui `AppServiceProvider`). Apabila salah satu variabel `.env` dikosongkan atau tidak disetel, sistem secara otomatis menggunakan nilai bawaan (*fallback default*) berikut:
+
+| Atribut | Variabel `.env` | Nilai Default (`config/app.php`) |
+| :--- | :--- | :--- |
+| **Nama Lengkap** | `AUTHOR_NAMA` | `Nabela Septiara` |
+| **NPM** | `AUTHOR_NPM` | `2311050052` |
+| **Username Instagram** | `AUTHOR_INSTAGRAM` | `nbelaasp_` |
+| **Email Aktif** | `AUTHOR_EMAIL` | `septiaranabila559@gmail.com` |
+| **Nomor WhatsApp** | `AUTHOR_WHATSAPP` | `085760898417` |
+| **Judul Skripsi / Proyek** | `AUTHOR_JUDUL` | `Payroll System pada PT ASM Lampung` |
+| **Dosen Pembimbing** | `AUTHOR_DOSBING` | `Bu Ayu Firdhayanti, S.Kom., M.T.I` |
+| **Alamat** | `AUTHOR_ALAMAT` | `Kosan Dakwah` |
+
+Data ini otomatis ditampilkan pada meta tag HTML, halaman login, footer portal (Admin, Supir, Pimpinan), modal **Tentang Pengembang**, serta footer dokumen cetak fisik (Slip Gaji, Rekapitulasi Periode, Surat Jalan, dan Buku Kasbon).

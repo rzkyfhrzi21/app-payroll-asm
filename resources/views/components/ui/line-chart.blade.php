@@ -1,3 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN GRAFIK GARIS TREN SVG):
+     - Tujuan Komponen: Menggambar grafik garis (Line Chart) murni menggunakan tag SVG bawaan browser,
+       tanpa mengunduh library luar seperti Chart.js apalagi React (sesuai aturan ketat AGENTS.md).
+     - Analogi Dunia Nyata: Seperti papan grafik tempel di dinding kantor logistik: penggaris ditarik
+       dari bulan ke bulan untuk melihat apakah pengiriman batubara sedang meroket atau merosot.
+     - Data dari Controller / Props:
+       * $judul: Nama grafik (misal: "Tren Ritase Bulanan", "Pengeluaran Operasional").
+       * $keterangan: Subjudul penjelas di bawah judul.
+       * $data: Array daftar titik koordinat [['label' => 'Jan', 'nilai' => 12000000], ...].
+       * $warna: Kode warna heksadesimal garis grafik (default warna ungu/indigo).
+       * $formatNilai: Fungsi callback untuk memformat angka (rupiah atau jumlah ritase).
+     - Alur Logika Matematika:
+       1. Menghitung nilai tertinggi ($nilaiMaks) sebagai patokan atap grafik (100%).
+       2. Memetakan setiap data ke titik pixel X (jarak mendatar) dan Y (ketinggian terbalik SVG).
+       3. Menggambar poligon arsiran gradien di bawah garis dan polyline untuk garis tren.
+     ============================================================================== -->
 @props([
     'judul' => 'Tren Bulanan',
     'keterangan' => null,

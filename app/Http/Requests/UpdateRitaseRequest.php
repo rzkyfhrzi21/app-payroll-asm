@@ -4,34 +4,48 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PERUBAHAN DATA SURAT JALAN / RITASE
+ * ==============================================================================
+ * Kelas ini memeriksa keabsahan saat Admin mengedit surat jalan yang sudah ada
+ * (misal merevisi tonase timbangan akhir pelabuhan, menambah foto bukti, atau mengubah status).
+ * ==============================================================================
+ */
 class UpdateRitaseRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang berhak memperbarui surat jalan.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
     }
 
+    /**
+     * Aturan validasi perubahan surat jalan.
+     */
     public function rules(): array
     {
         $aturanFoto = is_array($this->file('foto_surat_jalan')) || is_array($this->input('foto_surat_jalan'))
             ? [
-                'foto_surat_jalan' => ['nullable', 'array', 'max:10'],
-                'foto_surat_jalan.*' => ['file', 'image', 'max:2048'],
+                'foto_surat_jalan' => ['nullable', 'array', 'max:10'],            // Maksimal 10 foto
+                'foto_surat_jalan.*' => ['file', 'image', 'max:2048'],           // Maksimal 2 MB per file
             ]
             : [
-                'foto_surat_jalan' => ['nullable', 'file', 'image', 'max:2048'],
+                'foto_surat_jalan' => ['nullable', 'file', 'image', 'max:2048'],  // 1 file maksimal 2 MB
             ];
 
         return array_merge([
-            'id_karyawan' => ['required', 'integer', 'exists:karyawan,id'],
-            'id_truk' => ['required', 'integer', 'exists:truk,id'],
-            'id_rute' => ['required', 'integer', 'exists:rute,id'],
-            'tanggal_ritase' => ['required', 'date'],
-            'jumlah_rit' => ['required', 'integer', 'min:1', 'max:20'],
-            'tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],
-            'tarif_per_ton' => ['nullable', 'integer', 'min:1'],
-            'uang_jalan' => ['nullable', 'integer', 'min:0'],
-            'nama_penerima' => ['nullable', 'string', 'max:120'],
+            'id_karyawan' => ['required', 'integer', 'exists:karyawan,id'],         // Supir harus sah
+            'id_truk' => ['required', 'integer', 'exists:truk,id'],                 // Unit armada harus sah
+            'id_rute' => ['required', 'integer', 'exists:rute,id'],                 // Rute harus sah
+            'tanggal_ritase' => ['required', 'date'],                               // Tanggal pengantaran
+            'jumlah_rit' => ['required', 'integer', 'min:1', 'max:20'],             // Jumlah trip
+            'tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],         // Tonase muatan
+            'tarif_per_ton' => ['nullable', 'integer', 'min:1'],                    // Tarif angkut
+            'uang_jalan' => ['nullable', 'integer', 'min:0'],                       // Uang jalan
+            'nama_penerima' => ['nullable', 'string', 'max:120'],                   // Nama penerima
             'status' => ['required', 'in:draft,terbit,sedang_dikirim,menunggu_verifikasi,terverifikasi,dibatalkan'],
             'hapus_foto' => ['nullable', 'array'],
             'hapus_foto.*' => ['string', 'max:255'],

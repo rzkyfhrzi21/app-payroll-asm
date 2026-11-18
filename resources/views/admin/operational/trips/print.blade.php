@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN CETAK SURAT JALAN / DO):
+     - Tujuan Halaman: Menampilkan dokumen cetak fisik Surat Jalan (Delivery Order) resmi
+       yang siap dicetak ke printer di atas kertas A4 portrait.
+     - Analogi Dunia Nyata: Seperti surat jalan rangkap 3 yang dibawa supir di dashboard truk:
+       berisi identitas armada batubara, nomor DO, instruksi muatan, uang jalan, serta kolom
+       stempel & tanda tangan basah (Admin Pengirim, Supir, dan Penerima di pelabuhan).
+     - Aturan CSS Cetak (@media print):
+       * Tombol aksi (.no-print) disembunyikan otomatis saat dialog cetak muncul (Ctrl+P).
+       * Membaca logo dan tanda tangan digital dari storage publik (`storage/data-perusahaan/...`).
+     - Data dari Controller:
+       * $trip: Model `Ritase` lengkap dengan relasi karyawan, truk, dan rute.
+       * $perusahaanAktif: Singleton `DataPerusahaan` (kop surat, alamat, nama direktur).
+     ============================================================================== -->
 @php
     $perusahaanAktif = $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
     $tanggalFormatted = $trip->tanggal_ritase?->translatedFormat('d F Y') ?? $trip->tanggal_ritase?->format('d/m/Y') ?? '—';
@@ -25,13 +39,20 @@
         'dibatalkan' => 'Dibatalkan',
         default => 'Draf (Belum Terbit)',
     };
+    $author = $infoAuthor ?? config('app.author', []);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="{{ $author['nama'] ?? 'Nabela Septiara' }} (NPM: {{ $author['npm'] ?? '2311050052' }})">
+    <meta name="description" content="{{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }}">
     <title>Surat Jalan {{ $trip->nomor_surat_jalan }} — {{ $karyawan?->nama_lengkap ?? 'Supir' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     @vite(['resources/css/app.css'])
     <style>
         @media print {
@@ -224,7 +245,7 @@
         {{-- Footer Lembar Catatan --}}
         <div class="border-t border-slate-200 pt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[0.6875rem] text-slate-500">
             <div>Lembar 1: Kantor Pusat &bull; Lembar 2: Supir Armada &bull; Lembar 3: Pos Timbangan Jetty</div>
-            <div>Dicetak pada: {{ now()->translatedFormat('d/m/Y H:i') }} WIB &bull; Sistem Payroll ASM</div>
+            <div>Dicetak pada: {{ now()->translatedFormat('d/m/Y H:i') }} WIB &bull; {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }} ({{ $author['nama'] ?? 'Nabela Septiara' }} - {{ $author['npm'] ?? '2311050052' }})</div>
         </div>
     </div>
 </body>

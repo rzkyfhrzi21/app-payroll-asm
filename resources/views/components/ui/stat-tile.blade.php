@@ -1,3 +1,11 @@
+<!-- ======================================================
+     KOMPONEN UI: UBIN KARTU KECIL BER-PROGRESS BAR (STAT TILE)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Panel Pengukur Bar Persentase Kerja".
+     Dipakai pada halaman master untuk memperlihatkan rasio,
+     misalnya: Truk yang sedang jalan dibanding truk menganggur di pool.
+====================================================== -->
 @props([
     'label',
     'nilai',

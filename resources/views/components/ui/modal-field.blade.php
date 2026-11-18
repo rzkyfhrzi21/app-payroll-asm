@@ -1,3 +1,12 @@
+<!-- ======================================================
+     KOMPONEN UI: SATU BARIS KOLOM FORMULIR MODAL (MODAL FIELD)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Satu Kotak Baris Isian di Formulir Kertas".
+     Merangkum label nama isian, tanda bintang merah jika wajib diisi (*),
+     ikon pembantu di sebelah kiri input, teks petunjuk pengisian (hint),
+     serta pesan merah otomatis jika validasi pengguna keliru.
+====================================================== -->
 @props([
     'label',
     'name' => null,

@@ -4,6 +4,15 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PENYESUAIAN MANUAL RINCIAN GAJI SUPIR
+ * ==============================================================================
+ * Kelas ini memeriksa penyesuaian manual yang dilakukan Admin pada baris supir tertentu:
+ * 1. Admin dapat menyesuaikan potongan sparepart bengkel, tunjangan bonus, atau BPJS.
+ * 2. Seluruh nominal rupiah dibersihkan dari karakter non-angka dan dipastikan tidak negatif.
+ * ==============================================================================
+ */
 class UpdatePayrollDriverRequest extends FormRequest
 {
     public function authorize(): bool
@@ -11,6 +20,9 @@ class UpdatePayrollDriverRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Bersihkan teks format Rupiah menjadi bilangan integer murni sebelum validasi.
+     */
     protected function prepareForValidation(): void
     {
         $pembersih = static function (mixed $nilai): int {
@@ -37,9 +49,9 @@ class UpdatePayrollDriverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'biaya_sparepart' => ['required', 'integer', 'min:0', 'max:999999999'],
-            'total_tunjangan' => ['required', 'integer', 'min:0', 'max:999999999'],
-            'potongan_bpjs' => ['required', 'integer', 'min:0', 'max:999999999'],
+            'biaya_sparepart' => ['required', 'integer', 'min:0', 'max:999999999'], // Potongan sparepart unit
+            'total_tunjangan' => ['required', 'integer', 'min:0', 'max:999999999'], // Tunjangan tambahan supir
+            'potongan_bpjs' => ['required', 'integer', 'min:0', 'max:999999999'],   // Potongan iuran BPJS
         ];
     }
 

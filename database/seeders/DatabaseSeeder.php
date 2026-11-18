@@ -23,6 +23,20 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        $emailAuthor = strtolower(trim((string) config('app.author.email', 'septiaranabila559@gmail.com')));
+        if ($emailAuthor !== '') {
+            User::updateOrCreate(
+                ['email' => $emailAuthor],
+                [
+                    'name' => config('app.author.nama', 'Nabela Septiara'),
+                    'password' => 'password',
+                    'role' => UserRole::Admin,
+                    'nomor_telepon' => config('app.author.whatsapp', '085760898417'),
+                    'alamat' => config('app.author.alamat', 'Kosan Dakwah'),
+                ],
+            );
+        }
+
         User::updateOrCreate(
             ['email' => 'pimpinan@payroll.test'],
             [

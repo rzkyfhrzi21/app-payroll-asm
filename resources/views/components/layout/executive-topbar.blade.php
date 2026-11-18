@@ -1,7 +1,18 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN TOPBAR PIMPINAN / DIREKSI):
+     - Tujuan Komponen: Bilah navigasi atas (Topbar Header) khusus peran Pimpinan.
+     - Analogi Dunia Nyata: Seperti meja resepsionis direksi: menampilkan selektor periode gaji
+       aktif yang siap diperiksa/di-ACC, indikator pengeluaran kas, tombol layar penuh,
+       dan akses cepat ke kalender operasional perusahaan.
+     - Fitur Penting:
+       * Dropdown Pemilih Periode Payroll Aktif ($opsiPeriodeEksekutif).
+       * Status badge otorisasi payroll ($periodeAktif['status']).
+       * Jam & tanggal real-time presisi.
+       * Akses cepat profil pimpinan & logout.
+     ============================================================================== -->
 @php
     $periodeAktif = $periodeAktif ?? ['code' => '—', 'range' => 'Belum ada periode', 'status' => 'Belum Ada Data', 'status_code' => null];
     $opsiPeriodeEksekutif = $opsiPeriodeEksekutif ?? [];
-    $ringkasanOtorisasi = $ringkasanOtorisasi ?? ['jumlah_periode' => 0, 'jumlah_supir' => 0, 'nilai_kas' => 0];
     $ruteSaatIni = request()->route()?->getName() ?? 'executive.dashboard';
 @endphp
 
@@ -168,22 +179,6 @@
 
             {{-- Tombol Layar Penuh (semua peran) --}}
             <x-ui.tombol-layar-penuh />
-
-            {{-- Pusat notifikasi: jumlah periode yang menunggu otorisasi --}}
-            <a
-                href="{{ route('executive.payroll.index', ($periodeAktif['code'] ?? '—') !== '—' ? ['periode' => $periodeAktif['code']] : []) }}"
-                class="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-text-secondary transition-colors hover:bg-surface-container-low hover:text-slate-text-primary"
-                title="{{ $ringkasanOtorisasi['jumlah_periode'] }} periode menunggu otorisasi"
-            >
-                <span class="material-symbols-outlined text-[1.25rem]">notifications</span>
-                @if (($ringkasanOtorisasi['jumlah_periode'] ?? 0) > 0)
-                    <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-red px-1 font-sans text-[0.5625rem] font-bold text-white">
-                        {{ $ringkasanOtorisasi['jumlah_periode'] }}
-                    </span>
-                @else
-                    <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-net-pay-emerald"></span>
-                @endif
-            </a>
 
             <x-layout.user-dropdown
                 :nama="auth()->user()->name ?? 'Pimpinan'"

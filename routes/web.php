@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\InteraksiTabelController;
+use App\Http\Controllers\InteraksiTabelPeranController;
 use App\Http\Controllers\Admin\Master\EmployeeController;
 use App\Http\Controllers\Admin\Master\RouteController as MasterRouteController;
 use App\Http\Controllers\Admin\Master\TruckController;
@@ -49,9 +50,12 @@ Route::middleware(['auth', 'role:admin', 'throttle:interaksi-admin'])->prefix('a
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::post('/interaksi/tabel', InteraksiTabelController::class)->name('admin.interaksi.tabel');
+    Route::post('/interaksi/tabel-ajax', InteraksiTabelPeranController::class)->name('admin.interaksi.tabel-ajax');
 
     Route::get('/payroll', [PayrollController::class, 'index'])->name('admin.payroll.index');
     Route::post('/payroll/periode-baru', [PayrollController::class, 'buatPeriodeBaru'])->name('admin.payroll.period.create');
+    Route::patch('/payroll/{period}/tutup-buku', [PayrollController::class, 'tutupBukuDanAjukan'])->name('admin.payroll.tutup-buku');
+    Route::patch('/payroll/{period}/buka-kembali', [PayrollController::class, 'bukaKembaliPeriode'])->name('admin.payroll.buka-kembali');
     Route::post('/payroll/{period}/calculate', [PayrollController::class, 'calculate'])->name('admin.payroll.calculate');
     Route::patch('/payroll/{period}/submit', [PayrollController::class, 'submit'])->name('admin.payroll.submit');
     Route::post('/payroll/{period}/approval', [PayrollController::class, 'approval'])->name('admin.payroll.approval');
@@ -63,6 +67,12 @@ Route::middleware(['auth', 'role:admin', 'throttle:interaksi-admin'])->prefix('a
     Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/reports/export', [ReportController::class, 'exportArsip'])->name('admin.reports.export');
     Route::post('/reports/migrasi/import', [ReportController::class, 'imporMigrasi'])->name('admin.reports.migrasi.import');
+    Route::post('/reports/migrasi/preview', [ReportController::class, 'unggahPreviewMigrasi'])->name('admin.reports.migrasi.preview');
+    Route::get('/reports/migrasi/preview/{token}', [ReportController::class, 'tampilPreviewMigrasi'])->name('admin.reports.migrasi.tampil-preview');
+    Route::post('/reports/migrasi/eksekusi', [ReportController::class, 'eksekusiPreviewMigrasi'])->name('admin.reports.migrasi.eksekusi');
+    Route::post('/reports/migrasi/tambah-unit-ajax', [ReportController::class, 'tambahUnitAjax'])->name('admin.reports.migrasi.tambah-unit-ajax');
+    Route::post('/reports/migrasi/eksekusi-async', [ReportController::class, 'eksekusiAsyncMigrasi'])->name('admin.reports.migrasi.eksekusi-async');
+    Route::get('/reports/migrasi/status-progress/{token}', [ReportController::class, 'statusProgressMigrasi'])->name('admin.reports.migrasi.status-progress');
     Route::get('/reports/migrasi/export', [ReportController::class, 'eksporMigrasi'])->name('admin.reports.migrasi.export');
     Route::get('/reports/migrasi/template', [ReportController::class, 'unduhTemplateMigrasi'])->name('admin.reports.migrasi.template');
     Route::get('/reports/migrasi/dummy', [ReportController::class, 'unduhDummyMigrasi'])->name('admin.reports.migrasi.dummy');
@@ -145,6 +155,7 @@ Route::middleware(['auth', 'role:admin', 'throttle:interaksi-admin'])->prefix('a
 */
 Route::middleware(['auth', 'role:pimpinan', 'throttle:interaksi-admin'])->prefix('executive')->name('executive.')->group(function () {
     Route::get('/dashboard', [ExecutiveDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/interaksi/tabel', InteraksiTabelPeranController::class)->name('interaksi.tabel');
 
     Route::get('/payroll', [PayrollReviewController::class, 'index'])->name('payroll.index');
     Route::get('/payroll/{period}', [PayrollReviewController::class, 'show'])->name('payroll.show');
@@ -172,6 +183,7 @@ Route::middleware(['auth', 'role:pimpinan', 'throttle:interaksi-admin'])->prefix
 */
 Route::middleware(['auth', 'role:supir'])->prefix('my')->name('driver.')->group(function () {
     Route::get('/payroll', [DriverDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/interaksi/tabel', InteraksiTabelPeranController::class)->name('interaksi.tabel');
     Route::get('/payroll/slip', [DriverDashboardController::class, 'cetakSlip'])->name('payroll.slip');
     Route::get('/trips', [DriverTripHistoryController::class, 'index'])->name('trips.index');
     Route::patch('/trips/{trip}/mulai-kirim', [DriverTripHistoryController::class, 'mulaiPengiriman'])->name('trips.start-delivery');

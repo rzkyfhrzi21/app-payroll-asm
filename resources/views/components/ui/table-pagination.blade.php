@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PAGINASI TABEL DATA):
+     - Tujuan Komponen: Membagi daftar data yang panjang menjadi lembaran-lembaran halaman
+       (halaman 1, 2, 3...) agar tidak membuat layar lambat saat memuat ribuan baris data.
+     - Analogi Dunia Nyata: Seperti membuka buku tebal catatan ekspedisi batubara lembar demi lembar;
+       ada nomor halaman di bagian bawah dan pilihan mau lihat 25, 50, atau 100 baris per lembar.
+     - Data dari Controller / Props:
+       * $paginator: Objek Paginator Laravel (LengthAwarePaginator) pembawa data dan info halaman.
+       * $label: Nama entitas yang dihitung (misal: "ritase", "karyawan", "transaksi").
+       * $perPage: Jumlah baris data yang sedang ditampilkan per halaman (default: 25).
+     - Fitur Penting:
+       * Menyertakan query parameter filter lama ($paginator->appends(request()->query()))
+         sehingga saat ganti nomor halaman, saringan tanggal/supir tidak hilang.
+     ============================================================================== -->
 @props([
     'paginator',
     'label' => 'data',

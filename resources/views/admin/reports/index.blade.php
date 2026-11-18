@@ -1,3 +1,16 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN ARSIP LAPORAN & SLIP GAJI):
+     - Tujuan Halaman: Menampilkan arsip riwayat seluruh periode penggajian bulanan supir,
+       status otorisasi Pimpinan (ACC/Tolak/Cair), dan gerbang unduh berkas slip gaji.
+     - Analogi Dunia Nyata: Seperti lemari berkas binder arsip tahunan di ruang akuntansi:
+       setiap bulan ada map khususnya (misal Jan-26, Feb-26). Admin bisa membuka map untuk
+       melihat siapa saja supir yang sudah digaji dan mencetak rekapitulasi audit.
+     - Standar Aturan Penerbitan Slip (Sesuai AGENTS.md Bab 3.2):
+       * Slip gaji dan laporan resmi HANYA BOLEH diterbitkan bila status periode sudah 'approved' atau 'paid'.
+     - Data dari Controller (Admin/ReportController@index):
+       * $ringkasan: Total periode, total pengeluaran gaji bersih, dan total supir terbayar.
+       * $barisPeriode: Array daftar periode gaji beserta status otorisasi pimpinan.
+     ============================================================================== -->
 @php
     $rp = fn ($nilai) => 'Rp '.number_format((int) round((float) $nilai), 0, ',', '.');
     $perusahaanAktif = $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
@@ -29,7 +42,20 @@
                     <span class="material-symbols-outlined text-[18px] text-emerald-600">upload_file</span>
                     <span>Import / Export Migrasi Excel</span>
                 </button>
-                @php
+                <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN ARSIP LAPORAN & SLIP GAJI):
+     - Tujuan Halaman: Menampilkan arsip riwayat seluruh periode penggajian bulanan supir,
+       status otorisasi Pimpinan (ACC/Tolak/Cair), dan gerbang unduh berkas slip gaji.
+     - Analogi Dunia Nyata: Seperti lemari berkas binder arsip tahunan di ruang akuntansi:
+       setiap bulan ada map khususnya (misal Jan-26, Feb-26). Admin bisa membuka map untuk
+       melihat siapa saja supir yang sudah digaji dan mencetak rekapitulasi audit.
+     - Standar Aturan Penerbitan Slip (Sesuai AGENTS.md Bab 3.2):
+       * Slip gaji dan laporan resmi HANYA BOLEH diterbitkan bila status periode sudah 'approved' atau 'paid'.
+     - Data dari Controller (Admin/ReportController@index):
+       * $ringkasan: Total periode, total pengeluaran gaji bersih, dan total supir terbayar.
+       * $barisPeriode: Array daftar periode gaji beserta status otorisasi pimpinan.
+     ============================================================================== -->
+@php
                     $kodePeriodeUtama = $barisPeriode[0]['kode'] ?? 'Jan-26';
                 @endphp
                 <a
@@ -210,8 +236,10 @@
                         @click="resetFilter()"
                         title="Reset Filter"
                         class="w-full h-[38px] flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                        aria-label="Reset Filter"
                     >
                         <span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                        <span class="sr-only">Reset Filter</span>
                     </button>
                 </div>
             </div>
@@ -331,38 +359,36 @@
                                     </template>
                                 </td>
                                 <td class="py-3.5 px-4 text-center whitespace-nowrap" @click.stop>
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button
-                                            type="button"
-                                            @click="bukaRingkasanPeriode(baris)"
-                                            title="Ringkasan Cepat Periode"
-                                            class="btn-aksi-tabel hover:text-blue-600 hover:bg-blue-50"
-                                        >
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
+                                    <x-ui.tabel-aksi label="Aksi Periode">
+                                        <x-ui.tabel-aksi-item ikon="visibility" @click="bukaRingkasanPeriode(baris)">
+                                            Ringkasan Cepat Periode
+                                        </x-ui.tabel-aksi-item>
                                         <a
                                             :href="baris.url_detail"
-                                            title="Buka Rincian Daftar Supir"
-                                            class="btn-aksi-tabel hover:text-blue-600 hover:bg-blue-50"
+                                            role="menuitem"
+                                            class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-primary transition-colors hover:bg-surface-container-low"
                                         >
-                                            <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                                            <span class="material-symbols-outlined text-[1.25rem]">open_in_new</span>
+                                            <span>Buka Rincian Daftar Supir</span>
                                         </a>
                                         <a
                                             :href="baris.url_cetak"
                                             target="_blank"
-                                            title="Cetak Rekap PDF"
-                                            class="btn-aksi-tabel hover:text-rose-600 hover:bg-rose-50"
+                                            role="menuitem"
+                                            class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-banner-indigo transition-colors hover:bg-surface-container-low"
                                         >
-                                            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                                            <span class="material-symbols-outlined text-[1.25rem]">picture_as_pdf</span>
+                                            <span>Cetak Rekap PDF</span>
                                         </a>
                                         <a
                                             :href="baris.url_ekspor"
-                                            title="Unduh Excel Periode"
-                                            class="btn-aksi-tabel hover:text-emerald-600 hover:bg-emerald-50"
+                                            role="menuitem"
+                                            class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-sans text-body-sm font-medium text-net-pay-emerald transition-colors hover:bg-surface-container-low"
                                         >
-                                            <span class="material-symbols-outlined text-[18px]">table_chart</span>
+                                            <span class="material-symbols-outlined text-[1.25rem]">table_chart</span>
+                                            <span>Unduh Excel Periode</span>
                                         </a>
-                                    </div>
+                                    </x-ui.tabel-aksi>
                                 </td>
                             </tr>
                         </template>

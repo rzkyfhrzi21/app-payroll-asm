@@ -1,3 +1,22 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PROFIL PERUSAHAAN SINGLETON):
+     - Tujuan Halaman: Mengatur identitas resmi perusahaan logistik batubara yang dikelola
+       secara singleton (hanya 1 baris di tabel `data_perusahaan`) oleh Pimpinan/Owner.
+     - Analogi Dunia Nyata: Seperti surat izin usaha dan stempel resmi di brankas direktur:
+       berisi kop surat, logo resmi, nomor kontak, rekening kas transfer payroll, serta
+       tanda tangan digital direktur utama yang ditempelkan pada slip gaji fisik supir.
+     - Standar Aturan (Sesuai AGENTS.md Bab 3.2, 3.3, 3.8):
+       * Seluruh teks selain email otomatis disimpan dalam HURUF BESAR via trait `NormalisasiHurufBesar`.
+       * Logo dan tanda tangan otomatis dikonversi ke format `.webp` aman maksimal 2 MB.
+       * Halaman ini menyediakan live-preview kop surat dan tanda tangan di kolom kanan.
+     - Form & Pemetaan Input ke Database:
+       * `nama_perusahaan` -> data_perusahaan.nama_perusahaan
+       * `kode_perusahaan` -> data_perusahaan.kode_perusahaan
+       * `alamat`, `kota`, `no_telepon`, `email` -> data_perusahaan
+       * `nama_pemilik`, `jabatan_pemilik` -> data_perusahaan
+       * `nama_bank`, `no_rekening` -> data_perusahaan
+       * `logo_perusahaan`, `ttd_pemilik` (File upload / hapus)
+     ============================================================================== -->
 @php
     $perusahaanAktif = $perusahaan ?? $dataPerusahaan ?? \App\Models\DataPerusahaan::profilAktif();
 
@@ -690,28 +709,24 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="rounded-2xl border border-banner-indigo/20 bg-banner-indigo/5 p-4">
-                    <div class="flex items-start gap-3">
-                        <span class="material-symbols-outlined mt-0.5 text-[1.25rem] text-banner-indigo">info</span>
-                        <div class="space-y-1 font-sans text-body-sm text-slate-text-secondary">
-                            <p class="font-semibold text-slate-text-primary">Integrasi Otomatis Dokumen</p>
-                            <p>Logo, identitas, rekening, dan tanda tangan pemilik digunakan langsung pada:</p>
-                            <ul class="list-disc space-y-0.5 pl-4">
-                                <li>Slip Gaji Supir (<span class="font-mono text-[0.75rem]">/admin/reports/{periode}/slip/{id}</span>)</li>
-                                <li>Rekapitulasi Penggajian Cetak (<span class="font-mono text-[0.75rem]">/admin/reports/{periode}/cetak</span>)</li>
-                                <li>Halaman Arsip Laporan &amp; Slip Gaji</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
             </aside>
         </div>
     </div>
 
+    <!-- ==============================================================================
+         KOMENTAR ORANG TUA (LOGIKA ALUR SCRIPT FORMULIR PROFIL PERUSAHAAN):
+         Fungsi Alpine.js ini mengatur formulir identitas dan preview live:
+         (1) State Awal: Menyimpan data teks dan URL logo/ttd yang saat ini tersimpan di database.
+         (2) Getter Pratinjau Teks: Mengubah teks nama perusahaan, pemilik, alamat ke HURUF BESAR untuk live preview.
+         (3) Penanganan Berkas Gambar (Logo & Tanda Tangan):
+             * Validasi ukuran berkas maksimal 2 MB (2 * 1024 * 1024 byte).
+             * Membaca berkas sebagai Data URL (FileReader) untuk langsung ditampilkan di kotak pratinjau.
+         (4) Pembatalan & Reset: Mengosongkan berkas unggahan atau mereset seluruh formulir ke nilai semula.
+         ============================================================================== -->
     <script>
         function formulirProfilPerusahaan(awal) {
             return {
+                // (1) Data awal dari Controller
                 namaPerusahaan: awal.namaPerusahaan || '',
                 kodePerusahaan: awal.kodePerusahaan || '',
                 alamat: awal.alamat || '',
@@ -731,6 +746,7 @@
                 galatUkuranLogo: '',
                 galatUkuranTtd: '',
 
+                // (2.1) Getter URL Gambar Logo untuk ditampilkan
                 logoTampilUrl() {
                     if (this.logoPreviewBaru !== '') {
                         return this.logoPreviewBaru;
@@ -741,6 +757,7 @@
                     return '';
                 },
 
+                // (2.2) Getter URL Gambar Tanda Tangan untuk ditampilkan
                 ttdTampilUrl() {
                     if (this.ttdPreviewBaru !== '') {
                         return this.ttdPreviewBaru;
@@ -751,6 +768,7 @@
                     return '';
                 },
 
+                // (2.3) Getter pratinjau teks (otomatis HURUF BESAR)
                 namaPerusahaanAtauBawaan() {
                     return (this.namaPerusahaan.trim() || 'NAMA PERUSAHAAN BELUM DIISI').toUpperCase();
                 },
@@ -782,6 +800,7 @@
                     return 'Belum diatur';
                 },
 
+                // (3) Memproses berkas gambar baru (maks 2 MB, FileReader ke Data URL)
                 tanganiBerkasGambar(event, jenis) {
                     const berkas = event.target.files && event.target.files[0];
                     const batasByte = 2 * 1024 * 1024;
@@ -822,6 +841,7 @@
                     pembaca.readAsDataURL(berkas);
                 },
 
+                // (4.1) Batalkan gambar baru yang belum disimpan
                 batalkanGambarBaru(jenis) {
                     if (jenis === 'logo') {
                         this.logoPreviewBaru = '';
@@ -836,6 +856,7 @@
                     }
                 },
 
+                // (4.2) Reset seluruh isian formulir ke nilai awal saat pertama kali dimuat
                 resetFormulir() {
                     this.namaPerusahaan = awal.namaPerusahaan || '';
                     this.kodePerusahaan = awal.kodePerusahaan || '';

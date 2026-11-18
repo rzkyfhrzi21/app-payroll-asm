@@ -1,3 +1,19 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN PENGELUARAN OPERASIONAL & BIAYA ARMADA):
+     - Tujuan Halaman: Mencatat pengeluaran operasional armada truk (sparepart bengkel,
+       servis berkala, oli, ban, retribusi, dan solar tambahan).
+     - Analogi Dunia Nyata: Seperti map kuitansi nota bengkel di meja mandor armada:
+       setiap truk yang masuk bengkel atau ganti ban dicatat notanya agar saat tutup buku,
+       biaya sparepart ini dapat dikurangkan dari hasil angkutan armada sebelum komisi supir dihitung.
+     - Hubungan ke Rumus Penggajian 4 Tahap (AGENTS.md Bab 3.8):
+       * Kategori 'sparepart' dan 'servis' akan memotong nilai angkutan armada:
+         `hasil_bersih_armada = max(0, angkutan_bersih - total_uang_jalan - biaya_sparepart)`.
+     - Data dari Controller:
+       * $period: Info periode aktif pengeluaran.
+       * $summary: Total biaya, jumlah transaksi kuitansi, dan jumlah truk terlibat.
+       * $expenses: Paginator daftar biaya operasional dari tabel `biaya_operasional`.
+       * $trucks: Daftar master truk untuk dropdown pilihan unit.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 
@@ -18,7 +34,7 @@
 @endphp
 
 <x-app-layout title="Pengeluaran Operasional">
-    <div class="flex flex-col gap-6" x-data="expensesPage([], @js($period))">
+    <div class="flex flex-col gap-6" x-data="expensesPage([], @js($period))" data-wadah-tabel="biaya">
         {{-- Banner --}}
         <div class="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 p-space-xl text-white shadow-hero">
             <div class="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full bg-white/10 blur-2xl"></div>
@@ -141,10 +157,7 @@
         </div>
 
         {{-- Filter + Tombol Tambah --}}
-        <form
-            method="GET"
-            action="{{ route('admin.operational.expenses.index') }}"
-            data-filter-server
+        <div
             class="flex flex-col items-stretch justify-between gap-space-md rounded-xl bg-card-bg p-space-md shadow-card lg:flex-row lg:items-end"
         >
             <div class="flex flex-1 flex-col gap-space-md sm:flex-row sm:flex-wrap">
@@ -156,7 +169,8 @@
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-banner-indigo">date_range</span>
                         <select
                             name="periode"
-                            data-filter-submit
+                            data-no-tabel-ajax
+                            onchange="if (this.value) window.location.assign('{{ route('admin.operational.expenses.index') }}?periode=' + encodeURIComponent(this.value))"
                             class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
                         >
                             @foreach ($periodOptions as $opsi)
@@ -175,7 +189,7 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Kategori</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">category</span>
-                        <select name="kategori" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="kategori" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Kategori</option>
                             @foreach ($kategoriOptions as $nilai => $label)
                                 <option value="{{ $nilai }}" @selected($filter['kategori'] === $nilai)>{{ $label }}</option>
@@ -190,7 +204,7 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Unit Armada</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">local_shipping</span>
-                        <select name="unit" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="unit" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Unit</option>
                             @foreach ($unitOptions as $pelat)
                                 <option value="{{ $pelat }}" @selected($filter['unit'] === $pelat)>{{ $pelat }}</option>
@@ -207,7 +221,7 @@
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">fact_check</span>
                         <select
                             name="status"
-                            data-filter-submit
+                           
                             class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
                         >
                             <option value="all">Semua Status</option>
@@ -229,7 +243,6 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-4 font-sans text-body-md text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active"
                             placeholder="No. nota, keterangan, unit..."
                         >
@@ -238,15 +251,15 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-space-sm self-end lg:self-auto">
-                @if ($adaFilterAktif)
-                    <a
-                        href="{{ route('admin.operational.expenses.index') }}"
-                        class="flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                    >
-                        <span class="material-symbols-outlined text-[1.125rem]">restart_alt</span>
-                        <span>Reset Filter</span>
-                    </a>
-                @endif
+                <button
+                    type="button"
+                    data-tombol-reset-filter
+                    onclick="window.resetTabelAjax('biaya')"
+                    class="flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                >
+                    <span class="material-symbols-outlined text-[1.125rem]">restart_alt</span>
+                    <span>Reset Filter</span>
+                </button>
                 <button
                     type="button"
                     class="flex h-10 items-center gap-2 rounded-lg bg-primary-container px-space-lg font-display text-headline-sm text-on-primary shadow-md transition-transform active:scale-95"
@@ -256,7 +269,7 @@
                     Catat Pengeluaran
                 </button>
             </div>
-        </form>
+        </div>
 
         {{-- Rekap per kategori --}}
         @if (count($summary['per_kategori']) > 0)
@@ -283,7 +296,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3.5 text-center font-semibold">No</th>
                             <th class="w-10 px-2 py-3.5 text-center font-semibold">
                                 <input
                                     type="checkbox"
@@ -293,6 +305,7 @@
                                     aria-label="Pilih semua pengeluaran"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3.5 text-center font-semibold">No</th>
                             <th class="px-4 py-3.5 font-semibold">Tanggal</th>
                             <th class="px-4 py-3.5 font-semibold">Unit Armada</th>
                             <th class="px-4 py-3.5 font-semibold">Kategori</th>
@@ -304,96 +317,14 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-surface-container-low font-sans text-financial-table">
-                        @forelse ($rows as $baris)
-                            <tr class="transition-colors hover:bg-surface-container-low/70">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $rows->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $baris['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih pengeluaran {{ $baris['nomor_nota'] ?: $baris['kategori_label'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3 font-semibold">{{ $baris['tanggal'] }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold">{{ $baris['plate'] }}</span>
-                                        <span class="font-sans text-label-sm text-slate-text-muted">{{ $baris['truck'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span @class([
-                                        'inline-block rounded px-2 py-0.5 font-sans text-label-sm font-bold',
-                                        'bg-blue-50 text-blue-700' => $baris['kategori'] === 'sparepart',
-                                        'bg-amber-50 text-amber-700' => $baris['kategori'] === 'bbm',
-                                        'bg-slate-100 text-slate-700' => $baris['kategori'] === 'tol',
-                                        'bg-purple-50 text-purple-700' => $baris['kategori'] === 'retribusi',
-                                        'bg-green-50 text-green-700' => $baris['kategori'] === 'servis',
-                                        'bg-surface-container text-slate-text-secondary' => $baris['kategori'] === 'lain_lain',
-                                    ])>{{ $baris['kategori_label'] }}</span>
-                                </td>
-                                <td class="px-4 py-3 font-sans text-label-sm text-slate-text-secondary">
-                                    <div class="flex items-center gap-1.5">
-                                        <span>{{ $baris['nomor_nota'] ?: '—' }}</span>
-                                        <button
-                                            type="button"
-                                            @click.stop="window.bukaLightbox({ url: @js($baris['foto_nota']), judul: @js('Bukti Nota ' . ($baris['nomor_nota'] ?: $baris['kategori_label'])), caption: @js($baris['plate'] . ' • ' . $baris['tanggal']) })"
-                                            title="Pratinjau Bukti Nota"
-                                            class="inline-flex h-6 w-6 items-center justify-center rounded bg-surface-container-low text-primary transition-colors hover:bg-primary/10"
-                                        >
-                                            <span class="material-symbols-outlined text-[0.9375rem]">receipt_long</span>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-primary">{{ $rp($baris['nominal']) }}</td>
-                                <td class="max-w-[12rem] truncate px-4 py-3 font-sans text-body-sm text-slate-text-secondary">{{ $baris['keterangan'] ?: '—' }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span @class([
-                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold',
-                                        'bg-surface-container-high text-slate-text-secondary' => $baris['status'] === 'draft',
-                                        'bg-warning-surface text-warning-amber' => $baris['status'] === 'diajukan',
-                                        'bg-net-pay-surface text-net-pay-emerald' => $baris['status'] === 'disetujui',
-                                        'bg-danger-surface text-danger-red' => $baris['status'] === 'ditolak',
-                                    ])>{{ $baris['status_label'] }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="inline-flex items-center gap-1">
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:text-primary"
-                                            title="Detail"
-                                            @click="bukaDetail(@js($baris))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:text-primary"
-                                            title="Edit"
-                                            @click="bukaEdit(@js($baris))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:bg-danger-surface hover:text-danger-red
-                                                {{ $baris['status'] === 'disetujui' ? 'opacity-40 cursor-not-allowed' : '' }}"
-                                            title="{{ $baris['status'] === 'disetujui' ? 'Sudah disetujui, tidak dapat dihapus' : 'Hapus' }}"
-                                            @click="{{ $baris['status'] !== 'disetujui' ? 'bukaHapus(@js($baris))' : '' }}"
-                                            @if ($baris['status'] === 'disetujui') disabled @endif
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                    <tbody id="tbodyBiaya" class="divide-y divide-surface-container-low font-sans text-financial-table">
+                        @foreach ($rows as $indeksBaris => $baris)
+                            @include('components.tabel-baris.biaya', ['baris' => $baris, 'nomor' => $rows->firstItem() + $indeksBaris])
+                        @endforeach
+
+                        @if ($rows->isEmpty())
                             <x-ui.table-empty :colspan="10" label="pengeluaran operasional" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
 
                     <tfoot>
@@ -411,7 +342,7 @@
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$rows" :per-page="$perPage" label="pengeluaran" />
+            <x-ui.tabel-ajax entitas="biaya" label="pengeluaran" target-id="tbodyBiaya" :kolom="10" :filter="$filter" :per-halaman-awal="$perPage" />
         </div>
 
         {{-- =================== MODAL TAMBAH =================== --}}

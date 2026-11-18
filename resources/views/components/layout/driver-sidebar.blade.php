@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN SIDEBAR PORTAL SUPIR):
+     - Tujuan Komponen: Navigasi samping (Sidebar) khusus supir truk logistik batubara.
+       Menyediakan akses mandiri (self-service) tanpa harus bertanya manual ke kantor HRD.
+     - Analogi Dunia Nyata: Seperti map dasbor di dalam kabin truk supir: berisi slip gaji,
+       lembar surat jalan (DO) harian, buku catatan kasbon/potongan, kartu unit truk,
+       dan kalkulator perkiraan uang komisi bila menambah ritase pengantaran.
+     - Struktur Menu Supir:
+       * Slip Gaji (driver.dashboard): Ringkasan gaji bersih bulan berjalan.
+       * Riwayat Pengantaran & DO (driver.trips.index): Pantau status kirim dan upload bukti SJ.
+       * Buku Kasbon (driver.loans.index): Sisa cicilan kasbon dan jadwal potong gaji.
+       * Simulasi Gaji (driver.simulation.index): Hitung perkiraan komisi 10% berbasis ritase.
+       * Profil Supir & Armada (driver.profile.edit): Info NIP, kontak, dan plat nomor truk.
+     ============================================================================== -->
 @php
     $profilSupir = $profilSupir ?? [
         'initial' => '—',

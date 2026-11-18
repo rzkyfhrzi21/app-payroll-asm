@@ -1,3 +1,10 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KALENDER PIMPINAN):
+     - Tujuan Halaman: Kalender pemantauan agenda tutup buku dan siklus hauling bagi Pimpinan.
+     - Analogi Dunia Nyata: Seperti agenda meja kerja Pimpinan: melihat tonggak penting (milestones),
+       jadwal cut-off surat jalan timbangan, dan tanggal jatuh tempo pencairan gaji.
+     - Sifat Halaman: Read-only untuk Pimpinan (perubahan jadwal dilakukan oleh Admin).
+     ============================================================================== -->
 @php
     $eventStyles = [
         'hauling' => ['chip' => 'bg-primary/10 text-primary', 'dot' => 'bg-primary'],
@@ -124,7 +131,14 @@
 
                                 <div class="flex flex-col gap-1">
                                     @forelse ($day['events'] as $event)
-                                        @php $style = $eventStyles[$event['type']] ?? $eventStyles['maintenance']; @endphp
+                                        <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KALENDER PIMPINAN):
+     - Tujuan Halaman: Kalender pemantauan agenda tutup buku dan siklus hauling bagi Pimpinan.
+     - Analogi Dunia Nyata: Seperti agenda meja kerja Pimpinan: melihat tonggak penting (milestones),
+       jadwal cut-off surat jalan timbangan, dan tanggal jatuh tempo pencairan gaji.
+     - Sifat Halaman: Read-only untuk Pimpinan (perubahan jadwal dilakukan oleh Admin).
+     ============================================================================== -->
+@php $style = $eventStyles[$event['type']] ?? $eventStyles['maintenance']; @endphp
                                         <div class="flex items-center gap-1 rounded px-1.5 py-1 font-sans text-[0.6875rem] font-semibold leading-tight {{ $style['chip'] }}">
                                             <span class="h-1.5 w-1.5 shrink-0 rounded-full {{ $style['dot'] }}"></span>
                                             <span class="mark-dummy truncate">{{ $event['label'] }}</span>

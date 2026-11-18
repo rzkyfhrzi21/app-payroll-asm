@@ -1,3 +1,17 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN BUKU KASBON SUPIR):
+     - Tujuan Halaman: Catatan pribadi supir mengenai sisa kasbon, riwayat pengajuan,
+       dan jadwal pemotongan gaji (angsuran cicilan 1 s.d. 3 kali potong).
+     - Analogi Dunia Nyata: Seperti buku tabungan/buku utang piutang supir ke kantor:
+       supir bisa melihat berapa sisa kasbon yang belum lunas, berapa yang akan dipotong
+       pada gajian tanggal 1 bulan depan, dan mutasi cicilan yang sudah terpotong lunas.
+     - Standar Aturan Kasbon (Sesuai AGENTS.md Bab 3.6):
+       * Maksimal kasbon per pengajuan: Rp 1.000.000.
+       * Maksimal tenor angsuran: 3 kali potong.
+     - Data dari Controller (Driver/LoanController@index):
+       * $loan: Status kasbon aktif, total pinjaman, sisa utang, dan angsuran per bulan.
+       * $schedule: Jadwal tanggal dan periode rencana potong gaji dari tabel `angsuran_kasbon`.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 @endphp

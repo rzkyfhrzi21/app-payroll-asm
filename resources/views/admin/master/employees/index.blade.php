@@ -1,3 +1,19 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MASTER SUPIR & KARYAWAN):
+     - Tujuan Halaman: Buku induk data karyawan & supir truk tambang batubara.
+     - Analogi Dunia Nyata: Seperti lemari arsip kartu pegawai di kantor personalia HRD:
+       mencatat foto supir, NIP, nomor HP, plat truk yang dipegang, nomor rekening bank untuk
+       transfer gaji, serta besaran potongan BPJS Ketenagakerjaan bulanan.
+     - Standar Aturan Master Data (Sesuai AGENTS.md Bab 3.3 & 3.5):
+       * Normalisasi teks otomatis HURUF BESAR saat disimpan ke database via model `Karyawan`.
+       * Data supir yang memiliki jejak riwayat transaksi (pernah jalan ritase, punya kasbon,
+         atau tercatat di penggajian) TIDAK BOLEH dihapus sembarangan (tombol hapus dikunci).
+       * Sedia modal kelola akun login untuk menghubungkan supir dengan akun pengguna (`User`).
+     - Data dari Controller (Admin/Master/EmployeeController@index):
+       * $summary: Total supir aktif, unit armada siap jalan, dan akumulasi ritase.
+       * $drivers: Paginator daftar supir dari tabel `karyawan` join `truk` dan `users`.
+       * $trucks: Daftar master unit truk untuk pilihan dropdown kendaraan.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
     $statusTones = [
@@ -87,11 +103,8 @@
         </div>
 
         {{-- Tabel supir --}}
-        <div class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
-            <form
-                method="GET"
-                action="{{ route('admin.master.employees.index') }}"
-                data-filter-server
+        <div data-wadah-tabel="karyawan" class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
+            <div
                 class="flex flex-col items-center justify-between gap-space-md border-b border-card-border p-space-md md:flex-row"
             >
                 <div class="relative w-full md:w-80">
@@ -100,36 +113,35 @@
                         type="text"
                         name="cari"
                         value="{{ $filter['cari'] }}"
-                        data-filter-debounce
                         class="w-full rounded-lg bg-surface py-2 pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-primary-container"
                         placeholder="Cari nama supir, NIP, plat truk..."
                     >
                 </div>
 
                 <div class="flex w-full flex-wrap items-center gap-space-sm md:w-auto">
-                    <select name="status" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                    <select name="status" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                         <option value="all">Status: Semua</option>
                         <option value="aktif" @selected($filter['status'] === 'aktif')>Status: Aktif</option>
                         <option value="nonaktif" @selected($filter['status'] === 'nonaktif')>Status: Nonaktif</option>
                     </select>
 
-                    <select name="unit" data-filter-submit class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                    <select name="unit" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
                         <option value="all">Armada: Semua</option>
                         <option value="pegang" @selected($filter['unit'] === 'pegang')>Sudah Pegang Unit</option>
                         <option value="belum" @selected($filter['unit'] === 'belum')>Belum Dapat Unit</option>
                     </select>
 
-                    @if ($adaFilterAktif)
-                        <a
-                            href="{{ route('admin.master.employees.index') }}"
-                            class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                        >
-                            <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
-                            <span>Reset Filter</span>
-                        </a>
-                    @endif
+                    <button
+                        type="button"
+                        data-tombol-reset-filter
+                        onclick="window.resetTabelAjax('karyawan')"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                    >
+                        <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                        <span>Reset Filter</span>
+                    </button>
                 </div>
-            </form>
+            </div>
 
             <x-ui.tabel-massal
                 url="{{ route('admin.master.employees.status-massal') }}"
@@ -141,7 +153,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="w-10 px-2 py-3 text-center font-semibold text-slate-text-secondary">
                                 <input
                                     type="checkbox"
@@ -151,6 +162,7 @@
                                     aria-label="Pilih semua supir"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3 text-center font-semibold text-slate-text-secondary">No</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Supir &amp; Identitas</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Unit Truk Dipegang</th>
                             <th class="px-4 py-3 font-semibold text-slate-text-secondary">Rekening Payroll</th>
@@ -160,101 +172,26 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-card-border font-sans text-financial-table">
-                        @forelse ($employees as $employee)
-                            <tr class="group transition-colors hover:bg-surface-container-low/60">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $employees->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $employee['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih supir {{ $employee['name'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <img
-                                            src="{{ $employee['foto_profil'] }}"
-                                            alt="{{ $employee['initial'] }}"
-                                            loading="lazy"
-                                            onerror="window.tanganiGambarRusak(this, @js($employee['initial']))"
-                                            @click.stop="window.bukaLightbox({ url: @js($employee['foto_profil']), judul: @js($employee['name']), caption: @js('NIP: ' . $employee['nip'] . ' • ' . $employee['plate']) })"
-                                            title="Klik untuk memperbesar foto"
-                                            class="h-9 w-9 shrink-0 cursor-zoom-in rounded-full object-cover ring-1 ring-card-border transition-transform hover:scale-105"
-                                        >
-                                        <div class="flex min-w-0 flex-col">
-                                            <span class="truncate font-display text-headline-sm font-semibold text-slate-text-primary">{{ $employee['name'] }}</span>
-                                            <span class="truncate font-sans text-label-sm text-slate-text-secondary">NIP: {{ $employee['nip'] }} &bull; {{ $employee['phone'] }}</span>
-                                        </div>
-                                    </div>
-                                </td>
+                    <tbody id="tbodyKaryawan" class="divide-y divide-card-border font-sans text-financial-table">
+                        @foreach ($employees as $indeksBaris => $employee)
+                            @include('components.tabel-baris.karyawan', ['baris' => $employee, 'nomor' => $employees->firstItem() + $indeksBaris])
+                        @endforeach
 
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-display text-headline-sm font-semibold tabular-nums text-slate-text-primary">{{ $employee['plate'] }}</span>
-                                        <span class="font-sans text-body-sm text-slate-text-secondary">{{ $employee['truck'] }}</span>
-                                    </div>
-                                </td>
-
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <div class="flex items-center gap-1 font-semibold text-slate-text-primary">
-                                            <span class="rounded bg-surface-container-high px-1.5 py-0.5 font-sans text-label-sm font-bold text-primary">{{ $employee['bank'] }}</span>
-                                            <span class="tabular-nums">{{ $employee['account'] }}</span>
-                                        </div>
-                                        @if ($employee['verified'])
-                                            <span class="flex items-center gap-0.5 font-sans text-label-sm text-net-pay-emerald">
-                                                <span class="material-symbols-outlined text-[0.8125rem]">verified</span> Terverifikasi
-                                            </span>
-                                        @else
-                                            <span class="flex items-center gap-0.5 font-sans text-label-sm text-warning-amber">
-                                                <span class="material-symbols-outlined text-[0.8125rem]">pending</span> Belum diverifikasi
-                                            </span>
-                                        @endif
-                                    </div>
-                                </td>
-
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold {{ $statusTones[$employee['tone']] ?? $statusTones['blue'] }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $employee['status_kode'] === 'aktif' ? 'bg-net-pay-emerald' : 'bg-slate-text-muted' }}"></span>
-                                        {{ $employee['status'] }}
-                                    </span>
-                                </td>
-
-                                <td class="px-4 py-3 text-right">
-                                    @if ($employee['remaining'] > 0)
-                                        <span class="font-sans text-body-md font-bold tabular-nums text-danger-red">{{ $rp($employee['remaining']) }}</span>
-                                    @else
-                                        <span class="font-sans text-body-md font-bold text-net-pay-emerald">Tidak ada</span>
-                                    @endif
-                                </td>
-
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button type="button" class="btn-aksi-tabel hover:text-slate-text-primary" title="Lihat Detail Supir" @click="bukaDetailSupir(@js($employee))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-primary" title="Edit Profil Supir" @click="bukaEditSupir(@js($employee))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button type="button" class="btn-aksi-tabel hover:text-danger-red" title="Hapus Data Supir" @click="bukaHapusSupir(@js($employee))">
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                        @if ($employees->isEmpty())
                             <x-ui.table-empty :colspan="8" label="data supir" :tampilkan-reset="$adaFilterAktif" />
-                        @endforelse
+                        @endif
                     </tbody>
-                </table>
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$employees" :per-page="$perPage" label="supir" />
+            <x-ui.tabel-ajax
+                entitas="karyawan"
+                label="supir"
+                target-id="tbodyKaryawan"
+                :kolom="8"
+                :filter="$filter"
+                :per-halaman-awal="$perPage"
+            />
         </div>
 
         {{-- ============ MODAL TAMBAH SUPIR ============ --}}

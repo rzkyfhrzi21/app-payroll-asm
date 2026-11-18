@@ -15,29 +15,56 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: MASTER ARMADA TRUK & JENIS TRUK (TRUCK MASTER CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Buku Inventaris Bengkel & Garasi Armada Truk Batubara".
+ * Di sinilah kantor mendata seluruh kendaraan fisik milik perusahaan sendiri:
+ * pelat nomor polisinya, merek kendaraannya, supir tetap yang memegang kunci,
+ * serta kategori jenis truknya (misal: Tronton 10 Roda atau Fuso).
+ * 
+ * Pola Modal Bersarang:
+ * Pengelolaan kategori "Jenis Truk" (tambah, edit, hapus jenis truk) dikelola
+ * langsung dari dalam jendela popup (modal di atas modal) pada halaman ini,
+ * tanpa perlu berpindah ke halaman lain.
+ * ============================================================================
+ */
 class TruckController extends Controller
 {
+    // Menggunakan trait pembantu paginasi tabel dan respon notifikasi standar
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
+    /**
+     * Menampilkan Daftar Master Unit Armada Truk
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Baca kata kunci pencarian, filter status unit, dan filter penugasan supir.
+     * (2) Ambil daftar unit truk terpaginasi dari database.
+     * (3) Ambil diagram komposisi donat dan ringkasan unit aktif/menganggur.
+     * (4) Buka tampilan 'admin.master.trucks.index'.
+     */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
-            'status' => $this->ambilFilterTeks($request, 'status'),
+            'cari'      => $this->ambilKataKunciPencarian($request),
+            'status'    => $this->ambilFilterTeks($request, 'status'),
             'penugasan' => $this->ambilFilterTeks($request, 'penugasan'),
-            'jenis' => $this->ambilFilterTeks($request, 'jenis'),
+            'jenis'     => $this->ambilFilterTeks($request, 'jenis'),
         ];
 
         return view('admin.master.trucks.index', [
-            'trucks' => $layananDataPayroll->dataTrukMasterTerpaginasi($filter, $perHalaman),
-            'summary' => $layananDataPayroll->dataTrukMaster()['ringkasan'],
+            'trucks'           => $layananDataPayroll->dataTrukMasterTerpaginasi($filter, $perHalaman),
+            'summary'          => $layananDataPayroll->dataTrukMaster()['ringkasan'],
             'truckComposition' => $layananDataPayroll->komposisiTruk(),
-            'drivers' => $layananDataPayroll->supirUntukPilihanArmada(),
-            'jenisTruk' => $layananDataPayroll->daftarJenisTruk(),
-            'jenisTrukSemua' => $this->dataJenisTruk(),
-            'filter' => $filter,
-            'perPage' => $perHalaman,
+            'drivers'          => $layananDataPayroll->supirUntukPilihanArmada(),
+            'jenisTruk'        => $layananDataPayroll->daftarJenisTruk(),
+            'jenisTrukSemua'   => $this->dataJenisTruk(),
+            'filter'           => $filter,
+            'perPage'          => $perHalaman,
         ]);
     }
 

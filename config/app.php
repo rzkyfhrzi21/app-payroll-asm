@@ -123,4 +123,26 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Identitas Pengembang / Peneliti Sistem (Author)
+    |--------------------------------------------------------------------------
+    |
+    | Membaca data identitas pengembang/mahasiswa dari variabel environment (.env)
+    | dengan awalan AUTHOR_*. Apabila variabel di .env tidak ada atau
+    | dikosongkan (""), sistem tetap memakai nilai default yang lengkap.
+    |
+    */
+
+    'author' => [
+        'nama' => trim((string) env('AUTHOR_NAMA', '')) !== '' ? trim((string) env('AUTHOR_NAMA')) : 'Nabela Septiara',
+        'npm' => trim((string) env('AUTHOR_NPM', '')) !== '' ? trim((string) env('AUTHOR_NPM')) : '2311050052',
+        'instagram' => trim((string) env('AUTHOR_INSTAGRAM', '')) !== '' ? ltrim(trim((string) env('AUTHOR_INSTAGRAM')), '@') : 'nbelaasp_',
+        'email' => trim((string) env('AUTHOR_EMAIL', '')) !== '' ? trim((string) env('AUTHOR_EMAIL')) : 'septiaranabila559@gmail.com',
+        'whatsapp' => trim((string) env('AUTHOR_WHATSAPP', '')) !== '' ? trim((string) env('AUTHOR_WHATSAPP')) : '085760898417',
+        'judul' => trim((string) env('AUTHOR_JUDUL', '')) !== '' ? trim((string) env('AUTHOR_JUDUL')) : 'Payroll System pada PT ASM Lampung',
+        'dosbing' => trim((string) env('AUTHOR_DOSBING', '')) !== '' ? trim((string) env('AUTHOR_DOSBING')) : 'Bu Ayu Firdhayanti, S.Kom., M.T.I',
+        'alamat' => trim((string) env('AUTHOR_ALAMAT', '')) !== '' ? trim((string) env('AUTHOR_ALAMAT')) : 'Kosan Dakwah',
+    ],
+
 ];

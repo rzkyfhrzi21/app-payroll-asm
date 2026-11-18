@@ -1,3 +1,11 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN BILAH NAVIGASI BAWAH SUPIR):
+     - Tujuan Komponen: Navigasi bawah jempol (Bottom Navigation Bar) khusus di layar HP (Mobile),
+       memudahkan supir truk membuka menu dengan satu tangan saat di lapangan/rest area.
+     - Analogi Dunia Nyata: Seperti saklar cepat di stir mobil: tombol jempol untuk
+       Slip Gaji, Surat Jalan DO, Buku Kasbon, dan Profil Akun.
+     - Tampilan: Hanya muncul pada resolusi kecil (lg:hidden) dan tetap menempel di dasar layar.
+     ============================================================================== -->
 @php
     $items = [
         ['label' => 'Gaji', 'icon' => 'payments', 'route' => 'driver.dashboard', 'active' => request()->routeIs('driver.dashboard')],

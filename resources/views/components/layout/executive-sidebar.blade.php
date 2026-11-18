@@ -1,3 +1,16 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN SIDEBAR PIMPINAN / EKSEKUTIF):
+     - Tujuan Komponen: Navigasi samping (Sidebar) khusus Pimpinan / Direksi Logistik Batubara.
+       Fokus pada pengawasan tingkat tinggi (helicopter view), otorisasi, dan audit laba-rugi.
+     - Analogi Dunia Nyata: Seperti meja kerja Direktur Utama: ada tombol ACC persetujuan
+       gaji (hanya direktur yang boleh menyetujui pencairan uang perusahaan), laporan
+       laba kotor dan bersih, radar pantauan armada di jalan, serta cap stempel perusahaan.
+     - Struktur Menu Pimpinan:
+       * Menu Utama: Executive Dashboard (KPI ringkas omzet dan armada).
+       * Otorisasi & Payroll: Data Penggajian & ACC (eksklusif pimpinan), Laporan Finansial.
+       * Monitoring Operasional: Monitoring Pengantaran batubara & Kalender agenda.
+       * Pengaturan Perusahaan: Profil Perusahaan (kop surat, logo, rekening transfer).
+     ============================================================================== -->
 @php
     $menuGroups = [
         [

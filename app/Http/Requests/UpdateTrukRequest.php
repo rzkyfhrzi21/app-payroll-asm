@@ -5,13 +5,28 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PERUBAHAN DATA UNIT ARMADA TRUK
+ * ==============================================================================
+ * Kelas ini memeriksa saat Admin memperbarui data armada truk:
+ * 1. Nomor polisi boleh sama dengan dirinya sendiri (`ignore($truk->id)`).
+ * 2. Supir pemegang dapat diganti bila ada pergantian shift atau rotasi armada.
+ * ==============================================================================
+ */
 class UpdateTrukRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang boleh mengedit data unit armada.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
     }
 
+    /**
+     * Aturan validasi pembaruan unit truk.
+     */
     public function rules(): array
     {
         $truk = $this->route('truck');
@@ -20,13 +35,13 @@ class UpdateTrukRequest extends FormRequest
             'nomor_polisi' => [
                 'required', 'string', 'max:15',
                 'regex:/^[A-Z]{1,2}\s?[0-9]{1,4}\s?[A-Z]{0,3}$/',
-                Rule::unique('truk', 'nomor_polisi')->ignore($truk?->id),
+                Rule::unique('truk', 'nomor_polisi')->ignore($truk?->id), // Abaikan id truk sendiri
             ],
-            'merek_model' => ['required', 'string', 'max:100'],
-            'status' => ['required', 'in:aktif,nonaktif'],
-            'id_karyawan' => ['nullable', 'integer', 'exists:karyawan,id'],
-            'id_jenis_truk' => ['required', 'integer', 'exists:jenis_truk,id'],
-            'foto_unit' => ['nullable', 'file', 'max:2048'],
+            'merek_model' => ['required', 'string', 'max:100'],           // Merek kendaraan
+            'status' => ['required', 'in:aktif,nonaktif'],                // Status unit aktif/bengkel
+            'id_karyawan' => ['nullable', 'integer', 'exists:karyawan,id'],// Supir pemegang
+            'id_jenis_truk' => ['required', 'integer', 'exists:jenis_truk,id'],// Jenis armada
+            'foto_unit' => ['nullable', 'file', 'max:2048'],              // Foto armada
         ];
     }
 

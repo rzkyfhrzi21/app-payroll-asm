@@ -1,3 +1,12 @@
+<!-- ======================================================
+     KOMPONEN UI: DIAGRAM LINGKARAN DONAT NATIVE SVG (DONUT CHART)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Kue Pie / Donat Pembagian Porsi Armada Truk".
+     Dibuat murni menggunakan SVG native tanpa library JavaScript berat.
+     Menampilkan visualisasi porsi kategori armada batubara (misal: Tronton 60%,
+     Fuso 30%, Trailer 10%) dengan warna-warni kontras dan legenda interaktif.
+====================================================== -->
 @props([
     'items' => [],
     'total' => 0,

@@ -1,10 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MONITORING PENGANTARAN PIMPINAN):
+     - Tujuan Halaman: Radar pemantauan pengantaran armada batubara secara read-only untuk Pimpinan.
+     - Analogi Dunia Nyata: Seperti layar CCTV pengawas di ruang Direksi: Pimpinan dapat melihat
+       status surat jalan di lapangan (mana yang sedang jalan, mana yang sudah sampai timbangan),
+       tanpa memiliki tombol tambah/edit surat jalan (karena input data adalah tugas Admin HRD).
+     - Data dari Controller (Executive/TripMonitorController@index):
+       * $rows: Daftar surat jalan pengantaran batubara periode berjalan.
+       * $overview: Total trip, tonase tercapai vs target kontrak, dan omzet bruto angkutan.
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
-    $subtotalTonnage = collect($rows)->sum(fn ($row) => (float) str_replace(',', '.', $row['tonnage']));
+    $subtotalTonnage = (float) str_replace(',', '.', (string) ($summary['tonnage'] ?? '0'));
 @endphp
 
 <x-executive-layout title="Monitoring Pengantaran">
-    <div class="flex flex-col gap-5" x-data="executiveTrips(@js($rows), @js($summary), @js($overview))">
+    <div class="flex flex-col gap-5">
         <div class="flex flex-col justify-between gap-space-md lg:flex-row lg:items-center">
             <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2 font-sans text-label-sm text-slate-text-secondary">
@@ -40,7 +50,7 @@
             <div class="rounded-xl bg-card-bg p-space-lg shadow-card">
                 <span class="font-sans text-label-sm uppercase tracking-wider">Total Tonase</span>
                 <div class="font-display text-financial-total font-bold text-slate-text-primary">{{ $overview['tonnage'] }} <span class="font-sans text-label-md font-normal text-slate-text-secondary">Ton</span></div>
-                <span class="font-sans text-body-sm text-slate-text-secondary">{{ $overview['target_pct'] }} dari target kontrak</span>
+                <span class="font-sans text-body-sm text-slate-text-secondary">Akumulasi timbangan periode {{ $period['code'] }}</span>
             </div>
             <div class="rounded-xl bg-card-bg p-space-lg shadow-card">
                 <span class="font-sans text-label-sm uppercase tracking-wider">Nilai Angkutan</span>
@@ -50,11 +60,21 @@
             <div class="rounded-xl bg-card-bg p-space-lg shadow-card">
                 <span class="font-sans text-label-sm uppercase tracking-wider">Uang Jalan Cair</span>
                 <div class="font-display text-financial-total font-bold tabular-nums text-net-pay-emerald">{{ $rp($summary['trip_money']) }}</div>
-                <span class="font-sans text-body-sm text-slate-text-secondary">{{ count($rows) }} surat jalan pada periode ini</span>
+                <span class="font-sans text-body-sm text-slate-text-secondary">{{ $jumlahSeluruhBaris }} surat jalan pada periode ini</span>
             </div>
         </div>
         {{-- Bar Chart Harian Pengantaran & Tonase (Native SVG) --}}
-        @php
+        <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MONITORING PENGANTARAN PIMPINAN):
+     - Tujuan Halaman: Radar pemantauan pengantaran armada batubara secara read-only untuk Pimpinan.
+     - Analogi Dunia Nyata: Seperti layar CCTV pengawas di ruang Direksi: Pimpinan dapat melihat
+       status surat jalan di lapangan (mana yang sedang jalan, mana yang sudah sampai timbangan),
+       tanpa memiliki tombol tambah/edit surat jalan (karena input data adalah tugas Admin HRD).
+     - Data dari Controller (Executive/TripMonitorController@index):
+       * $rows: Daftar surat jalan pengantaran batubara periode berjalan.
+       * $overview: Total trip, tonase tercapai vs target kontrak, dan omzet bruto angkutan.
+     ============================================================================== -->
+@php
             $daftarGrafik = $rekapHarian ?? [];
             $jumlahHari = count($daftarGrafik);
             $maxTonase = max(1, (float) collect($daftarGrafik)->max('total_tonase'));
@@ -110,7 +130,17 @@
                     >
                         {{-- Garis Panduan Grid Horizontal --}}
                         @for ($i = 0; $i <= 4; $i++)
-                            @php
+                            <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MONITORING PENGANTARAN PIMPINAN):
+     - Tujuan Halaman: Radar pemantauan pengantaran armada batubara secara read-only untuk Pimpinan.
+     - Analogi Dunia Nyata: Seperti layar CCTV pengawas di ruang Direksi: Pimpinan dapat melihat
+       status surat jalan di lapangan (mana yang sedang jalan, mana yang sudah sampai timbangan),
+       tanpa memiliki tombol tambah/edit surat jalan (karena input data adalah tugas Admin HRD).
+     - Data dari Controller (Executive/TripMonitorController@index):
+       * $rows: Daftar surat jalan pengantaran batubara periode berjalan.
+       * $overview: Total trip, tonase tercapai vs target kontrak, dan omzet bruto angkutan.
+     ============================================================================== -->
+@php
                                 $yGrid = $marginAtas + ($tinggiPlot * (1 - $i / 4));
                                 $nilaiGridTon = round($maxTonase * ($i / 4));
                             @endphp
@@ -120,7 +150,17 @@
 
                         {{-- Bar Harian --}}
                         @foreach ($daftarGrafik as $idx => $item)
-                            @php
+                            <!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN MONITORING PENGANTARAN PIMPINAN):
+     - Tujuan Halaman: Radar pemantauan pengantaran armada batubara secara read-only untuk Pimpinan.
+     - Analogi Dunia Nyata: Seperti layar CCTV pengawas di ruang Direksi: Pimpinan dapat melihat
+       status surat jalan di lapangan (mana yang sedang jalan, mana yang sudah sampai timbangan),
+       tanpa memiliki tombol tambah/edit surat jalan (karena input data adalah tugas Admin HRD).
+     - Data dari Controller (Executive/TripMonitorController@index):
+       * $rows: Daftar surat jalan pengantaran batubara periode berjalan.
+       * $overview: Total trip, tonase tercapai vs target kontrak, dan omzet bruto angkutan.
+     ============================================================================== -->
+@php
                                 $xPusat = 40 + ($idx * $lebarSlot) + ($lebarSlot / 2);
                                 $tinggiBarTon = max(4, ($item['total_tonase'] / $maxTonase) * $tinggiPlot);
                                 $yBarTon = $marginAtas + $tinggiPlot - $tinggiBarTon;
@@ -173,53 +213,60 @@
         </div>
 
         {{-- Filter --}}
-        <form method="GET" action="{{ route('executive.trips') }}" data-filter-server class="flex flex-col items-stretch justify-between gap-space-md rounded-xl bg-card-bg p-space-md shadow-card lg:flex-row lg:items-end">
-            <input type="hidden" name="periode" value="{{ $period['code'] }}">
+        <div data-wadah-tabel="ritase" class="flex flex-col items-stretch justify-between gap-space-md rounded-xl bg-card-bg p-space-md shadow-card lg:flex-row lg:items-end">
             <div class="flex flex-1 flex-col gap-space-md sm:flex-row sm:flex-wrap">
-                <div class="flex min-w-[11rem] flex-col">
-                    <label for="filter_tanggal_dari" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Tanggal Dari</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">event</span>
-                        <input
-                            type="date"
-                            id="filter_tanggal_dari"
-                            name="tanggal_dari"
-                            value="{{ $tanggalDari }}"
-                            data-filter-submit
-                            class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
-                        >
-                    </div>
-                </div>
+                {{-- Rentang tanggal mengganti konteks halaman (grafik harian ikut berubah),
+                     jadi dikirim sebagai navigasi GET, bukan filter AJAX tabel. --}}
+                <form method="GET" action="{{ route('executive.trips') }}" data-filter-server class="flex flex-col gap-space-md sm:flex-row">
+                    <input type="hidden" name="periode" value="{{ $period['code'] }}">
 
-                <div class="flex min-w-[11rem] flex-col">
-                    <label for="filter_tanggal_sampai" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Tanggal Sampai</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">event_available</span>
-                        <input
-                            type="date"
-                            id="filter_tanggal_sampai"
-                            name="tanggal_sampai"
-                            value="{{ $tanggalSampai }}"
-                            data-filter-submit
-                            class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
-                        >
+                    <div class="flex min-w-[11rem] flex-col">
+                        <label for="filter_tanggal_dari" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Tanggal Dari</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">event</span>
+                            <input
+                                type="date"
+                                id="filter_tanggal_dari"
+                                name="tanggal_dari"
+                                value="{{ $tanggalDari }}"
+                                data-filter-submit
+                                data-no-tabel-ajax
+                                class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                            >
+                        </div>
                     </div>
-                </div>
+
+                    <div class="flex min-w-[11rem] flex-col">
+                        <label for="filter_tanggal_sampai" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Tanggal Sampai</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">event_available</span>
+                            <input
+                                type="date"
+                                id="filter_tanggal_sampai"
+                                name="tanggal_sampai"
+                                value="{{ $tanggalSampai }}"
+                                data-filter-submit
+                                data-no-tabel-ajax
+                                class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active"
+                            >
+                        </div>
+                    </div>
+                </form>
 
                 <div class="flex min-w-[13.75rem] flex-col">
                     <label for="filter_supir" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Filter Supir</label>
-                    <select id="filter_supir" x-model="driver" class="h-10 w-full rounded-lg bg-surface-container-low px-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
-                        <option value="all">Semua Supir ({{ count($rows) }})</option>
-                        @foreach (collect($rows)->pluck('driver')->unique()->sort()->values() as $name)
-                            <option value="{{ $name }}">{{ $name }}</option>
+                    <select id="filter_supir" name="supir" class="h-10 w-full rounded-lg bg-surface-container-low px-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <option value="all">Semua Supir ({{ $jumlahSeluruhBaris }})</option>
+                        @foreach ($pilihanSupir as $nipSupir => $namaSupir)
+                            <option value="{{ $nipSupir }}">{{ $namaSupir }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="flex min-w-[13.75rem] flex-col">
                     <label for="filter_rute" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Filter Rute</label>
-                    <select id="filter_rute" x-model="route" class="h-10 w-full rounded-lg bg-surface-container-low px-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                    <select id="filter_rute" name="rute" class="h-10 w-full rounded-lg bg-surface-container-low px-3 font-sans text-body-sm text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                         <option value="all">Semua Rute</option>
-                        @foreach (collect($rows)->pluck('route')->unique()->sort()->values() as $kodeRute)
+                        @foreach ($pilihanRute as $kodeRute)
                             <option value="{{ $kodeRute }}">{{ $kodeRute }}</option>
                         @endforeach
                     </select>
@@ -228,24 +275,32 @@
                     <label for="filter_cari" class="mb-1 font-sans text-label-sm uppercase tracking-wider">Cari Surat Jalan</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">search</span>
-                        <input type="text" id="filter_cari" x-model="search" class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active" placeholder="SJ-MIP-09821">
+                        <input type="text" id="filter_cari" name="cari" class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active" placeholder="SJ-MIP-09821">
                     </div>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
                 @if ($modeRentangTanggal)
-                    <a href="{{ route('executive.trips', ['periode' => $period['code']]) }}" class="inline-flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
-                        <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                    <a
+                        href="{{ route('executive.trips', ['periode' => $period['code']]) }}"
+                        class="inline-flex h-10 items-center gap-1.5 rounded-lg border border-banner-indigo/30 bg-banner-indigo/10 px-3 font-sans text-body-sm font-semibold text-banner-indigo transition-colors hover:bg-banner-indigo/20"
+                    >
+                        <span class="material-symbols-outlined text-[1rem]">event_busy</span>
                         Reset Tanggal
                     </a>
                 @endif
-                <button type="submit" class="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary-container px-4 font-sans text-body-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary">
-                    <span class="material-symbols-outlined text-[1.125rem]">filter_alt</span>
-                    Terapkan
+                <button
+                    type="button"
+                    data-tombol-reset-filter
+                    onclick="window.resetTabelAjax('ritase')"
+                    class="hidden inline-flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
+                >
+                    <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                    Reset Filter
                 </button>
             </div>
-        </form>
+        </div>
 
         @if ($modeRentangTanggal)
             <div class="flex items-start gap-2 rounded-xl border border-banner-indigo/20 bg-banner-indigo/5 px-4 py-3">
@@ -277,63 +332,44 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-surface-container-low font-financial-table">
-                        @forelse ($rows as $row)
-                            <tr
-                                class="transition-colors hover:bg-surface-container-low/70"
-                                x-show="rowVisible(@js($row['driver']), @js($row['sj']), @js($row['route']))"
-                            >
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-semibold">{{ $row['date'] }}</span>
-                                        <span class="font-sans text-label-sm">{{ $row['sj'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold">{{ $row['driver'] }}</span>
-                                        <span class="font-sans text-label-sm">{{ $row['plate'] }} &bull; {{ $row['truck'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-3 text-center">
-                                    <span class="inline-block rounded bg-surface-container-high px-2 py-0.5 font-sans text-label-sm font-bold text-banner-deep">{{ $row['material'] }}</span>
-                                </td>
-                                <td class="px-3 py-3 text-center font-bold">{{ $row['rit'] }} Rit</td>
-                                <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ $row['tonnage'] }} Ton</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $rp($row['rate']) }}</td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-primary">{{ $rp($row['total']) }}</td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-net-pay-emerald">{{ $rp($row['trip_money']) }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-block rounded bg-primary-fixed px-2 py-0.5 font-sans text-label-sm font-semibold text-on-primary-fixed">{{ $row['route'] }}</span>
-                                </td>
-                            </tr>
-                        @empty
+                    <tbody id="tbodyPemantauan" class="divide-y divide-surface-container-low font-financial-table">
+                        @foreach (collect($rows)->take(50) as $indeksBaris => $row)
+                            @include('components.tabel-baris.ritase-pimpinan', ['baris' => $row, 'nomor' => $indeksBaris + 1])
+                        @endforeach
+
+                        @if (count($rows) === 0)
                             <tr>
                                 <td colspan="9" class="px-4 py-10 text-center font-sans text-body-sm text-slate-text-muted">
                                     Belum ada surat jalan pada periode {{ $period['code'] }}.
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
 
                     <tfoot>
                         <tr class="bg-surface-container font-display text-headline-sm text-slate-text-primary">
-                            <td class="px-4 py-3.5 font-bold" colspan="3">Subtotal {{ count($rows) }} Rit Ditampilkan</td>
-                            <td class="px-3 py-3.5 text-center font-bold">{{ collect($rows)->sum('rit') }} Rit</td>
+                            <td class="px-4 py-3.5 font-bold" colspan="3">Akumulasi {{ $jumlahSeluruhBaris }} Baris</td>
+                            <td class="px-3 py-3.5 text-center font-bold">{{ $summary['rit'] }} Rit</td>
                             <td class="px-4 py-3.5 text-right font-bold tabular-nums text-primary">{{ number_format($subtotalTonnage, 2, ',', '.') }} Ton</td>
                             <td class="px-4 py-3.5 text-right font-sans text-label-sm font-normal text-slate-text-secondary">-</td>
-                            <td class="px-4 py-3.5 text-right font-bold tabular-nums text-primary">{{ $rp(collect($rows)->sum('total')) }}</td>
-                            <td class="px-4 py-3.5 text-right font-bold tabular-nums text-net-pay-emerald">{{ $rp(collect($rows)->sum('trip_money')) }}</td>
+                            <td class="px-4 py-3.5 text-right font-bold tabular-nums text-primary">{{ $rp($summary['haulage']) }}</td>
+                            <td class="px-4 py-3.5 text-right font-bold tabular-nums text-net-pay-emerald">{{ $rp($summary['trip_money']) }}</td>
                             <td class="px-4 py-3.5 text-center font-sans text-label-sm font-normal text-slate-text-secondary">Akumulasi</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
 
+            <x-ui.tabel-ajax
+                entitas="ritase"
+                label="ritase"
+                target-id="tbodyPemantauan"
+                :kolom="9"
+                :filter="['periode' => $period['code'], 'tanggal_dari' => $tanggalDari, 'tanggal_sampai' => $tanggalSampai, 'lintas_periode' => $modeRentangTanggal]"
+                :per-halaman-awal="50"
+            />
+
             <div class="flex flex-col items-center justify-between gap-2 bg-surface-container-low px-space-md py-3 sm:flex-row">
-                <span class="font-sans text-body-sm text-slate-text-secondary">
-                    Menampilkan <strong class="text-slate-text-primary">{{ count($rows) }}</strong> dari <strong class="text-slate-text-primary">{{ $summary['rit'] }}</strong> ritase pada periode {{ $period['code'] }}
-                </span>
                 <a
                     href="{{ route('executive.reports.index', ['periode' => $period['code']]) }}"
                     class="flex items-center gap-1 font-sans text-body-sm font-semibold text-banner-indigo hover:underline"

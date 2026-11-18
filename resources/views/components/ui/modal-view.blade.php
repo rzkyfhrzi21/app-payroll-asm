@@ -1,3 +1,12 @@
+<!-- ======================================================
+     KOMPONEN UI: MODAL DETAIL DATA BACA-SAJA (MODAL VIEW READ-ONLY)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Map Berkas Detail Data Pegawai / Truk".
+     Saat admin atau supir mengklik tombol ikon mata (Detail),
+     jendela ini menampilkan seluruh informasi lengkap data baris per baris
+     secara rapi dan hanya bisa dibaca (read-only tanpa risiko teredit).
+====================================================== -->
 @props([
     'name',
     'title',

@@ -293,8 +293,6 @@ class DemoData
             'margin_pct' => '42.0%',
             'net_pay' => 31291581,
             'drivers' => 35,
-            'target' => 6500,
-            'target_pct' => '93.8%',
             'pending_acc' => 4,
             'audit_ready' => 31,
         ];

@@ -1,4 +1,12 @@
-{{-- Modal Lightbox Media Preview Full-Screen (BRIEF Bab 3.1) --}}
+<!-- ======================================================
+     KOMPONEN UI: PENINJAU FOTO LAYAR PENUH (FULLSCREEN LIGHTBOX)
+     
+     Analogi Sederhana:
+     Komponen ini ibarat "Kaca Pembesar / Proyektor Foto Layar Lebar".
+     Saat admin atau supir mengklik gambar thumbnail surat jalan atau nota belanja,
+     foto tersebut akan diperbesar memenuhi layar dengan latar gelap, lengkap dengan
+     tombol geser kiri/kanan jika surat jalan memiliki banyak lembaran foto.
+====================================================== -->
 <div
     x-data="lightboxPreviewManager()"
     x-show="terbuka"

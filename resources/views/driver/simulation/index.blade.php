@@ -1,3 +1,20 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN KALKULATOR & SIMULASI GAJI SUPIR):
+     - Tujuan Halaman: Kalkulator interaktif bagi supir truk batubara untuk menghitung perkiraan
+       gaji bersih (take-home pay) berdasarkan target ritase yang ingin ditempuh (1 s.d. 31 rit).
+     - Analogi Dunia Nyata: Seperti supir yang sedang menghitung di warung kopi rest area:
+       "Kalau bulan ini saya bisa tembus 15 rit rute Tambang-Dermaga, muatan rata-rata 29 ton,
+       setelah dipotong cicilan kasbon dan bon servis ban, kira-kira berapa uang bersih yang saya bawa pulang?".
+     - Rumus Penggajian 4 Tahap yang Disimulasikan:
+       1. Total Angkutan Kotor = sum(Tonase x Tarif per Ton).
+       2. Hasil Bersih Armada = max(0, Total Angkutan Kotor - Total Uang Jalan - Biaya Sparepart).
+       3. Komisi Supir = Hasil Bersih Armada x 10%.
+       4. Gaji Bersih = max(0, Komisi + Total Tunjangan - Potongan BPJS - Potongan Kasbon).
+     - Data dari Controller (Driver/SalarySimulationController@index):
+       * $daftarRute: Master rute aktif beserta tarif per ton dan uang jalan default.
+       * $ritaseRiil: Data surat jalan supir yang sudah terverifikasi bulan berjalan.
+       * $dataRiil: Angka riil potongan kasbon, BPJS, dan biaya sparepart supir.
+     ============================================================================== -->
 @php
     $profilSupir = $profile ?? [];
 @endphp
@@ -537,9 +554,19 @@
         @endif
     </div>
 
+    <!-- ==============================================================================
+         KOMENTAR ORANG TUA (LOGIKA ALUR SCRIPT KALKULATOR GAJI SUPIR):
+         Fungsi Alpine.js ini bekerja dengan alur bertahap:
+         (1) Inisialisasi: Mengambil data rute dan potongan riil dari database.
+         (2) Manajemen Baris: Supir dapat menambah, menyalin dari riil, menduplikat, atau menghapus baris (maks 31).
+         (3) Sinkronisasi Rute: Saat rute dipilih, tarif dan uang jalan langsung terisi otomatis.
+         (4) Rumus 4 Tahap: Menghitung Angkutan Kotor -> Bersih Armada -> Komisi 10% -> Gaji Bersih.
+         (5) Pengiriman Form: Menyiapkan hidden input ke form POST saat supir menekan tombol simpan.
+         ============================================================================== -->
     <script>
     window.simulasiGajiSupir = function(konfigurasi) {
         return {
+            // (1) Inisialisasi data awal dari Controller
             daftarRute: konfigurasi.daftarRute || [],
             ritaseRiil: konfigurasi.ritaseRiil || [],
             dataRiil: konfigurasi.dataRiil || {},
@@ -555,12 +582,13 @@
             namaSimulasi: 'SIMULASI TARGET RITASE',
 
             init() {
+                // (1.1) Isi nilai awal potongan dari data riil berjalan
                 this.biayaSparepartInput = Number(this.dataRiil.sparepart || 0);
                 this.potonganKasbonInput = Number(this.dataRiil.kasbon || 0);
                 this.potonganBpjsInput = Number(this.dataRiil.bpjs || 0);
                 this.totalTunjanganInput = Number(this.dataRiil.tunjangan || 0);
 
-                // Coba muat dari ritase riil terlebih dahulu jika ada, atau buat 1 baris awal
+                // (1.2) Jika ada surat jalan riil bulan ini, salin otomatis; bila kosong, buat 1 baris kosong
                 if (this.ritaseRiil && this.ritaseRiil.length > 0) {
                     this.salinDariRiil();
                 } else {
@@ -568,6 +596,7 @@
                 }
             },
 
+            // (1.3) Beralih antara mode potongan riil dan mode kustom
             gantiMode(mode) {
                 this.modePotongan = mode;
                 if (mode === 'riil') {
@@ -577,6 +606,7 @@
                 }
             },
 
+            // (2.1) Tambah 1 baris surat jalan baru (maksimal 31 baris sesuai hari dalam sebulan)
             tambahBaris() {
                 if (this.suratJalan.length >= 31) return;
 
@@ -592,11 +622,13 @@
                 });
             },
 
+            // (2.2) Hapus 1 baris surat jalan
             hapusBaris(index) {
                 if (this.suratJalan.length <= 1) return;
                 this.suratJalan.splice(index, 1);
             },
 
+            // (2.3) Duplikat baris yang ada untuk mempercepat input target harian
             duplikatBaris(index) {
                 if (this.suratJalan.length >= 31) return;
                 const sumber = this.suratJalan[index];
@@ -611,11 +643,13 @@
                 });
             },
 
+            // (2.4) Bersihkan seluruh baris dan kembalikan ke 1 baris kosong
             resetBaris() {
                 this.suratJalan = [];
                 this.tambahBaris();
             },
 
+            // (2.5) Salin seluruh riwayat surat jalan riil yang sudah terverifikasi bulan ini
             salinDariRiil() {
                 if (!this.ritaseRiil || this.ritaseRiil.length === 0) return;
                 this.suratJalan = this.ritaseRiil.slice(0, 31).map((r, i) => ({
@@ -629,6 +663,7 @@
                 }));
             },
 
+            // (3) Sinkronisasi Rute: Pasang tarif dan uang jalan standar sesuai rute yang dipilih
             pilihRute(index, ruteId) {
                 const rute = this.daftarRute.find(r => String(r.id) === String(ruteId));
                 if (rute) {
@@ -643,6 +678,7 @@
                 return this.daftarRute.find(r => String(r.id) === String(ruteId)) || null;
             },
 
+            // (3.2) Muat arsip simulasi yang pernah disimpan sebelumnya di database
             muatSimulasiDariDatabase(dataSj, mode, sparepart, bpjs, kasbon, tunjangan, judul) {
                 if (Array.isArray(dataSj) && dataSj.length > 0) {
                     this.suratJalan = dataSj.map((s, i) => ({
@@ -665,7 +701,7 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             },
 
-            // Kalkulasi Getters
+            // (4) RUMUS 4 TAHAP KALKULASI GAJI (Sesuai AGENTS.md Bab 3.8)
             get totalRit() {
                 return this.suratJalan.length;
             },
@@ -674,6 +710,7 @@
                 return this.suratJalan.reduce((acc, b) => acc + (Number(b.tonase_ton) || 0), 0);
             },
 
+            // (4.1) Tahap 1: Total Angkutan Kotor (Tonase x Tarif per Ton)
             get totalAngkutanKotor() {
                 return this.suratJalan.reduce((acc, b) => {
                     const ton = Number(b.tonase_ton) || 0;
@@ -692,12 +729,13 @@
                     : Number(this.biayaSparepartInput || 0);
             },
 
+            // (4.2) Tahap 2: Hasil Bersih Armada (Angkutan Kotor - Uang Jalan - Biaya Sparepart)
             get hasilBersihArmada() {
                 return Math.max(0, this.totalAngkutanKotor - this.totalUangJalan - this.biayaSparepart);
             },
 
+            // (4.3) Tahap 3: Komisi Supir (10% dari Hasil Bersih Armada)
             get komisiSupir() {
-                // Skema 10% (1000 bp / 10000)
                 return Math.round(this.hasilBersihArmada * 0.10);
             },
 
@@ -717,6 +755,7 @@
                 return Number(this.totalTunjanganInput || 0);
             },
 
+            // (4.4) Tahap 4: Gaji Bersih Final (Take Home Pay)
             get gajiBersih() {
                 return Math.max(0, this.komisiSupir + this.totalTunjanganFinal - this.potonganBpjs - this.potonganKasbon);
             },
@@ -731,6 +770,7 @@
                 return angka.toLocaleString('id-ID', { minimumFractionDigits: desimal, maximumFractionDigits: desimal });
             },
 
+            // (5) Persiapan data sebelum submit form simpan skenario simulasi
             siapkanDataSebelumSimpan(form) {
                 const wadah = this.$refs.wadahInputSuratJalan;
                 wadah.innerHTML = '';

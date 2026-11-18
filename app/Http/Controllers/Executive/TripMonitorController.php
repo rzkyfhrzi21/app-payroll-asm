@@ -7,8 +7,29 @@ use App\Services\PayrollDataService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: MONITORING PERJALANAN RITASE EKSEKUTIF (TRIP MONITOR CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Layar Radar Pengawasan Truk Lapangan di Meja Direktur".
+ * Di sini pimpinan dapat melihat rekapitulasi harian pergerakan armada:
+ * tanggal berapa saja pengiriman batubara paling padat, berapa tonase yang terangkut
+ * per hari, dan siapa saja supir tangguh yang sedang bertugas di lapangan.
+ * ============================================================================
+ */
 class TripMonitorController extends Controller
 {
+    /**
+     * Menampilkan Dasbor Monitor Ritase Lapangan
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Tentukan periode aktif atau rentang tanggal kustom yang ingin dipantau.
+     * (2) Ambil baris surat jalan ritase yang terjadi pada rentang tersebut.
+     * (3) Kelompokkan data per tanggal untuk membentuk grafik statistik harian.
+     * (4) Buka tampilan antarmuka 'executive.trips'.
+     */
     public function index(Request $permintaan, PayrollDataService $layananDataPayroll): View
     {
         $kodePeriode = $permintaan->query('periode');
@@ -37,10 +58,10 @@ class TripMonitorController extends Controller
                 $tglObj = \Illuminate\Support\Carbon::parse($iso);
 
                 return [
-                    'iso' => $iso,
-                    'label' => $tglObj->format('d M'),
-                    'hari' => $tglObj->format('d'),
-                    'total_rit' => $totalRit,
+                    'iso'          => $iso,
+                    'label'        => $tglObj->format('d M'),
+                    'hari'         => $tglObj->format('d'),
+                    'total_rit'    => $totalRit,
                     'total_tonase' => $totalTonase,
                     'jumlah_supir' => count($daftarSupir),
                     'daftar_supir' => $daftarSupir,
@@ -53,7 +74,15 @@ class TripMonitorController extends Controller
             'period' => $layananDataPayroll->formatPeriode($periode),
             'periodeModel' => $periode,
             'summary' => $layananDataPayroll->ringkasanRitase($barisRitase),
-            'rows' => $barisRitase,
+            // Hanya baris awal yang dikirim ke Blade; sisanya dimuat via AJAX.
+            'rows' => array_slice($barisRitase, 0, 50),
+            'jumlahSeluruhBaris' => count($barisRitase),
+            // Opsi filter diambil dari SELURUH baris, bukan hanya 50 baris awal.
+            'pilihanSupir' => collect($barisRitase)
+                ->mapWithKeys(fn (array $baris) => [($baris['nip'] ?? '—') => ($baris['driver'] ?? '—')])
+                ->sort()
+                ->all(),
+            'pilihanRute' => collect($barisRitase)->pluck('route')->filter()->unique()->sort()->values()->all(),
             'rekapHarian' => $rekapHarian,
             'overview' => $layananDataPayroll->ringkasanEksekutif($periode),
             'tanggalDari' => $tanggalDari,

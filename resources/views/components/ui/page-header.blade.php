@@ -1,3 +1,15 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN HEADER HALAMAN):
+     - Tujuan Komponen: Menampilkan kop judul halaman di bagian atas setiap modul/menu sistem.
+     - Analogi Dunia Nyata: Seperti papan plang nama ruangan kantor di depan pintu (misal:
+       "Ruang Operasional Pengantaran" atau "Ruang Penggajian Supir").
+     - Data dari Controller / Props:
+       * $title: Judul utama halaman (misal: "Penggajian Supir", "Unit Armada Truk").
+       * $subtitle: Keterangan singkat atau panduan operasional satu kalimat.
+       * $badge: Label lencana status/peran kecil di samping judul.
+       * $breadcrumb: Jejak navigasi rute halaman (Dashboard > Menu).
+       * $slot: Tempat tombol-tombol aksi utama (misal: Tambah Data, Ekspor, Filter).
+     ============================================================================== -->
 @props([
     'title',
     'subtitle' => null,

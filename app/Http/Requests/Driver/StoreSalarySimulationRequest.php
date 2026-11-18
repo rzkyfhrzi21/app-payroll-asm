@@ -4,31 +4,47 @@ namespace App\Http\Requests\Driver;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PENYIMPANAN SKENARIO SIMULASI GAJI SUPIR
+ * ==============================================================================
+ * Kelas ini memeriksa data saat supir menyimpan skenario target ritase ke database:
+ * 1. Hanya pengguna bertipe Supir (`isSupir() === true`) yang berhak memanggil endpoint ini.
+ * 2. Baris surat jalan simulasi dibatasi antara 1 sampai 31 pengantaran (sesuai hari dalam sebulan).
+ * 3. Tonase per surat jalan harus masuk akal (0.01 ton hingga 100 ton per baris).
+ * ==============================================================================
+ */
 class StoreSalarySimulationRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya supir yang boleh menyimpan simulasi gaji miliknya.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isSupir() === true;
     }
 
+    /**
+     * Aturan validasi penyimpanan skenario simulasi gaji.
+     */
     public function rules(): array
     {
         return [
-            'nama_simulasi' => ['required', 'string', 'max:150'],
-            'id_periode_gaji' => ['nullable', 'integer', 'exists:periode_gaji,id'],
-            'mode_potongan' => ['required', 'string', 'in:riil,manual'],
-            'surat_jalan' => ['required', 'array', 'min:1', 'max:31'],
-            'surat_jalan.*.rute_id' => ['nullable', 'integer', 'exists:rute,id'],
-            'surat_jalan.*.nama_rute' => ['required', 'string', 'max:150'],
-            'surat_jalan.*.tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],
-            'surat_jalan.*.tarif_per_ton' => ['required', 'integer', 'min:0'],
-            'surat_jalan.*.uang_jalan' => ['required', 'integer', 'min:0'],
-            'biaya_sparepart' => ['nullable', 'integer', 'min:0'],
-            'potongan_bpjs' => ['nullable', 'integer', 'min:0'],
-            'potongan_kasbon' => ['nullable', 'integer', 'min:0'],
-            'total_tunjangan' => ['nullable', 'integer', 'min:0'],
-            'potongan_lain' => ['nullable', 'integer', 'min:0'],
-            'catatan' => ['nullable', 'string', 'max:500'],
+            'nama_simulasi' => ['required', 'string', 'max:150'],                                      // Judul simulasi target supir
+            'id_periode_gaji' => ['nullable', 'integer', 'exists:periode_gaji,id'],                     // Periode rujukan
+            'mode_potongan' => ['required', 'string', 'in:riil,manual'],                               // Mode potongan kasbon/bpjs
+            'surat_jalan' => ['required', 'array', 'min:1', 'max:31'],                                  // Minimal 1, maksimal 31 rit
+            'surat_jalan.*.rute_id' => ['nullable', 'integer', 'exists:rute,id'],                      // ID rute master
+            'surat_jalan.*.nama_rute' => ['required', 'string', 'max:150'],                             // Nama rute
+            'surat_jalan.*.tonase_ton' => ['required', 'numeric', 'min:0.01', 'max:100'],               // Tonase (Ton)
+            'surat_jalan.*.tarif_per_ton' => ['required', 'integer', 'min:0'],                          // Tarif angkut
+            'surat_jalan.*.uang_jalan' => ['required', 'integer', 'min:0'],                             // Uang saku jalan
+            'biaya_sparepart' => ['nullable', 'integer', 'min:0'],                                      // Potongan sparepart
+            'potongan_bpjs' => ['nullable', 'integer', 'min:0'],                                        // Potongan BPJS
+            'potongan_kasbon' => ['nullable', 'integer', 'min:0'],                                      // Potongan kasbon
+            'total_tunjangan' => ['nullable', 'integer', 'min:0'],                                      // Tunjangan bonus
+            'potongan_lain' => ['nullable', 'integer', 'min:0'],                                        // Potongan lain-lain
+            'catatan' => ['nullable', 'string', 'max:500'],                                             // Catatan pribadi supir
         ];
     }
 

@@ -20,34 +20,58 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
+/**
+ * ============================================================================
+ * CONTROLLER: KEUANGAN KARYAWAN & KASBON (EMPLOYEE FINANCE & LOAN CONTROLLER)
+ * ============================================================================
+ * 
+ * Analogi Sederhana:
+ * File ini ibarat "Loket Pinjaman Uang Muka (Kasbon) & Administrasi Iuran BPJS".
+ * Di loket inilah admin mencatat permohonan supir yang ingin meminjam uang muka,
+ * membuatkan jadwal kartu cicilan potong gaji per bulannya, serta memperbarui
+ * nilai potongan iuran BPJS Ketenagakerjaan/Kesehatan supir.
+ * 
+ * Ketentuan Ketat Kasbon:
+ * 1. Batas Maksimal Pinjaman : Rp 1.000.000 per pengajuan.
+ * 2. Batas Tenor Cicilan     : Maksimal 3 kali potong gaji.
+ * 3. Pembagian Cicilan       : Dibagi rata, sisa pembulatan rupiah ditaruh di cicilan terakhir.
+ * ============================================================================
+ */
 class EmployeeFinanceController extends Controller
 {
+    // Menggunakan trait paginasi tabel dan standar notifikasi toast
     use MengaturPaginasiTabel, ResponInteraksiStandar;
 
     /**
-     * Halaman Kasbon & Potongan.
+     * Menampilkan Halaman Kelola Kasbon & Potongan Supir
+     * 
+     * Alur Kerja Bernomor:
+     * (1) Dapatkan periode bulan penggajian aktif.
+     * (2) Tangkap filter pencarian nama supir, status pinjaman, dan rentang tanggal.
+     * (3) Ambil daftar transaksi kasbon terpaginasi beserta jadwal cicilannya.
+     * (4) Buka tampilan antarmuka 'admin.operational.loans.index'.
      */
     public function index(Request $request, PayrollDataService $layananDataPayroll): View
     {
         $periodeAktif = $layananDataPayroll->ambilPeriodeTerbaru();
         $perHalaman = $this->ambilJumlahBarisPerHalaman($request);
         $filter = [
-            'cari' => $this->ambilKataKunciPencarian($request),
-            'supir' => $this->ambilFilterTeks($request, 'supir'),
-            'status' => $this->ambilFilterTeks($request, 'status'),
-            'tanggal_dari' => $this->ambilFilterTanggal($request, 'tanggal_dari'),
-            'tanggal_sampai' => $this->ambilFilterTanggal($request, 'tanggal_sampai'),
+            'cari'            => $this->ambilKataKunciPencarian($request),
+            'supir'           => $this->ambilFilterTeks($request, 'supir'),
+            'status'          => $this->ambilFilterTeks($request, 'status'),
+            'tanggal_dari'    => $this->ambilFilterTanggal($request, 'tanggal_dari'),
+            'tanggal_sampai'  => $this->ambilFilterTanggal($request, 'tanggal_sampai'),
         ];
 
         return view('admin.operational.loans.index', [
-            'rows' => $layananDataPayroll->daftarKasbonTerpaginasi($filter, $perHalaman),
-            'summary' => $layananDataPayroll->ringkasanKasbon($layananDataPayroll->daftarKasbon()),
-            'period' => $layananDataPayroll->formatPeriode($periodeAktif),
-            'drivers' => $layananDataPayroll->daftarSupirAktif(),
+            'rows'                => $layananDataPayroll->daftarKasbonTerpaginasi($filter, $perHalaman),
+            'summary'             => $layananDataPayroll->ringkasanKasbon($layananDataPayroll->daftarKasbon()),
+            'period'              => $layananDataPayroll->formatPeriode($periodeAktif),
+            'drivers'             => $layananDataPayroll->daftarSupirAktif(),
             'daftarKomponenSupir' => $layananDataPayroll->dataKomisiDanPotongan(),
-            'periodeOptions' => $layananDataPayroll->daftarOpsiPeriode(),
-            'periodeAktifId' => $periodeAktif?->id,
-            'trucks' => $layananDataPayroll->pilihanTrukBiaya(),
+            'periodeOptions'      => $layananDataPayroll->daftarOpsiPeriode(),
+            'periodeAktifId'      => $periodeAktif?->id,
+            'trucks'              => $layananDataPayroll->pilihanTrukBiaya(),
             'kategoriOptions' => BiayaOperasional::daftarKategori(),
             'statusOptionsBiaya' => BiayaOperasional::daftarStatus(),
             'pilihanSupirKasbon' => $layananDataPayroll->pilihanSupirKasbon(),

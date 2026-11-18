@@ -1,3 +1,19 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN NOTIFIKASI TOAST):
+     - Tujuan Komponen: Menampilkan tumpukan notifikasi mengambang (Toast Stack) di pojok
+       kanan atas layar (fixed top-4 right-4 z-[95]) untuk memberitahu hasil aksi pengguna.
+     - Analogi Dunia Nyata: Seperti papan pengumuman/lampu strobo di pos gerbang tambang:
+       * Lampu Hijau: Menandakan proses lancar (simpan data, verifikasi), otomatis hilang
+         dalam 2 detik dengan progress slider bar (pause saat kursor diarahkan ke sana).
+       * Lampu Merah: Peringatan bahaya/kendala (validasi gagal, error server). TIDAK BOLEH
+         hilang sendiri! Wajib ditekan tombol silang (x) oleh admin agar pesan terbaca tuntas.
+     - Sumber Data Masuk:
+       * Dari Server (PHP Session Flash): 'toast', 'status', 'galat', dan error validasi form ($errors).
+       * Dari Browser (Client Event AJAX): Mendengarkan event JavaScript window `notify-toast`.
+     - Logika Interaksi:
+       * Menggunakan Alpine.js helper `toastStackManager` untuk mengelola antrean notifikasi.
+       * Memiliki bar progress mundur untuk toast sukses dan penutup manual untuk galat.
+     ============================================================================== -->
 @php
     $daftarToastAwal = [];
 
@@ -43,7 +59,8 @@
 <div
     x-data="toastStackManager(@js($daftarToastAwal))"
     @notify-toast.window="tambahToast($event.detail)"
-    class="pointer-events-none fixed right-4 top-4 z-[95] flex w-full max-w-md flex-col gap-3"
+    :class="$store.panelProgres.aktif ? 'top-64' : 'top-4'"
+    class="pointer-events-none fixed right-4 z-[95] flex w-full max-w-md flex-col gap-3 transition-all duration-200"
     aria-live="polite"
 >
     <template x-for="item in antrean" :key="item.id">

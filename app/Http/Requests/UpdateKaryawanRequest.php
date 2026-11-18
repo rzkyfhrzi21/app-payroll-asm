@@ -5,29 +5,43 @@ namespace App\Http\Requests;
 use App\Support\FormatNomorTelepon;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * ==============================================================================
+ * KOMENTAR ORANG TUA: VALIDASI PERUBAHAN DATA SUPIR & KARYAWAN
+ * ==============================================================================
+ * Kelas ini memeriksa perubahan data supir yang sudah terdaftar di sistem:
+ * 1. NIP supir dikunci (tidak boleh diubah) karena sudah menjadi nomor induk patokan
+ *    di seluruh slip gaji dan audit transaksi masa lalu.
+ * 2. Data yang boleh diperbarui: nama lengkap, nomor rekening bank, nomor HP,
+ *    potongan BPJS, skema komisi, dan status keaktifan supir.
+ * ==============================================================================
+ */
 class UpdateKaryawanRequest extends FormRequest
 {
+    /**
+     * Memastikan hanya Admin yang boleh mengubah data karyawan.
+     */
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;
     }
 
     /**
-     * NIP tidak boleh diubah karena menjadi acuan slip & audit.
+     * Aturan validasi perubahan data supir.
      */
     public function rules(): array
     {
         $karyawan = $this->route('employee');
 
         return [
-            'nama_lengkap' => ['required', 'string', 'min:3', 'max:150'],
-            'status' => ['required', 'in:aktif,nonaktif'],
-            'persentase_komisi' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'nama_bank' => ['nullable', 'string', 'max:50'],
-            'nomor_rekening' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]{6,20}$/'],
-            'potongan_bpjs_bulanan' => ['nullable', 'integer', 'min:0'],
-            'nomor_telepon' => ['nullable', 'string', 'regex:'.FormatNomorTelepon::POLA_VALIDASI],
-            'foto_profil' => ['nullable', 'file', 'max:2048'],
+            'nama_lengkap' => ['required', 'string', 'min:3', 'max:150'],                                      // Nama supir
+            'status' => ['required', 'in:aktif,nonaktif'],                                                     // Status kerja aktif/nonaktif
+            'persentase_komisi' => ['nullable', 'numeric', 'min:0', 'max:100'],                                // Komisi supir
+            'nama_bank' => ['nullable', 'string', 'max:50'],                                                   // Nama bank
+            'nomor_rekening' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]{6,20}$/'],                     // Rekening bank
+            'potongan_bpjs_bulanan' => ['nullable', 'integer', 'min:0'],                                       // Potongan BPJS
+            'nomor_telepon' => ['nullable', 'string', 'regex:'.FormatNomorTelepon::POLA_VALIDASI],              // Nomor telepon
+            'foto_profil' => ['nullable', 'file', 'max:2048'],                                                 // Foto profil baru
         ];
     }
 

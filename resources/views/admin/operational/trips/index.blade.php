@@ -1,3 +1,23 @@
+<!-- ==============================================================================
+     KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OPERASIONAL PENGANTARAN / SURAT JALAN):
+     - Tujuan Halaman: Pusat penerbitan, pemantauan, dan verifikasi Surat Jalan (DO) batubara.
+     - Analogi Dunia Nyata: Seperti pos satpam & loket timbangan tambang batubara:
+       Admin membuat tiket jalan untuk supir dan truk, supir berangkat bawa batubara ke pelabuhan,
+       lalu setelah dibongkar dan ditimbang, lembar surat jalan difoto dan diverifikasi oleh Admin.
+     - Standar Alur Status Surat Jalan 5 Tahap (Sesuai AGENTS.md Bab 3.8):
+       1. Draft (`draft`): Surat jalan baru diketik Admin, belum bisa dilihat supir.
+       2. Terbit (`terbit`): Surat jalan diterbitkan, supir bisa melihat tugas di HP.
+       3. Sedang Dikirim (`sedang_dikirim`): Supir jalan membawa batubara ke tujuan.
+       4. Menunggu Verifikasi (`menunggu_verifikasi`): Supir tiba, upload foto bukti dan nama penerima.
+       5. Terverifikasi (`terverifikasi`): Admin mengecek foto dan stempel; data SAH untuk dihitung gaji!
+     - Data dari Controller (Admin/Operational/DeliveryTripController@index):
+       * $period: Info periode aktif pengantaran.
+       * $summary: Total ritase, total tonase (Ton), uang jalan terpakai, dan antrean verifikasi.
+       * $trips: Paginator daftar surat jalan dari tabel `ritase` join supir, truk, dan rute.
+       * $drivers, $routes, $trucks: Data master untuk dropdown pilihan tambah/edit surat jalan.
+     - Tabel Database Terkait:
+       * `ritase` (no_surat_jalan, tanggal_ritase, tonase_kg, tarif_per_ton, uang_jalan, foto_surat_jalan, nama_penerima, status).
+     ============================================================================== -->
 @php
     $rp = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
 
@@ -156,8 +176,8 @@
                     </div>
                 </div>
                 <span class="inline-flex items-center gap-1 font-sans text-label-sm text-slate-text-muted">
-                    <span class="material-symbols-outlined text-[0.95rem]">verified</span>
-                    Sinkron otomatis ke payroll &amp; kasbon
+                    <span class="material-symbols-outlined text-[0.95rem]">tune</span>
+                    Hanya pengantaran yang lolos filter
                 </span>
             </div>
 
@@ -167,7 +187,7 @@
                         <span class="material-symbols-outlined text-[1.25rem]">local_shipping</span>
                     </span>
                     <div class="flex flex-col">
-                        <span class="font-sans text-label-sm uppercase tracking-wide text-slate-text-secondary">Total Muatan</span>
+                        <span class="font-sans text-label-sm uppercase tracking-wide text-slate-text-secondary">Total Pengantaran</span>
                         <span class="font-display text-headline-sm font-bold tabular-nums text-slate-text-primary">{{ number_format($summary['rit'], 0, ',', '.') }} <span class="font-sans text-label-sm font-normal text-slate-text-muted">Trip</span></span>
                     </div>
                 </div>
@@ -177,7 +197,7 @@
                         <span class="material-symbols-outlined text-[1.25rem]">scale</span>
                     </span>
                     <div class="flex flex-col">
-                        <span class="font-sans text-label-sm uppercase tracking-wide text-slate-text-secondary">Tonase</span>
+                        <span class="font-sans text-label-sm uppercase tracking-wide text-slate-text-secondary">Total Tonase</span>
                         <span class="font-display text-headline-sm font-bold tabular-nums text-slate-text-primary">{{ $summary['tonnage'] }} <span class="font-sans text-label-sm font-normal text-slate-text-muted">Ton</span></span>
                     </div>
                 </div>
@@ -204,19 +224,17 @@
             </div>
         </div>
 
-        {{-- Filter & aksi --}}
-        <div class="flex flex-col items-stretch justify-between gap-space-md rounded-xl bg-card-bg p-space-md shadow-card lg:flex-row lg:items-end">
-            <form
-                method="GET"
-                action="{{ route('admin.operational.trips.index') }}"
-                data-filter-server
-                class="flex flex-1 flex-col gap-space-md sm:flex-row sm:flex-wrap"
-            >
+        {{-- Filter & aksi (AJAX: URL tidak berubah, tanpa query string) --}}
+        <div
+            class="flex flex-col items-stretch justify-between gap-space-md rounded-xl bg-card-bg p-space-md shadow-card lg:flex-row lg:items-end"
+            data-wadah-tabel="ritase"
+        >
+            <div class="flex flex-1 flex-col gap-space-md sm:flex-row sm:flex-wrap">
                 <div class="flex min-w-[13.75rem] flex-col">
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Supir</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">badge</span>
-                        <select name="supir" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="supir" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Supir ({{ $summary['supplier'] }})</option>
                             @foreach (collect($drivers)->sortBy('nama') as $supir)
                                 <option value="{{ $supir['nip'] }}" @selected($filter['supir'] === $supir['nip'])>{{ $supir['nama'] }}</option>
@@ -230,7 +248,7 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Rute</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">alt_route</span>
-                        <select name="rute" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="rute" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Rute</option>
                             @foreach (collect($routes)->pluck('code')->filter()->sort() as $kodeRute)
                                 <option value="{{ $kodeRute }}" @selected($filter['rute'] === $kodeRute)>{{ $kodeRute }}</option>
@@ -244,7 +262,7 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Jenis Truk</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">category</span>
-                        <select name="jenis" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="jenis" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Jenis</option>
                             @foreach ($jenisTrukOptions as $namaJenis)
                                 <option value="{{ $namaJenis }}" @selected($filter['jenis'] === $namaJenis)>{{ $namaJenis }}</option>
@@ -258,7 +276,9 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Periode Operasional</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-banner-indigo">date_range</span>
-                        <select name="periode" data-filter-submit
+                        <select name="periode"
+                            data-no-tabel-ajax
+                            onchange="if (this.value) window.location.assign('{{ route('admin.operational.trips.index') }}?periode=' + encodeURIComponent(this.value))"
                             class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             @foreach ($periodOptions as $opsi)
                                 <option value="{{ $opsi['kode'] }}"
@@ -273,7 +293,7 @@
                     <label class="mb-1 font-sans text-label-sm font-semibold uppercase tracking-wider text-slate-text-secondary">Status</label>
                     <div class="relative flex items-center">
                         <span class="material-symbols-outlined pointer-events-none absolute left-3 text-[1.125rem] text-slate-text-secondary">fact_check</span>
-                        <select name="status" data-filter-submit class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
+                        <select name="status" class="h-10 w-full appearance-none rounded-lg bg-surface-container-low pl-9 pr-8 font-sans text-body-md text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-sidebar-active">
                             <option value="all">Semua Status</option>
                             @foreach ($statusOptions as $nilai => $label)
                                 <option value="{{ $nilai }}" @selected($filter['status'] === $nilai)>{{ $label }}</option>
@@ -291,25 +311,24 @@
                             type="text"
                             name="cari"
                             value="{{ $filter['cari'] }}"
-                            data-filter-debounce
                             class="h-10 w-full rounded-lg bg-surface-container-low pl-9 pr-4 font-sans text-body-md text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-sidebar-active"
                             placeholder="Tanggal, no. surat jalan, supir..."
                         >
                     </div>
                 </div>
-            </form>
+            </div>
 
             <div class="flex flex-wrap items-center gap-space-sm self-end lg:self-auto">
-                @if ($adaFilterAktif)
-                    <a
-                        href="{{ route('admin.operational.trips.index', ['periode' => $period['code']]) }}"
-                        class="flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                        title="Reset Semua Filter"
-                    >
-                        <span class="material-symbols-outlined text-[1.125rem]">restart_alt</span>
-                        <span>Reset Filter</span>
-                    </a>
-                @endif
+                <button
+                    type="button"
+                    data-tombol-reset-filter
+                    onclick="window.resetTabelAjax('ritase')"
+                    class="flex h-10 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 {{ $adaFilterAktif ? '' : 'hidden' }}"
+                    title="Reset Semua Filter"
+                >
+                    <span class="material-symbols-outlined text-[1.125rem]">restart_alt</span>
+                    <span>Reset Filter</span>
+                </button>
                 <button
                     type="button"
                     class="flex h-10 items-center gap-1.5 rounded-lg bg-surface-container-low px-space-md font-sans text-body-md font-medium text-slate-text-primary shadow-sm transition-colors hover:bg-surface-container-high"
@@ -341,7 +360,6 @@
                 <table class="w-full border-collapse text-left">
                     <thead>
                         <tr class="bg-surface-container-low font-sans text-label-sm uppercase tracking-wider">
-                            <th class="w-14 px-4 py-3.5 text-center font-semibold">No</th>
                             <th class="w-10 px-2 py-3.5 text-center font-semibold">
                                 <input
                                     type="checkbox"
@@ -351,6 +369,7 @@
                                     aria-label="Pilih semua surat jalan"
                                 >
                             </th>
+                            <th class="w-14 px-4 py-3.5 text-center font-semibold">No</th>
                             <th class="px-4 py-3.5 font-semibold">Tanggal</th>
                             <th class="px-4 py-3.5 font-semibold">No. Pol &amp; Supir</th>
                             <th class="px-3 py-3.5 text-center font-semibold">Material</th>
@@ -365,128 +384,18 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-surface-container-low font-sans text-financial-table">
-                        @forelse ($rows as $row)
-                            <tr class="transition-colors hover:bg-surface-container-low/70">
-                                <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $rows->firstItem() + $loop->index }}</td>
-                                <td class="px-2 py-3 text-center">
-                                    <input
-                                        type="checkbox"
-                                        value="{{ $row['id'] }}"
-                                        x-model="terpilih"
-                                        data-centang-massal
-                                        class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                        aria-label="Pilih surat jalan {{ $row['sj'] }}"
-                                    >
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-semibold">{{ $row['date'] }}</span>
-                                        <div class="flex flex-wrap items-center gap-1.5">
-                                            <span class="font-sans text-label-sm">{{ $row['sj'] }}</span>
-                                            @if (($row['jumlah_foto'] ?? 0) > 0)
-                                                <span class="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 font-sans text-[0.625rem] font-bold text-primary">
-                                                    {{ $row['jumlah_foto'] }} Foto Bukti
-                                                </span>
-                                            @endif
-                                            <button
-                                                type="button"
-                                                @click.stop="bukaModalSuratJalan(@js($row))"
-                                                title="Pratinjau Foto Surat Jalan"
-                                                class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-on-primary"
-                                            >
-                                                <span class="material-symbols-outlined text-[0.95rem]">description</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold">{{ $row['driver'] }}</span>
-                                        <span class="font-sans text-label-sm">{{ $row['plate'] }} &bull; {{ $row['truck'] }}</span>
-                                        @if (! empty($row['nama_penerima']))
-                                            <span class="mt-0.5 font-sans text-label-sm font-medium text-net-pay-emerald">Penerima: {{ $row['nama_penerima'] }}</span>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="px-3 py-3 text-center">
-                                    <span class="inline-block rounded bg-surface-container-high px-2 py-0.5 font-sans text-label-sm font-bold text-banner-deep">{{ $row['material'] }}</span>
-                                </td>
-                                <td class="px-3 py-3 text-center font-bold">{{ $row['rit'] }} Rit</td>
-                                <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ $row['tonnage'] }} Ton</td>
-                                <td class="px-4 py-3 text-right tabular-nums">{{ $rp($row['rate']) }}</td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-primary">{{ $rp($row['total']) }}</td>
-                                <td class="px-4 py-3 text-right font-bold tabular-nums text-net-pay-emerald">{{ $rp($row['trip_money']) }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="@if ($row['route'] === 'MIP-36') bg-secondary-fixed text-on-secondary-fixed @else bg-primary-fixed text-on-primary-fixed @endif inline-block rounded px-2 py-0.5 font-sans text-label-sm font-semibold">{{ $row['route'] }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span @class([
-                                        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-sans text-label-sm font-bold',
-                                        'bg-net-pay-surface text-net-pay-emerald' => $row['status'] === 'terverifikasi',
-                                        'bg-indigo-50 text-indigo-700' => $row['status'] === 'sedang_dikirim',
-                                        'bg-sky-50 text-sky-700' => $row['status'] === 'menunggu_verifikasi',
-                                        'bg-warning-surface text-warning-amber' => $row['status'] === 'terbit',
-                                        'bg-slate-100 text-slate-700' => $row['status'] === 'draft',
-                                        'bg-danger-surface text-danger-red' => $row['status'] === 'dibatalkan',
-                                    ])>
-                                        <span @class([
-                                            'h-1.5 w-1.5 rounded-full',
-                                            'bg-net-pay-emerald' => $row['status'] === 'terverifikasi',
-                                            'bg-indigo-500' => $row['status'] === 'sedang_dikirim',
-                                            'bg-sky-500' => $row['status'] === 'menunggu_verifikasi',
-                                            'bg-warning-amber' => $row['status'] === 'terbit',
-                                            'bg-slate-400' => $row['status'] === 'draft',
-                                            'bg-danger-red' => $row['status'] === 'dibatalkan',
-                                        ])></span>
-                                        {{ $row['status_label'] }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="inline-flex items-center justify-center gap-1">
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:text-slate-text-primary"
-                                            title="Detail Surat Jalan"
-                                            @click="bukaDetailRitase(@js($row))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
-                                        </button>
-                                        <a
-                                            href="{{ route('admin.operational.trips.print', $row['id']) }}"
-                                            target="_blank"
-                                            rel="noopener"
-                                            class="btn-aksi-tabel hover:text-blue-600"
-                                            title="Cetak Surat Jalan (PDF / Print)"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">print</span>
-                                        </a>
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:text-primary"
-                                            title="Edit Surat Jalan"
-                                            @click="openEdit(@js($row))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">edit</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn-aksi-tabel hover:bg-danger-surface hover:text-danger-red"
-                                            title="Hapus Surat Jalan"
-                                            @click="bukaHapusRitase(@js($row))"
-                                        >
-                                            <span class="material-symbols-outlined text-[1.125rem]">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                    <tbody id="tbodyRitase" class="divide-y divide-surface-container-low font-sans text-financial-table">
+                        @foreach ($rows as $indeksBaris => $row)
+                            @include('components.tabel-baris.ritase', ['baris' => $row, 'nomor' => $rows->firstItem() + $indeksBaris, 'statusOptions' => $statusOptions])
+                        @endforeach
+
+                        @if ($rows->isEmpty())
                             <x-ui.table-empty
                                 :colspan="13"
                                 label="surat jalan pengantaran"
                                 :tampilkan-reset="$adaFilterAktif"
                             />
-                        @endforelse
+                        @endif
                     </tbody>
 
                     <tfoot>
@@ -504,9 +413,15 @@
             </div>
             </x-ui.tabel-massal>
 
-            <x-ui.table-pagination :paginator="$rows" :per-page="$perPage" label="surat jalan" />
+            <x-ui.tabel-ajax
+                entitas="ritase"
+                label="surat jalan"
+                target-id="tbodyRitase"
+                :kolom="13"
+                :filter="$filter"
+                :per-halaman-awal="$perPage"
+            />
         </div>
-
         {{-- Modal tengah tambah/edit ritase --}}
         <x-ui.modal-shell
             name="modalRitaseForm"
