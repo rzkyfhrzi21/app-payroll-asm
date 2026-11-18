@@ -1,28 +1,31 @@
-<mxfile host="65bd71144e">
+<mxfile host="app.diagrams.net" agent="Payroll ASM" version="24.7.17" type="device">
     <diagram id="activity_payroll" name="Activity Diagram Penggajian">
-        <mxGraphModel dx="654" dy="540" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1360" pageHeight="1500" background="#FFFFFF" math="0" shadow="0">
+        <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1360" pageHeight="1520" background="#FFFFFF" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=none;locked=1;connectable=0;" value="" vertex="1">
-                    <mxGeometry height="1500" width="1360" as="geometry"/>
+                    <mxGeometry height="1520" width="1360" as="geometry"/>
                 </mxCell>
-                <mxCell id="judul" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#111111;" value="Activity Diagram Sistem Penggajian Supir Logistik Batubara (CoalTrans)" vertex="1">
+                <mxCell id="judul" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#111111;" value="Activity Diagram Sistem Penggajian Supir Logistik Batubara (PT ASM)" vertex="1">
                     <mxGeometry height="34" width="1280" x="40" y="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="sub" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" value="Alur Surat Jalan (draft -&gt; terbit -&gt; sedang_dikirim -&gt; menunggu_verifikasi -&gt; terverifikasi), Blokir Pengajuan 422, ACC Bertahap Pimpinan, hingga Pencairan (paid) &amp; Slip Gaji" vertex="1">
+                <mxCell id="sub" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" value="Alur Surat Jalan (draft -&gt; terbit -&gt; sedang_dikirim -&gt; menunggu_verifikasi -&gt; terverifikasi), Tutup Buku &amp; Buka Periode Baru (H+1), Blokir 422, ACC Bertahap Pimpinan, hingga Pencairan (paid), Potong Kasbon &amp; Notifikasi Email/WA" vertex="1">
                     <mxGeometry height="22" width="1280" x="40" y="54" as="geometry"/>
                 </mxCell>
                 <mxCell id="lane_supir" parent="1" style="swimlane;html=1;startSize=36;collapsible=0;container=1;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontStyle=1;fontColor=#111111;rounded=0;" value="Supir (Karyawan)" vertex="1">
-                    <mxGeometry height="1246" width="380" x="10" y="170" as="geometry"/>
+                    <mxGeometry height="1246" width="380" x="10" y="92" as="geometry"/>
                 </mxCell>
                 <mxCell id="act_terima_sj" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EEF2FF;strokeColor=#4F46E5;strokeWidth=1.5;fontColor=#1E1B4B;fontSize=11;" value="&lt;b&gt;Lihat SJ di /my/trips &amp;amp; Klik &#39;Mulai Kirim&#39;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Supir melihat SJ berstatus terbit di /my/trips, lalu klik&lt;br&gt;&#39;Mulai Kirim&#39; saat berangkat -&gt; status: sedang_dikirim&lt;/font&gt;" vertex="1">
                     <mxGeometry height="76" width="290" x="45" y="204" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_konfirmasi_sj" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Tiba di Tujuan: Klik &#39;Konfirmasi Sampai&#39;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Isi nama_penerima &amp;amp; unggah &amp;gt;=1 foto bukti (.webp JSON,&lt;br&gt;maks 2 MB/foto) di /my/trips -&gt; menunggu_verifikasi&lt;/font&gt;" vertex="1">
+                <mxCell id="act_konfirmasi_sj" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Tiba di Tujuan: Klik &#39;Konfirmasi Sampai&#39;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Wajib isi nama_penerima (HURUF BESAR), tonase timbangan,&lt;br&gt;&amp;amp; unggah &amp;gt;=1 foto bukti (.webp JSON, maks 2 MB) -&gt; menunggu_verifikasi&lt;/font&gt;" vertex="1">
                     <mxGeometry height="82" width="290" x="45" y="314" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_slip_supir" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;Melihat &amp;amp; Mengunduh Slip Gaji Resmi&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Cek rincian komisi supir, potongan, &amp;amp; cetak&lt;br&gt;slip gaji ber-kop perusahaan (/my/payroll)&lt;/font&gt;" vertex="1">
+                <mxCell id="act_simulasi_supir" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.3;dashed=1;fontColor=#334155;fontSize=10.5;" value="&lt;b&gt;[Opsional] Simulasi Gaji Mandiri (1-31 Rit)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9.5px&quot; color=&quot;#555555&quot;&gt;Hitung estimasi komisi &amp;amp; potongan (mode Riil / Manual)&lt;br&gt;serta simpan arsip simulasi (/my/simulation)&lt;/font&gt;" vertex="1">
+                    <mxGeometry height="70" width="290" x="45" y="576" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_slip_supir" parent="lane_supir" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;Terima Notifikasi &amp;amp; Unduh Slip Gaji Resmi&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Terima notifikasi Email/WhatsApp, cek rincian bagi hasil&lt;br&gt;komisi supir &amp;amp; potongan, cetak slip (/my/payroll)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="290" x="45" y="1042" as="geometry"/>
                 </mxCell>
                 <mxCell id="lane_admin" parent="1" style="swimlane;html=1;startSize=36;collapsible=0;container=1;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontStyle=1;fontColor=#111111;rounded=0;" value="Admin / HRD" vertex="1">
@@ -31,37 +34,37 @@
                 <mxCell id="node_start" parent="lane_admin" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#111111;strokeColor=#111111;" value="" vertex="1">
                     <mxGeometry height="32" width="32" x="234" y="46" as="geometry"/>
                 </mxCell>
-                <mxCell id="lbl_start" parent="lane_admin" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#444444;" value="Mulai Siklus" vertex="1">
-                    <mxGeometry height="24" width="110" x="274" y="50" as="geometry"/>
+                <mxCell id="lbl_start" parent="lane_admin" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#444444;" value="Mulai Siklus Periode" vertex="1">
+                    <mxGeometry height="24" width="140" x="274" y="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_buat_sj" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Buat Surat Jalan (Status Awal: draft / terbit)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Input supir, truk, rute, &amp;amp; uang jalan (/admin/operational/trips)&lt;br&gt;Status draft belum tampil ke Supir (atau langsung terbit)&lt;/font&gt;" vertex="1">
+                <mxCell id="act_buat_sj" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Buat Surat Jalan (Status Awal: draft / terbit)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Input supir, truk, rute, &amp;amp; uang jalan (/admin/operational/trips)&lt;br&gt;Status draft belum tampil ke Supir (ditolak 403 bila diakses)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="74" width="310" x="95" y="102" as="geometry"/>
                 </mxCell>
                 <mxCell id="act_terbit_sj" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F0F9FF;strokeColor=#0284C7;strokeWidth=1.5;fontColor=#0C4A6E;fontSize=11;" value="&lt;b&gt;Terbitkan Surat Jalan (Status: terbit)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Admin terbitkan SJ (satuan/massal) agar tampil di Portal Supir&lt;br&gt;dan siap dikirim (/admin/operational/trips)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="310" x="95" y="206" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_verifikasi_sj" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Periksa Foto &amp;amp; Penerima, lalu Verifikasi SJ&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Admin cek foto bukti TTD &amp;amp; nama_penerima (/admin/operational/trips),&lt;br&gt;lalu verifikasi -&gt; status: terverifikasi&lt;/font&gt;" vertex="1">
+                <mxCell id="act_verifikasi_sj" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Periksa Foto &amp;amp; Penerima, lalu Verifikasi SJ&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Admin cek foto bukti TTD &amp;amp; nama_penerima (/admin/operational/trips),&lt;br&gt;lalu verifikasi (satuan/massal) -&gt; status: terverifikasi&lt;/font&gt;" vertex="1">
                     <mxGeometry height="82" width="310" x="95" y="314" as="geometry"/>
                 </mxCell>
                 <mxCell id="dec_sj_selesai" parent="lane_admin" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#D97706;strokeWidth=1.7;fontColor=#92400E;fontSize=10.5;" value="&lt;b&gt;Seluruh SJ&lt;br&gt;Periode Sudah&lt;br&gt;terverifikasi?&lt;/b&gt;" vertex="1">
                     <mxGeometry height="104" width="190" x="155" y="432" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_hitung_gaji" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Hitung Gaji &amp;amp; Rekonsiliasi Potongan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Rekap ritase terverifikasi, biaya sparepart, komisi supir,&lt;br&gt;tunjangan, BPJS, &amp;amp; angsuran kasbon (/admin/payroll)&lt;/font&gt;" vertex="1">
+                <mxCell id="act_hitung_gaji" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontSize=11;" value="&lt;b&gt;Rekonsiliasi &amp;amp; Hitung Gaji 4 Tahap&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Hitung angkutan bersih, uang jalan, biaya_operasional/sparepart,&lt;br&gt;bagi hasil komisi supir, BPJS, &amp;amp; angsuran_kasbon (/admin/payroll)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="310" x="95" y="576" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_ajukan_gaji" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontColor=#92400E;fontSize=11;" value="&lt;b&gt;Ajukan Kebutuhan Kas Gaji ke Pimpinan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Ajukan payroll periode (pending). Diblokir 422 bila masih ada SJ&lt;br&gt;draft, terbit, sedang_dikirim, atau menunggu_verifikasi&lt;/font&gt;" vertex="1">
+                <mxCell id="act_ajukan_gaji" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontColor=#92400E;fontSize=11;" value="&lt;b&gt;Tutup Buku Periode &amp;amp; Ajukan ke Pimpinan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Kunci tanggal_selesai, ubah status ke pending, &amp;amp; otomatis buka&lt;br&gt;periode baru (H+1). Diblokir 422 bila ada SJ belum terverifikasi&lt;/font&gt;" vertex="1">
                     <mxGeometry height="82" width="310" x="95" y="682" as="geometry"/>
                 </mxCell>
                 <mxCell id="act_terbit_slip" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;Terbitkan Slip Gaji Resmi Supir&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Terbitkan &amp;amp; cetak slip gaji dengan kop &amp;amp; TTD dari&lt;br&gt;data_perusahaan (/admin/reports/{periode}/slip)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="310" x="95" y="1042" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_laporan_admin" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Buat &amp;amp; Ekspor Laporan Gaji Periode&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Cetak laporan penggajian penuh (PDF / Excel)&lt;br&gt;untuk arsip keuangan &amp;amp; pelaporan pimpinan&lt;/font&gt;" vertex="1">
+                <mxCell id="act_laporan_admin" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Cetak &amp;amp; Ekspor Laporan Gaji Multi-Sheet&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Cetak rekap penggajian penuh (PDF / Excel .xlsx)&lt;br&gt;untuk arsip keuangan &amp;amp; pelaporan pimpinan&lt;/font&gt;" vertex="1">
                     <mxGeometry height="68" width="310" x="95" y="1146" as="geometry"/>
                 </mxCell>
                 <mxCell id="lane_pimpinan" parent="1" style="swimlane;html=1;startSize=36;collapsible=0;container=1;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontStyle=1;fontColor=#111111;rounded=0;" value="Pimpinan Operasional / Direksi" vertex="1">
                     <mxGeometry height="1246" width="400" x="920" y="92" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_periksa_pimpinan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Periksa Rincian Pendapatan &amp;amp; Potongan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Audit komisi supir, sparepart, BPJS, kasbon,&lt;br&gt;&amp;amp; total kas satu per satu (/executive/payroll)&lt;/font&gt;" vertex="1">
+                <mxCell id="act_periksa_pimpinan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Periksa Rincian Pendapatan &amp;amp; Potongan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Audit bagi hasil komisi supir, sparepart, BPJS, kasbon,&lt;br&gt;&amp;amp; total kebutuhan kas (/executive/payroll)&lt;/font&gt;" vertex="1">
                     <mxGeometry height="68" width="300" x="50" y="689" as="geometry"/>
                 </mxCell>
                 <mxCell id="dec_pimpinan" parent="lane_pimpinan" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#D97706;strokeWidth=1.8;fontColor=#92400E;fontSize=11;" value="&lt;b&gt;Keputusan&lt;br&gt;Otorisasi&lt;br&gt;Pimpinan?&lt;/b&gt;" vertex="1">
@@ -70,7 +73,7 @@
                 <mxCell id="act_acc_pimpinan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;ACC Gaji (Satuan / Checkbox / Semua)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Set baris penggajian terpilih menjadi approved&lt;br&gt;Periode menjadi approved bila seluruh supir di-ACC&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="300" x="50" y="938" as="geometry"/>
                 </mxCell>
-                <mxCell id="act_cairkan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.7;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;Cairkan Dana Gaji (Status: paid)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Cairkan gaji supir yang sudah approved -&gt; paid,&lt;br&gt;otomatis potong angsuran_kasbon (terpotong)&lt;/font&gt;" vertex="1">
+                <mxCell id="act_cairkan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.7;fontColor=#065F46;fontSize=11;" value="&lt;b&gt;Cairkan Dana Gaji (paid) &amp;amp; Kirim Notifikasi&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Cairkan gaji approved -&gt; paid, otomatis potong angsuran_kasbon&lt;br&gt;(terpotong) &amp;amp; kirim slip ke Email SMTP + WhatsApp Fonnte&lt;/font&gt;" vertex="1">
                     <mxGeometry height="72" width="300" x="50" y="1042" as="geometry"/>
                 </mxCell>
                 <mxCell id="act_terima_laporan" parent="lane_pimpinan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=18;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=1.5;fontColor=#111111;fontSize=11;" value="&lt;b&gt;Terima &amp;amp; Arsip Laporan Gaji&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#555555&quot;&gt;Laporan finansial &amp;amp; rekap pencairan&lt;br&gt;tersimpan di /executive/reports&lt;/font&gt;" vertex="1">
@@ -117,7 +120,7 @@
                 <mxCell id="edge_6" edge="1" parent="1" source="act_hitung_gaji" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=block;endFill=1;" target="act_ajukan_gaji" value="">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="edge_7" edge="1" parent="1" source="act_ajukan_gaji" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D97706;strokeWidth=1.6;endArrow=block;endFill=1;fontSize=10;fontStyle=1;fontColor=#92400E;labelBackgroundColor=#FFFFFF;" target="act_periksa_pimpinan" value="Ajukan (pending)">
+                <mxCell id="edge_7" edge="1" parent="1" source="act_ajukan_gaji" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D97706;strokeWidth=1.6;endArrow=block;endFill=1;fontSize=10;fontStyle=1;fontColor=#92400E;labelBackgroundColor=#FFFFFF;" target="act_periksa_pimpinan" value="Tutup Buku &amp;amp; Ajukan (pending)">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="edge_8" edge="1" parent="1" source="act_periksa_pimpinan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=block;endFill=1;" target="dec_pimpinan" value="">
@@ -137,7 +140,7 @@
                 <mxCell id="edge_9" edge="1" parent="1" source="act_acc_pimpinan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.6;endArrow=block;endFill=1;fontSize=10;fontColor=#065F46;labelBackgroundColor=#FFFFFF;" target="act_cairkan" value="approved">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="edge_10" edge="1" parent="1" source="act_cairkan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.8;endArrow=block;endFill=1;fontSize=10;fontStyle=1;fontColor=#065F46;labelBackgroundColor=#FFFFFF;" target="act_terbit_slip" value="paid (Potong Kasbon)">
+                <mxCell id="edge_10" edge="1" parent="1" source="act_cairkan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.8;endArrow=block;endFill=1;fontSize=10;fontStyle=1;fontColor=#065F46;labelBackgroundColor=#FFFFFF;" target="act_terbit_slip" value="paid (Potong Kasbon + Email/WA)">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="edge_11" edge="1" parent="1" source="act_terbit_slip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.5;dashed=1;endArrow=block;endFill=1;fontSize=10;fontColor=#065F46;labelBackgroundColor=#FFFFFF;" target="act_slip_supir" value="Terbit ke Portal Supir">
@@ -164,10 +167,10 @@
                 <mxCell id="leg_3" parent="legend" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=10;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="&lt;b&gt;Decision Node:&lt;/b&gt; Validasi kelengkapan verifikasi SJ (blokir 422 bila belum terverifikasi) &amp;amp; keputusan ACC/Tolak Pimpinan." vertex="1">
                     <mxGeometry height="24" width="630" x="640" y="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="leg_4" parent="legend" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=10;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="&lt;b&gt;Final Node (Selesai):&lt;/b&gt; Dana gaji telah dicairkan (paid), angsuran kasbon terpotong, slip gaji &amp;amp; laporan diterbitkan." vertex="1">
+                <mxCell id="leg_4" parent="legend" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=10;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="&lt;b&gt;Final Node (Selesai):&lt;/b&gt; Dana gaji dicairkan (paid), angsuran kasbon terpotong, notifikasi Email/WA terkirim, slip &amp;amp; laporan diterbitkan." vertex="1">
                     <mxGeometry height="24" width="630" x="640" y="54" as="geometry"/>
                 </mxCell>
-                <mxCell id="leg_5" parent="legend" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=10;fillColor=none;strokeColor=none;fontColor=#666666;fontSize=9.5;" value="&lt;i&gt;*Catatan: Pengajuan gaji diblokir 422 bila masih ada SJ draft, terbit, sedang_dikirim, atau menunggu_verifikasi. Pimpinan dapat ACC satuan/checkbox/semua atau tolak dengan catatan_penolakan.&lt;/i&gt;" vertex="1">
+                <mxCell id="leg_5" parent="legend" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=10;fillColor=none;strokeColor=none;fontColor=#666666;fontSize=9.5;" value="&lt;i&gt;*Catatan: Menutup buku periode otomatis mengunci tanggal_selesai, mengajukan ke Pimpinan (pending), &amp;amp; membuka periode baru (H+1). Bila ditolak, Admin dapat Buka Kembali Periode.&lt;/i&gt;" vertex="1">
                     <mxGeometry height="22" width="1260" y="82" as="geometry"/>
                 </mxCell>
             </root>
