@@ -36,12 +36,15 @@ Sistem ini memecahkan berbagai risiko bisnis nyata, seperti:
 
 ---
 
-## 3. Diagram Alur Bisnis & Skema Basis Data (ERD)
+## 3. Diagram Use Case, Alur Bisnis (Activity), & Skema Basis Data (ERD)
 
-### 3.1. Activity Diagram Alur Penggajian End-to-End
+### 3.1. Use Case Diagram (3 Aktor: Admin/HRD, Supir, Pimpinan)
+![Use Case Diagram Payroll ASM](dokumen/USECASE_DIAGRAM.png)
+
+### 3.2. Activity Diagram Alur Penggajian End-to-End
 ![Activity Diagram Alur Penggajian](dokumen/ACTIVITY_DIAGRAM.png)
 
-### 3.2. Entity Relationship Diagram (ERD Database)
+### 3.3. Entity Relationship Diagram (ERD Database Aktual — 13 Tabel)
 ![ERD Database Payroll ASM](dokumen/ERD_DATABASE.png)
 
 ---

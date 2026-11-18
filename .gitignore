@@ -57,11 +57,16 @@ Homestead.json
 Homestead.yaml
 
 # ==============================================================================
-# 5. File Sementara & Scratch
+# 5. File Sementara, Scratch, & Arsip Mentah Referensi
 # ==============================================================================
 Zzz/
 value
 *.tmp
+/dokumen/stitch/
+/dokumen/foto/
+/dokumen/lain/
+/dokumen/todo/
+/dokumen/*.docx
 
 # ==============================================================================
 # 6. Metadata AI Agent & Cache Indexing

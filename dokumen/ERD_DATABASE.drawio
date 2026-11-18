@@ -300,10 +300,10 @@
     <mxCell id="t_rute_5" value="&lt;b&gt;jarak_km&lt;/b&gt; : INT UNSIGNED nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Jarak tempuh koridor dalam kilometer&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
       <mxGeometry x="0" y="218" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_rute_6" value="&lt;b&gt;alamat_asal&lt;/b&gt; : VARCHAR(150) nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Lokasi tambang / titik muat asal&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
+    <mxCell id="t_rute_6" value="&lt;b&gt;alamat_asal&lt;/b&gt; : VARCHAR(150) nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Lokasi titik muat asal pengantaran&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
       <mxGeometry x="0" y="250" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_rute_7" value="&lt;b&gt;alamat_tujuan&lt;/b&gt; : VARCHAR(150) nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Lokasi pelabuhan / stockpile tujuan&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
+    <mxCell id="t_rute_7" value="&lt;b&gt;alamat_tujuan&lt;/b&gt; : VARCHAR(150) nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Lokasi titik bongkar / tujuan pengantaran&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
       <mxGeometry x="0" y="282" width="390" height="32" as="geometry" />
     </mxCell>
     <mxCell id="t_rute_8" value="&lt;b&gt;status&lt;/b&gt; : ENUM(aktif, nonaktif)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Status keaktifan rute&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_rute">
@@ -453,7 +453,7 @@
     <mxCell id="t_ritase_14" value="&lt;b&gt;nama_penerima&lt;/b&gt; : VARCHAR(120) nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Nama penerima di tujuan (wajib, HURUF BESAR)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_ritase">
       <mxGeometry x="0" y="506" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_ritase_15" value="&lt;b&gt;status&lt;/b&gt; : ENUM(draft, terbit, sedang_dikirim, menunggu_verifikasi, terverifikasi, dibatalkan)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Siklus status Surat Jalan (hanya terverifikasi masuk gaji)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_ritase">
+    <mxCell id="t_ritase_15" value="&lt;b&gt;status&lt;/b&gt; : ENUM(draft, terbit, sedang_dikirim, menunggu_verifikasi, terverifikasi, ...)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Siklus status Surat Jalan (hanya terverifikasi masuk gaji)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_ritase">
       <mxGeometry x="0" y="538" width="410" height="32" as="geometry" />
     </mxCell>
 
@@ -574,67 +574,180 @@
     </mxCell>
 
     <mxCell id="rel_R1" value="1 .. 1" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_users" target="t_karyawan">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="22" y="284" />
+          <mxPoint x="22" y="658" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R2" value="1 .. N (penyetuju)" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_users" target="t_periode_gaji">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="452" y="284" />
+          <mxPoint x="452" y="1280" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R3" value="1 .. N (penyetuju)" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_users" target="t_penggajian">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="458" y="250" />
+          <mxPoint x="458" y="102" />
+          <mxPoint x="918" y="102" />
+          <mxPoint x="918" y="1550" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R4" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_jenis_truk" target="t_truk">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="898" y="215" />
+          <mxPoint x="898" y="515" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R5" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_truk">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="464" y="620" />
+          <mxPoint x="464" y="515" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R6" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_ritase">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="470" y="580" />
+          <mxPoint x="470" y="350" />
+          <mxPoint x="906" y="350" />
+          <mxPoint x="906" y="360" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R7" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_truk" target="t_ritase">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="910" y="480" />
+          <mxPoint x="910" y="400" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R8" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_rute" target="t_ritase">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="914" y="860" />
+          <mxPoint x="914" y="450" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R9" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_ritase">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="922" y="1220" />
+          <mxPoint x="922" y="500" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R10" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_biaya_operasional">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="904" y="1260" />
+          <mxPoint x="904" y="920" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R11" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_truk" target="t_biaya_operasional">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="900" y="550" />
+          <mxPoint x="900" y="860" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R12" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_biaya_operasional">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="476" y="700" />
+          <mxPoint x="476" y="690" />
+          <mxPoint x="926" y="690" />
+          <mxPoint x="926" y="960" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R13" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_kasbon">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="22" y="740" />
+          <mxPoint x="22" y="1080" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R14" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_kasbon">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="460" y="1250" />
+          <mxPoint x="460" y="1100" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R15" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_kasbon" target="t_angsuran_kasbon">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="22" y="1180" />
+          <mxPoint x="22" y="1480" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R16" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_angsuran_kasbon">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="466" y="1340" />
+          <mxPoint x="466" y="1480" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R17" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_penggajian">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="910" y="1340" />
+          <mxPoint x="910" y="1340" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R18" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_penggajian">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="446" y="780" />
+          <mxPoint x="446" y="1095" />
+          <mxPoint x="908" y="1095" />
+          <mxPoint x="908" y="1420" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R19" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_truk" target="t_penggajian">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="930" y="600" />
+          <mxPoint x="930" y="1480" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R20" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_karyawan" target="t_simulasi_gaji">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="14" y="800" />
+          <mxPoint x="14" y="1950" />
+        </Array>
+      </mxGeometry>
     </mxCell>
     <mxCell id="rel_R21" value="1 .. N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_periode_gaji" target="t_simulasi_gaji">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="456" y="1420" />
+          <mxPoint x="456" y="1850" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
         <mxCell id="legend" value="KETERANGAN NOTASI ERD" style="swimlane;fontStyle=1;align=center;startSize=30;container=1;collapsible=0;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=12;fontColor=#111111;" vertex="1" parent="1">
