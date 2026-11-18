@@ -37,18 +37,18 @@ class MasterStatusSeeder extends Seeder
         $dataRute = [
             'MIP-PORT' => [
                 'jarak_km' => 118,
-                'alamat_asal' => 'Pit Muara Enim, Kab. Muara Enim',
-                'alamat_tujuan' => 'Stockpile Jetty Kertapati, Palembang',
+                'alamat_asal' => 'Muara Enim, Kab. Muara Enim',
+                'alamat_tujuan' => 'Kertapati, Palembang',
             ],
             'MIP-36' => [
                 'jarak_km' => 96,
-                'alamat_asal' => 'Pit Muara Enim, Kab. Muara Enim',
-                'alamat_tujuan' => 'Stockpile KM 36, Muara Enim',
+                'alamat_asal' => 'Muara Enim, Kab. Muara Enim',
+                'alamat_tujuan' => 'KM 36, Muara Enim',
             ],
             'TAL-PORT' => [
                 'jarak_km' => 132,
-                'alamat_asal' => 'Pit Talang Akar, Kab. Muara Enim',
-                'alamat_tujuan' => 'Stockpile Jetty Kertapati, Palembang',
+                'alamat_asal' => 'Talang Akar, Kab. Muara Enim',
+                'alamat_tujuan' => 'Kertapati, Palembang',
             ],
             'DMY-NOV' => [
                 'jarak_km' => null,

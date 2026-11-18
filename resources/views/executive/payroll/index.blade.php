@@ -158,7 +158,7 @@
                 <div class="flex max-w-3xl flex-col">
                     <div class="mb-1 flex items-center gap-2">
                         <span class="rounded bg-surface-container-high px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-wider text-primary">Direksi Only</span>
-                        <span class="font-sans text-body-sm text-slate-text-muted">&bull; Arsip Keuangan Logistik Tambang &bull; Otorisasi Penggajian</span>
+                        <span class="font-sans text-body-sm text-slate-text-muted">&bull; Arsip Keuangan Payroll &bull; Otorisasi Penggajian</span>
                     </div>
                     <h1 class="font-display text-headline-lg font-bold tracking-tight text-slate-text-primary">Laporan Rekapitulasi Penggajian &amp; Finansial Pengantaran</h1>
                     <p class="mt-1 font-sans text-body-md leading-relaxed text-slate-text-secondary">
@@ -883,7 +883,7 @@
                                         <span class="material-symbols-outlined text-[0.8125rem]">verified_user</span> Otorisasi Pimpinan
                                     </span>
                                 </div>
-                                <p class="font-sans text-body-sm text-slate-text-secondary">Perhitungan data pengantaran tambang batubara, operasional uang jalan, dan beban servis berkala.</p>
+                                <p class="font-sans text-body-sm text-slate-text-secondary">Perhitungan gaji berdasarkan surat jalan pengantaran, uang jalan, dan beban servis armada.</p>
                             </div>
                         </div>
                         <button type="button" class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-slate-text-secondary transition-colors hover:bg-danger-surface hover:text-danger-red" @click="detailOpen = false">

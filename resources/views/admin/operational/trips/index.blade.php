@@ -59,7 +59,7 @@
                     <div class="mb-1 flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 font-sans text-label-sm font-semibold uppercase tracking-wider backdrop-blur-md">
                             <span class="material-symbols-outlined text-[0.875rem]">local_shipping</span>
-                            Logistik Tambang Batubara
+                            Rekapitulasi Surat Jalan Penggajian
                         </span>
                         <span class="font-sans text-label-sm text-white/70">&bull;</span>
                         <span class="font-sans text-label-sm tracking-wide">

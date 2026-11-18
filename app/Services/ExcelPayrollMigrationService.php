@@ -844,8 +844,8 @@ class ExcelPayrollMigrationService
                         'tarif_per_ton' => $ruteInfo['tarif_per_ton'] > 0 ? $ruteInfo['tarif_per_ton'] : 150000,
                         'uang_jalan_default' => $ruteInfo['uang_jalan_default'] > 0 ? $ruteInfo['uang_jalan_default'] : 2000000,
                         'jarak_km' => 120,
-                        'alamat_asal' => 'PIT TAMBANG',
-                        'alamat_tujuan' => 'STOCKPILE PELABUHAN',
+                        'alamat_asal' => 'LOKASI ASAL',
+                        'alamat_tujuan' => 'LOKASI TUJUAN',
                         'status' => 'aktif',
                     ]);
 
@@ -2229,8 +2229,8 @@ class ExcelPayrollMigrationService
             'tarif_per_ton' => $tarifPerTon > 0 ? $tarifPerTon : 150000,
             'uang_jalan_default' => $uangJalan > 0 ? $uangJalan : 2000000,
             'jarak_km' => 120,
-            'alamat_asal' => 'PIT TAMBANG',
-            'alamat_tujuan' => 'STOCKPILE PELABUHAN',
+            'alamat_asal' => 'LOKASI ASAL',
+            'alamat_tujuan' => 'LOKASI TUJUAN',
             'status' => 'aktif',
         ]);
     }

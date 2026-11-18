@@ -127,16 +127,16 @@ class DataPerusahaan extends Model
     public static function nilaiBawaan(): array
     {
         return [
-            'nama_perusahaan' => 'PT KAFA COALTRANS MINING LOGISTICS',
-            'kode_perusahaan' => 'COALTRANS',
-            'kota'            => 'PALEMBANG',
+            'nama_perusahaan' => 'PT ADIGUNA SEJAHTERA MANDIRI',
+            'kode_perusahaan' => 'PT ASM',
+            'kota'            => 'BANDAR LAMPUNG',
             'jabatan_pemilik' => 'DIREKTUR UTAMA',
             'nama_pemilik'    => 'PIMPINAN PERUSAHAAN',
-            'alamat'          => 'JL. LINTAS SUMATERA KM 12, PALEMBANG',
+            'alamat'          => 'JL. LINTAS SUMATERA KM 12, BANDAR LAMPUNG',
             'no_telepon'      => '0711-000000',
-            'email'           => 'finance@coaltrans.local',
+            'email'           => 'official_asm@gmail.com',
             'tanggal_berdiri' => '2018-05-12',
-            'bidang_usaha'    => 'LOGISTIK BATUBARA & ANGKUTAN ALAT BERAT',
+            'bidang_usaha'    => 'PENGANTARAN LOGISTIK BATUBARA',
         ];
     }
 

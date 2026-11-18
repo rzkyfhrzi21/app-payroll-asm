@@ -83,8 +83,8 @@
                     </div>
                 @endif
                 <div class="space-y-0.5">
-                    <h1 class="text-xl font-black uppercase tracking-tight text-slate-900">{{ $perusahaanAktif->nama_perusahaan ?? 'PT ANUGERAH SUMBER MAKMUR' }}</h1>
-                    <p class="text-xs font-medium text-slate-600">{{ $perusahaanAktif->alamat_lengkap ?? 'Jl. Lintas Tambang Batubara' }} &bull; {{ $perusahaanAktif->kota ?? 'Lampung' }}</p>
+                    <h1 class="text-xl font-black uppercase tracking-tight text-slate-900">{{ $perusahaanAktif->nama_perusahaan ?? 'PT ADIGUNA SEJAHTERA MANDIRI' }}</h1>
+                    <p class="text-xs font-medium text-slate-600">{{ $perusahaanAktif->alamat_lengkap ?? 'Jl. Lintas Sumatera Km. 12' }} &bull; {{ $perusahaanAktif->kota ?? 'Lampung' }}</p>
                     <p class="text-xs text-slate-500">Telp: {{ $perusahaanAktif->nomor_telepon ?? '-' }} &bull; Email: {{ $perusahaanAktif->email_resmi ?? '-' }}</p>
                 </div>
             </div>

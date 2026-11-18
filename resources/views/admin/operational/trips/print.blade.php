@@ -101,8 +101,8 @@
                     </div>
                 @endif
                 <div class="space-y-0.5">
-                    <h1 class="text-xl font-black uppercase tracking-tight text-slate-900">{{ $perusahaanAktif->nama_perusahaan ?? 'PT ANUGERAH SUMBER MAKMUR' }}</h1>
-                    <p class="text-xs font-medium text-slate-600">{{ $perusahaanAktif->alamat_lengkap ?? 'Jl. Lintas Tambang Batubara Km. 42' }} &bull; {{ $perusahaanAktif->kota ?? 'Lampung' }}</p>
+                    <h1 class="text-xl font-black uppercase tracking-tight text-slate-900">{{ $perusahaanAktif->nama_perusahaan ?? 'PT ADIGUNA SEJAHTERA MANDIRI' }}</h1>
+                    <p class="text-xs font-medium text-slate-600">{{ $perusahaanAktif->alamat_lengkap ?? 'Jl. Lintas Sumatera Km. 12' }} &bull; {{ $perusahaanAktif->kota ?? 'Lampung' }}</p>
                     <p class="text-xs text-slate-500">Telp: {{ $perusahaanAktif->nomor_telepon ?? '-' }} &bull; Email: {{ $perusahaanAktif->email_resmi ?? '-' }}</p>
                 </div>
             </div>
@@ -120,7 +120,7 @@
             <h2 class="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 underline decoration-slate-900 decoration-2 underline-offset-4">
                 SURAT JALAN PENGANTARAN LOGISTIK BATUBARA
             </h2>
-            <p class="mt-1 text-xs text-slate-500">Dokumen resmi bukti penugasan armada dan pengantaran muatan tambang.</p>
+            <p class="mt-1 text-xs text-slate-500">Dokumen resmi bukti penugasan armada dan pengantaran muatan sebagai dasar perhitungan penggajian supir.</p>
         </div>
 
         {{-- Kotak Identitas Pengemudi & Unit Armada --}}
@@ -176,7 +176,7 @@
                         <td class="py-3 px-3 text-center text-slate-500">1</td>
                         <td class="py-3 px-3">
                             <span class="font-bold text-slate-900">{{ $rute?->kode ?? '—' }}</span>
-                            <div class="text-[0.6875rem] text-slate-500">{{ $rute?->asal ?? 'PIT' }} &rarr; {{ $rute?->tujuan ?? 'JETTY' }}</div>
+                            <div class="text-[0.6875rem] text-slate-500">{{ $rute?->asal ?? 'LOKASI ASAL' }} &rarr; {{ $rute?->tujuan ?? 'LOKASI TUJUAN' }}</div>
                         </td>
                         <td class="py-3 px-3 font-semibold text-slate-800">{{ $rute?->material ?? 'BATUBARA' }}</td>
                         <td class="py-3 px-3 text-center font-bold">{{ $trip->jumlah_rit }}</td>
@@ -206,7 +206,7 @@
             </div>
             <div class="rounded-xl border border-slate-200 p-3.5 space-y-1">
                 <span class="font-bold uppercase tracking-wider text-slate-600">Catatan Pengantaran:</span>
-                <p class="text-slate-800">{{ !empty($trip->catatan_pengantaran) ? $trip->catatan_pengantaran : 'Pengantaran normal sesuai standar operasional keselamatan tambang.' }}</p>
+                <p class="text-slate-800">{{ !empty($trip->catatan_pengantaran) ? $trip->catatan_pengantaran : 'Pengantaran normal sesuai standar operasional pengantaran logistik.' }}</p>
             </div>
         </div>
 
@@ -218,7 +218,7 @@
                     <div class="mt-auto">
                         <div class="border-b border-slate-400 w-3/4 mx-auto mb-1"></div>
                         <div class="font-bold text-slate-900">{{ auth()->user()->name ?? 'Admin Logistik' }}</div>
-                        <div class="text-[0.6875rem] text-slate-500">PT Anugerah Sumber Makmur</div>
+                        <div class="text-[0.6875rem] text-slate-500">{{ $perusahaanAktif->nama_perusahaan ?? 'PT Adiguna Sejahtera Mandiri' }}</div>
                     </div>
                 </div>
 
@@ -232,11 +232,11 @@
                 </div>
 
                 <div class="flex flex-col justify-between h-36 border border-slate-200 rounded-xl p-3 bg-slate-50/30">
-                    <div class="font-semibold text-slate-700 uppercase tracking-wide">Penerima Barang / Jetty</div>
+                    <div class="font-semibold text-slate-700 uppercase tracking-wide">Penerima Barang / Tujuan</div>
                     <div class="mt-auto">
                         <div class="border-b border-slate-400 w-3/4 mx-auto mb-1"></div>
                         <div class="font-bold text-slate-900">{{ !empty($trip->nama_penerima) ? $trip->nama_penerima : '(..........................................)' }}</div>
-                        <div class="text-[0.6875rem] text-slate-500">Petugas Timbangan Tujuan</div>
+                        <div class="text-[0.6875rem] text-slate-500">Petugas Penerima Tujuan</div>
                     </div>
                 </div>
             </div>
@@ -244,7 +244,7 @@
 
         {{-- Footer Lembar Catatan --}}
         <div class="border-t border-slate-200 pt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[0.6875rem] text-slate-500">
-            <div>Lembar 1: Kantor Pusat &bull; Lembar 2: Supir Armada &bull; Lembar 3: Pos Timbangan Jetty</div>
+            <div>Lembar 1: Kantor Pusat (HRD/Payroll) &bull; Lembar 2: Supir Armada &bull; Lembar 3: Penerima Tujuan</div>
             <div>Dicetak pada: {{ now()->translatedFormat('d/m/Y H:i') }} WIB &bull; {{ $author['judul'] ?? 'Payroll System pada PT ASM Lampung' }} ({{ $author['nama'] ?? 'Nabela Septiara' }} - {{ $author['npm'] ?? '2311050052' }})</div>
         </div>
     </div>

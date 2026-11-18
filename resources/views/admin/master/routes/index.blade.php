@@ -185,7 +185,7 @@
         <x-ui.modal-shell
             name="modalRuteTambah"
             title="Tambah Tarif Rute Angkutan"
-            subtitle="Konfigurasi koridor pengangkutan tambang, jarak, tarif per ton, dan uang jalan standar."
+            subtitle="Konfigurasi jalur pengantaran untuk perhitungan penggajian, jarak, tarif per ton, dan uang jalan standar."
             icon="alt_route"
             accent="gradient"
             badge="Formulir Baru"
@@ -226,7 +226,7 @@
                         <x-ui.modal-field label="Alamat Tujuan" name="alamat_tujuan" icon="place" meta="(Opsional)"
                             :error="$errors->first('alamat_tujuan')">
                             <input type="text" id="alamat_tujuan" name="alamat_tujuan" value="{{ old('alamat_tujuan') }}"
-                                maxlength="150" placeholder="Stockpile Jetty Kertapati"
+                                maxlength="150" placeholder="Lokasi Tujuan Pengantaran"
                                 class="w-full rounded-lg bg-surface-container-low py-2 pl-9 pr-3 font-sans text-body-md text-slate-text-primary transition-all focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary">
                         </x-ui.modal-field>
                     </div>

@@ -24,27 +24,27 @@
                     @endif
                     <div class="flex flex-col min-w-0">
                         <span class="font-display text-headline-sm font-bold tracking-tight text-white leading-tight truncate max-w-[18rem]">{{ $dataPerusahaan->nama_perusahaan ?? config('app.name') }}</span>
-                        <span class="font-sans text-label-sm uppercase tracking-wider text-slate-text-muted truncate">{{ $dataPerusahaan->bidang_usaha ?: 'Logistik Batubara &amp; Angkutan Tambang' }}</span>
+                        <span class="font-sans text-label-sm uppercase tracking-wider text-slate-text-muted truncate">{{ $dataPerusahaan->bidang_usaha ?: 'Sistem Informasi Penggajian Supir' }}</span>
                     </div>
                 </div>
 
                 <div class="relative z-10 my-auto py-10">
 
                     <h1 class="mb-4 font-display text-headline-lg font-extrabold leading-snug tracking-tight text-white">
-                        Sistem Penggajian Supir &amp; Logistik Batubara Terintegrasi
+                        Sistem Informasi Penggajian Supir Terintegrasi
                     </h1>
                     <p class="mb-8 font-sans text-body-md leading-relaxed text-slate-text-muted">
-                        Arsitektur perhitungan upah angkutan otomatis, sinkronisasi data timbangan jembatan, uang jalan (UJL), dan slip pengantaran presisi tinggi dalam satu dasbor komprehensif.
+                        Otomatisasi perhitungan gaji dan bagi hasil komisi supir berbasis verifikasi surat jalan pengantaran, rekonsiliasi uang jalan, cicilan kasbon, serta penerbitan slip gaji resmi dalam satu dasbor.
                     </p>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="rounded-xl bg-sidebar-surface/80 p-4 backdrop-blur-sm">
                             <div class="mb-2 flex items-center gap-2 text-banner-sky">
-                                <span class="material-symbols-outlined text-[1.25rem]">schedule</span>
-                                <span class="mark-label-invert font-sans text-label-sm uppercase tracking-wide">Operasional</span>
+                                <span class="material-symbols-outlined text-[1.25rem]">calculate</span>
+                                <span class="mark-label-invert font-sans text-label-sm uppercase tracking-wide">Rekonsiliasi</span>
                             </div>
-                            <div class="font-display text-headline-sm font-bold text-white">24 Jam Non-Stop</div>
-                            <div class="mt-1 font-sans text-body-sm text-slate-text-muted">Pengangkutan Tambang ke Pelabuhan Terpadu</div>
+                            <div class="font-display text-headline-sm font-bold text-white">4 Tahap Presisi</div>
+                            <div class="mt-1 font-sans text-body-sm text-slate-text-muted">Perhitungan Surat Jalan, Uang Jalan &amp; Komisi</div>
                         </div>
                         <div class="rounded-xl bg-sidebar-surface/80 p-4 backdrop-blur-sm">
                             <div class="mb-2 flex items-center gap-2 text-net-pay-emerald">
@@ -52,7 +52,7 @@
                                 <span class="mark-label-invert font-sans text-label-sm uppercase tracking-wide">Validasi Kas</span>
                             </div>
                             <div class="font-display text-headline-sm font-bold text-white">100% Akurat</div>
-                            <div class="mt-1 font-sans text-body-sm text-slate-text-muted">Audit Pengantaran &amp; Potongan Solar</div>
+                            <div class="mt-1 font-sans text-body-sm text-slate-text-muted">Otorisasi Gaji Berjenjang &amp; Slip Resmi</div>
                         </div>
                     </div>
                 </div>

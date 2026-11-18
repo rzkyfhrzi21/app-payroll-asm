@@ -65,7 +65,7 @@
             <div class="rounded-xl bg-card-bg p-space-lg shadow-card">
                 <span class="font-sans text-label-sm uppercase tracking-wider">Total Tonase</span>
                 <div class="font-display text-financial-total font-bold text-slate-text-primary">{{ $payroll['tonnage'] }} <span class="font-sans text-label-md font-normal text-slate-text-secondary">Ton</span></div>
-                <span class="font-sans text-body-sm text-slate-text-secondary">Sesuai timbangan jembatan</span>
+                <span class="font-sans text-body-sm text-slate-text-secondary">Sesuai bukti surat jalan</span>
             </div>
             <div class="rounded-xl bg-card-bg p-space-lg shadow-card">
                 <span class="font-sans text-label-sm uppercase tracking-wider">Uang Jalan Diterima</span>
@@ -366,7 +366,7 @@
 
                     <div class="grid grid-cols-1 gap-space-md sm:grid-cols-2">
                         <x-ui.modal-field label="Tonase Timbangan Bersih (Ton)" name="tonase_ton" :required="true" icon="scale"
-                            hint="Sesuaikan dengan angka tiket timbangan jembatan Jetty.">
+                            hint="Sesuaikan dengan angka tonase pada bukti surat jalan / timbangan.">
                             <input type="text" id="tonase_ton" name="tonase_ton" x-model="formKonfirmasi.tonase_ton"
                                 inputmode="decimal" placeholder="28,48" required
                                 class="w-full rounded-lg bg-surface-container-low py-2.5 pl-9 pr-14 font-financial-table text-body-md font-bold tabular-nums text-slate-text-primary focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary">
@@ -380,10 +380,10 @@
                         </div>
                     </div>
 
-                    <x-ui.modal-field label="Nama Pihak Penerima / Petugas Timbangan" name="nama_penerima" :required="true" icon="badge"
-                        hint="Isi nama jelas penerima barang atau petugas timbangan jetty/stockpile.">
+                    <x-ui.modal-field label="Nama Pihak Penerima / Petugas Tujuan" name="nama_penerima" :required="true" icon="badge"
+                        hint="Isi nama jelas penerima barang atau petugas di lokasi tujuan.">
                         <input type="text" id="nama_penerima" name="nama_penerima" x-model="formKonfirmasi.nama_penerima"
-                            maxlength="120" required placeholder="Contoh: BUDI (JETTY 2)"
+                            maxlength="120" required placeholder="Contoh: BUDI SANTOSO"
                             class="w-full rounded-lg bg-surface-container-low py-2.5 pl-9 pr-3 font-sans text-body-md uppercase text-slate-text-primary focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary">
                     </x-ui.modal-field>
 
@@ -432,9 +432,9 @@
                     </x-ui.modal-field>
 
                     <x-ui.modal-field label="Catatan Pengantaran" name="catatan_pengantaran" icon="notes" meta="(Opsional)"
-                        hint="Catat nama petugas penerima, kondisi bongkar muat, atau keterangan timbangan.">
+                        hint="Catat nama petugas penerima, kondisi bongkar muat, atau keterangan penerimaan.">
                         <input type="text" id="catatan_pengantaran" name="catatan_pengantaran" x-model="formKonfirmasi.catatan_pengantaran"
-                            maxlength="255" placeholder="Contoh: BARANG DITERIMA POS TIMBANGAN JETTY 2 AMAN"
+                            maxlength="255" placeholder="Contoh: MUATAN DITERIMA LENGKAP DI LOKASI TUJUAN"
                             class="w-full rounded-lg bg-surface-container-low py-2.5 pl-9 pr-3 font-sans text-body-md text-slate-text-primary focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary">
                     </x-ui.modal-field>
                 </div>

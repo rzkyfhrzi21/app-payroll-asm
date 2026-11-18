@@ -135,7 +135,7 @@
                 <div class="flex max-w-3xl flex-col">
                     <div class="mb-1 flex items-center gap-2">
                         <span class="rounded bg-surface-container-high px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-wider text-primary">Direksi Only</span>
-                        <span class="font-sans text-body-sm text-slate-text-muted">&bull; Arsip Keuangan Logistik Tambang</span>
+                        <span class="font-sans text-body-sm text-slate-text-muted">&bull; Arsip Laporan Penggajian Supir</span>
                     </div>
                     <h1 class="font-display text-headline-lg font-bold tracking-tight text-slate-text-primary">Laporan Rekapitulasi Penggajian &amp; Finansial Pengantaran</h1>
                     <p class="mt-1 font-sans text-body-md leading-relaxed text-slate-text-secondary">
@@ -545,10 +545,10 @@
                         <span class="mb-1 inline-block rounded-full bg-net-pay-surface px-2.5 py-0.5 font-sans text-label-sm font-bold uppercase tracking-wider text-net-pay-emerald">
                             STATUS DOKUMEN: DISAHKAN &amp; DIAUDIT
                         </span>
-                        <h3 class="font-display text-headline-sm font-bold text-slate-text-primary">Audit Otentikasi Keuangan Logistik &amp; Pimpinan</h3>
+                        <h3 class="font-display text-headline-sm font-bold text-slate-text-primary">Audit Otentikasi Penggajian &amp; Pimpinan</h3>
                         <p class="mt-1 font-sans text-body-sm text-slate-text-secondary">
-                            Laporan ini dibuat secara otomatis melalui sistem perhitungan pengantaran tambang terintegrasi. Telah divalidasi oleh tim audit HRD
-                            dan disetujui langsung oleh Direksi untuk eksekusi disbursement bank.
+                            Laporan ini dibuat secara otomatis melalui sistem informasi penggajian supir terintegrasi. Telah divalidasi oleh tim audit HRD
+                            dan disetujui langsung oleh Direksi untuk eksekusi pencairan gaji.
                         </p>
                     </div>
                 </div>

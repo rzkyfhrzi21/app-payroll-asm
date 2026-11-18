@@ -122,7 +122,7 @@
                                 maxlength="150"
                                 x-model="namaPerusahaan"
                                 value="{{ old('nama_perusahaan', $perusahaanAktif->nama_perusahaan) }}"
-                                placeholder="Contoh: PT KAFA COALTRANS MINING LOGISTICS"
+                                placeholder="Contoh: PT ADIGUNA SEJAHTERA MANDIRI"
                                 class="h-10 w-full rounded-lg border border-card-border bg-canvas-bg px-3.5 font-sans text-body-md uppercase text-slate-text-primary focus:border-banner-indigo focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-banner-indigo/20"
                             >
                             @error('nama_perusahaan')
@@ -141,7 +141,7 @@
                                 maxlength="30"
                                 x-model="kodePerusahaan"
                                 value="{{ old('kode_perusahaan', $perusahaanAktif->kode_perusahaan) }}"
-                                placeholder="Contoh: COALTRANS"
+                                placeholder="Contoh: PT ASM"
                                 class="h-10 w-full rounded-lg border border-card-border bg-canvas-bg px-3.5 font-sans text-body-md uppercase text-slate-text-primary focus:border-banner-indigo focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-banner-indigo/20"
                             >
                             @error('kode_perusahaan')
@@ -158,7 +158,7 @@
                                 type="text"
                                 maxlength="150"
                                 value="{{ old('bidang_usaha', $perusahaanAktif->bidang_usaha) }}"
-                                placeholder="Contoh: LOGISTIK BATUBARA & ANGKUTAN ALAT BERAT"
+                                placeholder="Contoh: PENGANTARAN LOGISTIK BATUBARA"
                                 class="h-10 w-full rounded-lg border border-card-border bg-canvas-bg px-3.5 font-sans text-body-md uppercase text-slate-text-primary focus:border-banner-indigo focus:bg-card-bg focus:outline-none focus:ring-2 focus:ring-banner-indigo/20"
                             >
                             @error('bidang_usaha')
