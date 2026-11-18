@@ -42,16 +42,6 @@ jobs:
           chmod +x /tmp/gitleaks
           /tmp/gitleaks detect --source . --redact -v
 
-      - name: PHP Syntax Check & Config Parse Validation
-        run: |
-          find app bootstrap config database routes public -type f -name "*.php" -print0 | xargs -0 -n1 php -l
-          cp .env.example .env
-          php artisan key:generate --ansi
-          php artisan config:clear
-
-      - name: Run Automated Tests (PHPUnit)
-        run: php artisan test
-
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -63,6 +53,16 @@ jobs:
           npm ci
           npm run build
           test -f public/build/manifest.json
+
+      - name: PHP Syntax Check & Config Parse Validation
+        run: |
+          find app bootstrap config database routes public -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+          cp .env.example .env
+          php artisan key:generate --ansi
+          php artisan config:clear
+
+      - name: Run Automated Tests (PHPUnit)
+        run: php artisan test
 
   deploy-vps:
     name: Deploy to VPS Muse via Cloudflared Tunnel
