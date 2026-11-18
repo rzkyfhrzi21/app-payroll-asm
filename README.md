@@ -15,27 +15,43 @@ Tujuan utama dari pengembangan sistem ini adalah **menghadirkan standarisasi dan
 Sistem ini memecahkan berbagai risiko bisnis nyata, seperti:
 
 - Mencegah timbulnya surat jalan fiktif melalui validasi foto bukti fisik bertanda tangan penerima dan normalisasi data timbangan.
-- Menjamin tidak ada surat jalan yang tertinggal (_unverified trips_) saat gaji diajukan ke Direksi melalui mekanisme blokir otomatis (_strict pre-condition check_).
+- Menjamin tidak ada surat jalan yang tertinggal (_unverified trips_) saat buku periode ditutup dan diajukan ke Direksi melalui mekanisme blokir otomatis (_strict pre-condition check_).
 - Menghilangkan perselisihan pembagian komisi supir melalui rekonsiliasi berjenjang 4 tahap berpresisi bilangan bulat Rupiah (`BIGINT`).
-- Mengotomatiskan pemotongan angsuran kasbon supir tepat pada saat pencairan dana gaji dieksekusi oleh Pimpinan.
+- Mengotomatiskan pemotongan angsuran kasbon supir tepat pada saat pencairan dana gaji dieksekusi oleh Pimpinan, disertai pengiriman notifikasi slip gaji via Email & WhatsApp.
 - Memberikan transparansi kepada pengemudi melalui **Portal Mandiri Supir** dan fitur **Simulasi & Kalkulator Gaji (1 s.d. 31 Rit)**.
 
 ---
 
-## 2. Diagram Alur Bisnis Penggajian End-to-End
+## 2. Arsitektur & Spesifikasi Teknis (Tech Stack)
 
-Berikut adalah alur aktivitas sistem dari penugasan Surat Jalan hingga pengesahan slip gaji:
-
-![Activity Diagram Alur Penggajian](ACTIVITY_DIAGRAM.png)
+| Lapisan | Teknologi & Konfigurasi Standar |
+| :--- | :--- |
+| **Backend Framework** | **Laravel 13.x** (PHP `^8.3`), Monolith Server-Side Rendered (SSR) |
+| **Frontend & UI** | **Blade Components**, **Tailwind CSS v3.4**, **Alpine.js v3**, **Vite 7** |
+| **Database Utama** | **TiDB Cloud Serverless (MySQL Compatible, Port `4000` + TLS/SSL)** / MySQL 8.0 |
+| **Session & Cache** | `file` driver di disk lokal (`SESSION_DRIVER=file`, `CACHE_STORE=file`) untuk latensi rendah |
+| **Penyimpanan Media** | Disk lokal `storage/app/public` (`storage:link`), kompresi otomatis gambar ke `.webp` (maks 2 MB) |
+| **Integrasi Notifikasi** | SMTP Gmail (Email Slip Gaji) & **Fonnte API** (WhatsApp Gateway) |
+| **CI/CD & Deployment** | **GitHub Actions** (`quality-gate` → `deploy-vps` via **Cloudflare Tunnel `cloudflared`**) ke **Nginx + PHP 8.3-FPM** (`https://nabela-payroll.web.id`) |
 
 ---
 
-## 3. Tahapan Alur Operasional Penggajian (Urutan Bernomor 1–10)
+## 3. Diagram Alur Bisnis & Skema Basis Data (ERD)
+
+### 3.1. Activity Diagram Alur Penggajian End-to-End
+![Activity Diagram Alur Penggajian](dokumen/ACTIVITY_DIAGRAM.png)
+
+### 3.2. Entity Relationship Diagram (ERD Database)
+![ERD Database Payroll ASM](dokumen/ERD_DATABASE.png)
+
+---
+
+## 4. Tahapan Alur Operasional Penggajian (Urutan Bernomor 1–10)
 
 Seluruh proses di dalam aplikasi mengikuti urutan bernomor yang mengikat antar peran (_Admin HRD_, _Supir_, dan _Pimpinan/Direksi_):
 
 1. **Pembuatan Surat Jalan (`draft` atau langsung `terbit`) — Admin HRD (`/admin/operational/trips`):**
-    - Admin membuat Surat Jalan baru untuk penugasan supir, nomor polisi armada, rute koridor tambang, dan uang jalan jalan operasional.
+    - Admin membuat Surat Jalan baru untuk penugasan supir, nomor polisi armada, rute koridor tambang, dan uang jalan operasional.
     - Status awal dapat disetel ke **`draft`** (_Draf / Belum Diterbitkan_) atau langsung **`terbit`** (_Terbit / Siap Dikirim Supir_).
     - **Kunci Keamanan:** Surat Jalan berstatus **`draft` TIDAK BOLEH terlihat di Portal Supir (`/my/trips`)** dan setiap aksi supir (`mulai-kirim` atau `konfirmasi`) atas Surat Jalan `draft` otomatis ditolak oleh server dengan HTTP `403`.
 
@@ -53,34 +69,35 @@ Seluruh proses di dalam aplikasi mengikuti urutan bernomor yang mengikat antar p
 
 5. **Verifikasi Surat Jalan Lapangan (`menunggu_verifikasi` → `terverifikasi`) — Admin HRD (`/admin/operational/trips`):**
     - Admin memeriksa keabsahan foto bukti fisik bertanda tangan, kesesuaian tonase muatan, dan identitas penerima (dapat diverifikasi satuan maupun massal).
-    - Admin menandai Surat Jalan sebagai **`terverifikasi`** (_Berhasil Terkirim & Terverifikasi_). Hanya surat jalan dengan status `terverifikasi` yang sah untuk diperhitungkan dalam penggajian bulanan.
+    - Admin menandai Surat Jalan sebagai **`terverifikasi`** (_Berhasil Terkirim & Terverifikasi_). Hanya surat jalan dengan status `terverifikasi` yang sah untuk diperhitungkan dalam penggajian.
 
-6. **Rekonsiliasi Penggajian & Blokir Pengajuan (`draft` → `pending`) — Admin HRD (`/admin/payroll`):**
+6. **Rekonsiliasi Penggajian, Tutup Buku Periode, & Blokir Pengajuan (`draft` → `pending`) — Admin HRD (`/admin/payroll`):**
     - Layanan `PayrollCalculationService::rekonsiliasiPeriode()` **hanya** menghitung surat jalan yang berstatus **`terverifikasi`**.
-    - **Blokir Integritas:** Ketika Admin mengajukan rekapitulasi gaji ke Pimpinan (`POST /admin/payroll/{period}/submit`), server **wajib memblokir dengan HTTP `422`** apabila masih ditemukan Surat Jalan pada periode tersebut yang berstatus `draft`, `terbit`, `sedang_dikirim`, atau `menunggu_verifikasi`. Seluruh perjalanan harus tuntas diverifikasi atau dibatalkan terlebih dahulu.
-    - Setelah lolos verifikasi, status periode berubah menjadi **`pending`** (_Menunggu Otorisasi Pimpinan_).
+    - Siklus periode dikelola oleh `PeriodeGajiLifecycleService`: hanya ada **satu periode berjalan** (`tanggal_selesai = NULL`). Saat tanggal gajian tiba, Admin menekan **Tutup Buku & Ajukan ke Pimpinan** (`PATCH /admin/payroll/{period}/tutup-buku`) yang otomatis mengunci tanggal selesai periode berjalan, mengubah status ke **`pending`**, dan membuka periode berikutnya (`H+1`).
+    - **Blokir Integritas:** Server **wajib memblokir dengan HTTP `422`** apabila masih ditemukan Surat Jalan pada periode tersebut yang berstatus `draft`, `terbit`, `sedang_dikirim`, atau `menunggu_verifikasi`.
 
 7. **Audit & Otorisasi Bertahap Direksi — Pimpinan / Direksi (`/executive/payroll`):**
     - Pimpinan memeriksa kebutuhan likuiditas kas (_cash requirement_), total komisi pengemudi, rekap uang jalan, beban sparepart per unit armada, serta potongan kewajiban (BPJS dan kasbon).
     - Pimpinan berwenang memberikan **ACC Satuan** per supir, **ACC Baris Terpilih** via checkbox, atau **ACC Semua** (`approved`).
-    - Jika ditemukan selisih atau anomali data, Pimpinan dapat mengembalikan periode ke status **`draft`** (_Tolak / Revisi_) disertai **`catatan_penolakan`**.
+    - Jika ditemukan selisih atau anomali data, Pimpinan dapat mengembalikan periode ke status **`draft`** (_Tolak / Revisi_) disertai **`catatan_penolakan`** (Admin dapat menggunakan fitur **Buka Kembali Periode** bila perlu menambah surat jalan susulan).
 
-8. **Pencairan Dana (`approved` → `paid`) & Pemotongan Kasbon Otomatis — Pimpinan (`/executive/payroll`):**
+8. **Pencairan Dana (`approved` → `paid`), Pemotongan Kasbon, & Notifikasi Otomatis — Pimpinan (`/executive/payroll`):**
     - Pimpinan mengeksekusi pencairan dana (`PATCH /executive/payroll/{period}/disburse`) untuk baris gaji berstatus `approved` menjadi **`paid`** (_Sudah Dicairkan_).
-    - Proses pencairan otomatis menandai jadwal tagihan `angsuran_kasbon` periode berjalan menjadi **`terpotong`** dan mengurangi saldo `kasbon.sisa_pinjaman` (otomatis berstatus **`lunas`** saat sisa pinjaman mencapai `0`).
+    - Proses pencairan otomatis menandai jadwal tagihan `angsuran_kasbon` periode berjalan menjadi **`terpotong`**, mengurangi saldo `kasbon.sisa_pinjaman` (otomatis berstatus **`lunas`** saat sisa mencapai `0`), serta mengirimkan notifikasi slip gaji ke Email dan WhatsApp supir.
 
-9. **Penerbitan Slip Gaji & Laporan Keuangan Resmi (`data_perusahaan`):**
-    - Slip gaji dan laporan keuangan periode hanya diterbitkan dan dapat diunduh supir/admin setelah periode berstatus disetujui (`approved` / `paid`).
+9. **Penerbitan Slip Gaji, Impor/Ekspor Excel Multi-Sheet, & Laporan Resmi (`data_perusahaan`):**
+    - Slip gaji dan laporan keuangan periode hanya diterbitkan dan dapat diunduh setelah periode disetujui (`approved` / `paid`).
+    - Tersedia fitur ekspor & impor migrasi Excel multi-sheet (`.xlsx`) dengan staging pratinjau dan deteksi anomali di `/admin/reports`.
     - Identitas legal perusahaan (kop surat, logo, nomor rekening bank pencairan, nama & tanda tangan pemilik) dikelola secara terpusat oleh Pimpinan di `/executive/company` pada tabel `data_perusahaan`.
 
 10. **Simulasi Mandiri & Perencanaan Ritase Supir — Supir (`/my/simulation`):**
     - Supir dapat membuat proyeksi penghasilan mandiri dengan menyusun 1 s.d. 31 baris surat jalan simulasi berdasarkan rute-rute resmi aktif.
-    - Supir dapat memilih mode potongan: **Data Riil Sistem** (otomatis menarik beban sparepart unit armadanya, potongan BPJS, dan cicilan kasbon bulan berjalan) atau **Input Manual Sendiri** (memasukkan perkiraan angka bebas untuk menganalisis berbagai skenario).
-    - Hasil simulasi dapat disimpan ke arsip akun supir pada tabel `simulasi_gaji` atau dimuat ulang kapan saja.
+    - Supir dapat memilih mode potongan: **Data Riil Sistem** (otomatis menarik beban sparepart unit armadanya, potongan BPJS, dan cicilan kasbon bulan berjalan) atau **Input Manual Sendiri**.
+    - Hasil simulasi dapat disimpan ke arsip akun supir pada tabel `simulasi_gaji`.
 
 ---
 
-## 4. Rumus Kalkulasi Gaji Supir 4 Tahap
+## 5. Rumus Kalkulasi Gaji Supir 4 Tahap
 
 Seluruh perhitungan matematis dikonsolidasikan pada satu kelas layanan tunggal: `App\Services\PayrollCalculationService::hitungKomponenGaji()`.  
 Semua nilai nominal uang menggunakan bilangan bulat Rupiah (`BIGINT`) untuk mencegah galat pembulatan desimal (_floating-point rounding errors_), berat muatan dalam kilogram (`tonase_kg BIGINT`), dan persentase komisi supir disimpan sebagai basis poin (`persentase_komisi_bp SMALLINT`, di mana `1000` = `10,00%`).
@@ -113,37 +130,40 @@ Ritase Terverifikasi (tonase_kg × tarif_per_ton)
 
 ---
 
-## 5. Matriks Peran & Hak Akses Pengguna (Role-Based Access Control)
+## 6. Matriks Peran & Hak Akses Pengguna (Role-Based Access Control)
 
-| Peran                               | Prefix URL     | Hak Akses & Tanggung Jawab Operasional                                                                                                                                                                                                     |
-| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Admin HRD** (`admin`)             | `/admin/*`     | Pengelolaan data master (supir, armada truk, rute), penerbitan & verifikasi surat jalan lapangan, rekonsiliasi payroll bulanan, pengajuan pengesahan ke Pimpinan (`submit`). **Dilarang keras menyetujui / memberi ACC.**                  |
-| **Pimpinan / Direksi** (`pimpinan`) | `/executive/*` | Pemegang otoritas tertinggi pengesahan gaji: ACC satuan per supir, ACC batch/massal, penolakan/revisi periode ke draf, eksekusi pencairan dana gaji (`disburse`), serta tata kelola data legal perusahaan (`/executive/company`).          |
-| **Pengemudi / Supir** (`supir`)     | `/my/*`        | Akses mandiri supir: menerima surat jalan terbit, tombol mulai kirim, konfirmasi serah terima muatan & unggah bukti foto fisik, pemantauan buku kasbon & jadwal cicilan, kalkulator simulasi gaji (1–31 rit), serta unduh slip gaji resmi. |
+| Peran | Prefix URL | Hak Akses & Tanggung Jawab Operasional |
+| :--- | :--- | :--- |
+| **Admin HRD** (`admin`) | `/admin/*` | Pengelolaan data master (supir, armada truk + jenis truk, rute), penerbitan & verifikasi surat jalan lapangan, pencatatan biaya operasional & kasbon cicilan, rekonsiliasi payroll, tutup buku & pengajuan ke Pimpinan. **Dilarang keras menyetujui / memberi ACC.** |
+| **Pimpinan / Direksi** (`pimpinan`) | `/executive/*` | Pemegang otoritas tertinggi pengesahan gaji: ACC satuan per supir, ACC batch/massal, penolakan/revisi periode ke draf, eksekusi pencairan dana gaji (`disburse`), pemantauan analitik eksekutif, serta tata kelola profil legal perusahaan (`/executive/company`). |
+| **Pengemudi / Supir** (`supir`) | `/my/*` | Portal mandiri supir: menerima surat jalan terbit, tombol mulai kirim, konfirmasi serah terima muatan & unggah bukti foto fisik, pemantauan buku kasbon & jadwal cicilan, kalkulator simulasi gaji (1–31 rit), serta unduh slip gaji resmi. |
 
 ---
 
-## 6. Panduan Menjalankan Proyek di Lingkungan Lokal (CMD Windows)
+## 7. Panduan Menjalankan Proyek di Lingkungan Lokal (CMD Windows)
 
 ```cmd
-:: 1. Masuk ke folder proyek Laravel
+:: 1. Clone repositori & masuk ke direktori proyek
+git clone git@github.com:rzkyfhrzi21/app-payroll-asm.git
 cd app-payroll-asm
 
 :: 2. Pasang dependensi PHP dan Node.js
 composer install
 npm install
 
-:: 3. Konfigurasi Environment & Kunci Aplikasi
+:: 3. Salin konfigurasi environment & buat kunci enkripsi aplikasi
 copy .env.example .env
 php artisan key:generate
 
-:: 4. Migrasi Database dan Muat Data Simulasi Akademik
-php artisan migrate:fresh --seed
+:: 4. Sesuaikan kredensial DB di .env (TiDB Cloud Serverless port 4000 atau MySQL lokal)
+::    Lalu jalankan migrasi, seeder data contoh, dan symlink storage publik
+php artisan migrate --seed
+php artisan storage:link
 
-:: 5. Kompilasi Aset Frontend (Tailwind CSS & Blade)
+:: 5. Kompilasi aset frontend (Vite + Tailwind CSS)
 npm run build
 
-:: 6. Jalankan Server Pengembangan Lokal
+:: 6. Jalankan server pengembangan lokal
 php artisan serve --port=8888
 ```
 
@@ -158,28 +178,45 @@ Setelah server aktif, akses aplikasi melalui peramban web di: `http://127.0.0.1:
 
 ---
 
-## 7. Pengujian Otomatis & Verifikasi Kepatuhan (QA Test Suite)
+## 8. Pengujian Otomatis & Endpoint Health Check
 
-Aplikasi dilengkapi dengan rangkaian unit & feature test komprehensif untuk memastikan seluruh aturan bisnis dan alur keamanan OWASP terpenuhi:
+Aplikasi dilengkapi 222 pengujian otomatis (Unit & Feature Test) serta endpoint pemantauan kesehatan sistem:
 
 ```cmd
-:: Menjalankan seluruh pengujian fungsional dan keamanan
+:: 1. Pastikan aset Vite sudah ter-build sebelum menjalankan PHPUnit
+npm run build
+
+:: 2. Jalankan seluruh suite pengujian otomatis (PHPUnit)
 php artisan test
 
-:: Verifikasi integritas kompilasi template Blade
+:: 3. Verifikasi kompilasi seluruh template Blade
 php artisan view:clear
 php artisan view:cache
+```
 
-:: Verifikasi rekonsiliasi rumus matematika slip fisik (Single Source of Truth)
-php ..\Zzz\cek-layanan-payroll.php
+- **Health Check Endpoint:** `GET /health` mengembalikan respons JSON `{"status":"ok"}` (HTTP `200`) tanpa autentikasi dan tanpa membocorkan detail konfigurasi internal.
 
-:: Verifikasi status HTTP 200 seluruh rute sistem
-php ..\Zzz\verifikasi-halaman.php
+---
+
+## 9. Alur Branching & CI/CD Auto-Deploy ke VPS (`nabela-payroll.web.id`)
+
+Repositori ini menggunakan pemisahan branch untuk pengembangan dan rilis produksi:
+
+- **`master` (Development Branch):** Branch utama untuk pengerjaan fitur, perbaikan bug, dan sinkronisasi kode antar perangkat. Push ke `master` **tidak** memicu deployment ke server produksi.
+- **`production` (Live Release Branch):** Branch khusus rilis produksi. Push ke `production` akan memicu workflow [`.github/workflows/deploy-vps.yml`](.github/workflows/deploy-vps.yml):
+  1. **Job `quality-gate`:** Menjalankan `composer validate --strict`, instalasi dependensi, pemindaian kebocoran kredensial dengan **Gitleaks**, kompilasi aset frontend (`npm ci && npm run build`), pemeriksaan sintaks seluruh file PHP (`php -l`), dan eksekusi 222 pengujian otomatis (`php artisan test`).
+  2. **Job `deploy-vps`:** Menginstal dependensi produksi (`composer install --no-dev --optimize-autoloader`), membangun aset Vite (`public/build/`), mengemas tarball (mengecualikan `.env*` dan `storage/*` agar file unggahan di server tetap aman), mengirim arsip melalui **Cloudflare Tunnel (`cloudflared`)** ke `/home/hatch/workspace/nabela-payroll.web.id/`, memperbarui cache konfigurasi/route/view, menjalankan `php artisan storage:link`, dan memverifikasi endpoint `GET /health`.
+
+### Perintah Rilis ke Produksi:
+
+```cmd
+:: Push kode dari branch master ke branch production untuk memicu deploy otomatis
+git push origin master:production
 ```
 
 ---
 
-## 8. Identitas Peneliti / Pengembang & Konfigurasi `.env` (`AUTHOR_*`)
+## 10. Identitas Peneliti / Pengembang & Konfigurasi `.env` (`AUTHOR_*`)
 
 Identitas peneliti/pengembang dikelola melalui variabel environment `.env` (dibaca lewat `config('app.author')` di `config/app.php` dan dibagikan ke seluruh tampilan melalui `AppServiceProvider`). Apabila salah satu variabel `.env` dikosongkan atau tidak disetel, sistem secara otomatis menggunakan nilai bawaan (*fallback default*) berikut:
 
