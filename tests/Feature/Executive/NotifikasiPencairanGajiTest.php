@@ -52,7 +52,6 @@ class NotifikasiPencairanGajiTest extends TestCase
             'hasil_bersih_armada' => 4072000,
             'persentase_komisi_bp' => 1000,
             'gaji_komisi' => 407200,
-            'total_tunjangan' => 0,
             'potongan_bpjs' => 129000,
             'potongan_kasbon' => 0,
             'gaji_bersih' => 278200,

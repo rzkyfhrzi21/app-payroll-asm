@@ -178,7 +178,6 @@ class SlipGajiExcelService
         $baris[] = ['', '', '', '', '', '', '', 'Hasil Bersih Armada', '', '', (int) $penggajian->hasil_bersih_armada];
         // Persentase komisi tidak ditampilkan sebagai angka persen (AGENTS.md).
         $baris[] = ['', '', '', '', '', '', '', 'Gaji Komisi (Gross Pay)', '', '', (int) $penggajian->gaji_komisi];
-        $baris[] = ['', '', '', '', '', '', '', 'Tunjangan', '', '', (int) $penggajian->total_tunjangan];
         $baris[] = ['', '', '', '', '', '', '', 'Potongan BPJS', '', '', (int) $penggajian->potongan_bpjs];
         $baris[] = ['', '', '', '', '', '', '', 'Potongan Kasbon', '', '', (int) $penggajian->potongan_kasbon];
         $baris[] = ['', '', '', '', '', '', '', 'GAJI BERSIH DITERIMA', '', '', (int) $penggajian->gaji_bersih];

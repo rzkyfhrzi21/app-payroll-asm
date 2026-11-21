@@ -144,3 +144,5 @@ Aturan pemisahan kewenangan:
    - Sesuai aturan proyek (`AGENTS.md` 3.6), `penggajian.potongan_kasbon` **dilarang** diisi angka manual dan wajib berasal dari akumulasi tabel `angsuran_kasbon`.
    - `PayrollCalculationService::hitungPotonganKasbonPeriode()` menjumlahkan `angsuran_kasbon.nominal` dari kasbon milik `id_karyawan` yang berstatus `approved` atau `lunas`, baik yang sudah tertaut langsung lewat `id_periode_gaji` maupun yang `tanggal_rencana`-nya jatuh di rentang `[tanggal_mulai, tanggal_selesai]` periode (karena cicilan masa depan dapat bernilai `id_periode_gaji = NULL`).
    - Pada proses impor migrasi (`ExcelPayrollMigrationService::imporBerkasMigrasi()`), `potongan_kasbon` juga diambil langsung dari `SUM(angsuran_kasbon.nominal)` untuk `id_periode_gaji` dan `id_karyawan` terkait, bukan dari sel angka manual di file Excel.
+
+<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->

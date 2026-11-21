@@ -9,7 +9,7 @@
        1. Total Angkutan Kotor = sum(Tonase x Tarif per Ton).
        2. Hasil Bersih Armada = max(0, Total Angkutan Kotor - Total Uang Jalan - Biaya Sparepart).
        3. Komisi Supir = Hasil Bersih Armada x 10%.
-       4. Gaji Bersih = max(0, Komisi + Total Tunjangan - Potongan BPJS - Potongan Kasbon).
+       4. Gaji Bersih = max(0, Komisi - Potongan BPJS - Potongan Kasbon).
      - Data dari Controller (Driver/SalarySimulationController@index):
        * $daftarRute: Master rute aktif beserta tarif per ton dan uang jalan default.
        * $ritaseRiil: Data surat jalan supir yang sudah terverifikasi bulan berjalan.
@@ -239,7 +239,7 @@
             <div class="flex flex-col gap-5 rounded-2xl border border-card-border bg-card-bg p-5 shadow-card lg:col-span-7">
                 <div class="flex flex-col gap-2 border-b border-card-border pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 class="font-display text-headline-sm font-bold text-slate-text-primary">Pengaturan Potongan &amp; Tunjangan</h3>
+                        <h3 class="font-display text-headline-sm font-bold text-slate-text-primary">Pengaturan Potongan</h3>
                         <p class="font-sans text-body-sm text-slate-text-secondary">Pilih apakah menggunakan data riil sistem atau memasukkan angka perkiraan sendiri.</p>
                     </div>
 
@@ -264,7 +264,7 @@
                     </div>
                 </div>
 
-                {{-- Komponen Potongan & Tunjangan --}}
+                {{-- Komponen Potongan --}}
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {{-- 1. Biaya Sparepart Armada --}}
                     <div class="flex flex-col gap-1.5 rounded-xl border border-card-border/70 bg-surface-container-low/50 p-3.5">
@@ -330,25 +330,6 @@
                             >
                         </div>
                     </div>
-
-                    {{-- 4. Tunjangan & Bonus Tambahan --}}
-                    <div class="flex flex-col gap-1.5 rounded-xl border border-card-border/70 bg-surface-container-low/50 p-3.5">
-                        <div class="flex items-center justify-between">
-                            <label class="font-sans text-label-sm font-bold uppercase tracking-wider text-slate-text-primary">Tunjangan &amp; Bonus</label>
-                            <span class="rounded bg-net-pay-surface px-1.5 py-0.5 text-[0.625rem] font-bold uppercase text-net-pay-emerald">Penambah (+)</span>
-                        </div>
-                        <p class="font-sans text-xs text-slate-text-muted">Tunjangan tetap atau bonus performa ritase supir.</p>
-                        <div class="relative mt-1 flex items-center">
-                            <span class="pointer-events-none absolute left-3 font-financial-table text-xs font-bold text-slate-text-muted">Rp</span>
-                            <input
-                                type="number"
-                                min="0"
-                                step="50000"
-                                x-model.number="totalTunjanganInput"
-                                class="h-9 w-full rounded-lg border border-card-border bg-canvas-bg pl-9 pr-3 text-right font-financial-table text-body-md font-bold text-slate-text-primary focus:border-primary focus:ring-1 focus:ring-primary"
-                            >
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Form Simpan Skenario Simulasi --}}
@@ -365,7 +346,6 @@
                         <input type="hidden" name="biaya_sparepart" :value="biayaSparepart">
                         <input type="hidden" name="potongan_bpjs" :value="potonganBpjs">
                         <input type="hidden" name="potongan_kasbon" :value="potonganKasbon">
-                        <input type="hidden" name="total_tunjangan" :value="totalTunjanganInput || 0">
                         <input type="hidden" name="potongan_lain" value="0">
 
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-12">
@@ -452,11 +432,6 @@
                     </div>
 
                     <div class="flex items-center justify-between text-slate-text-secondary">
-                        <span>Tunjangan &amp; Bonus (+)</span>
-                        <span class="font-financial-table font-semibold text-net-pay-emerald" x-text="'+ ' + formatRupiah(totalTunjanganFinal)"></span>
-                    </div>
-
-                    <div class="flex items-center justify-between text-slate-text-secondary">
                         <span>Potongan BPJS (-)</span>
                         <span class="font-financial-table font-semibold text-danger-red" x-text="'- ' + formatRupiah(potonganBpjs)"></span>
                     </div>
@@ -525,7 +500,7 @@
                                         <div class="inline-flex items-center gap-1.5">
                                             <button
                                                 type="button"
-                                                @click="muatSimulasiDariDatabase(@js($sim->data_surat_jalan), '{{ $sim->mode_potongan }}', {{ $sim->biaya_sparepart }}, {{ $sim->potongan_bpjs }}, {{ $sim->potongan_kasbon }}, {{ $sim->total_tunjangan }}, '{{ addslashes($sim->nama_simulasi) }}')"
+                                                @click="muatSimulasiDariDatabase(@js($sim->data_surat_jalan), '{{ $sim->mode_potongan }}', {{ $sim->biaya_sparepart }}, {{ $sim->potongan_bpjs }}, {{ $sim->potongan_kasbon }}, '{{ addslashes($sim->nama_simulasi) }}')"
                                                 class="inline-flex items-center gap-1 rounded-lg bg-surface-container-low px-2.5 py-1 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
                                             >
                                                 <span class="material-symbols-outlined text-[1rem]">open_in_browser</span>
@@ -578,7 +553,6 @@
             biayaSparepartInput: 0,
             potonganKasbonInput: 0,
             potonganBpjsInput: 0,
-            totalTunjanganInput: 0,
             namaSimulasi: 'SIMULASI TARGET RITASE',
 
             init() {
@@ -586,7 +560,6 @@
                 this.biayaSparepartInput = Number(this.dataRiil.sparepart || 0);
                 this.potonganKasbonInput = Number(this.dataRiil.kasbon || 0);
                 this.potonganBpjsInput = Number(this.dataRiil.bpjs || 0);
-                this.totalTunjanganInput = Number(this.dataRiil.tunjangan || 0);
 
                 // (1.2) Jika ada surat jalan riil bulan ini, salin otomatis; bila kosong, buat 1 baris kosong
                 if (this.ritaseRiil && this.ritaseRiil.length > 0) {
@@ -679,7 +652,7 @@
             },
 
             // (3.2) Muat arsip simulasi yang pernah disimpan sebelumnya di database
-            muatSimulasiDariDatabase(dataSj, mode, sparepart, bpjs, kasbon, tunjangan, judul) {
+            muatSimulasiDariDatabase(dataSj, mode, sparepart, bpjs, kasbon, judul) {
                 if (Array.isArray(dataSj) && dataSj.length > 0) {
                     this.suratJalan = dataSj.map((s, i) => ({
                         id_kunci: 'sj_db_' + i + '_' + Date.now(),
@@ -695,7 +668,6 @@
                 this.biayaSparepartInput = Number(sparepart) || 0;
                 this.potonganBpjsInput = Number(bpjs) || 0;
                 this.potonganKasbonInput = Number(kasbon) || 0;
-                this.totalTunjanganInput = Number(tunjangan) || 0;
                 this.namaSimulasi = judul || 'SIMULASI DIMUAT';
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -751,13 +723,9 @@
                     : Number(this.potonganKasbonInput || 0);
             },
 
-            get totalTunjanganFinal() {
-                return Number(this.totalTunjanganInput || 0);
-            },
-
             // (4.4) Tahap 4: Gaji Bersih Final (Take Home Pay)
             get gajiBersih() {
-                return Math.max(0, this.komisiSupir + this.totalTunjanganFinal - this.potonganBpjs - this.potonganKasbon);
+                return Math.max(0, this.komisiSupir - this.potonganBpjs - this.potonganKasbon);
             },
 
             formatRupiah(nilai) {

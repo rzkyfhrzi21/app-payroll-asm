@@ -59,7 +59,6 @@ class SimulasiGaji extends Model
         'total_uang_jalan',     // Perkiraan uang jalan yang diambil
         'biaya_sparepart',      // Perkiraan pengeluaran suku cadang truk
         'gaji_komisi',          // Perkiraan nominal komisi yang didapat
-        'total_tunjangan',      // Perkiraan tunjangan tambahan
         'potongan_bpjs',        // Perkiraan potongan BPJS bulanan
         'potongan_kasbon',      // Perkiraan cicilan kasbon yang jatuh tempo
         'potongan_lain',        // Perkiraan potongan lain-lain
@@ -83,7 +82,6 @@ class SimulasiGaji extends Model
             'total_uang_jalan'     => 'integer', // Rupiah bulat
             'biaya_sparepart'      => 'integer', // Rupiah bulat
             'gaji_komisi'          => 'integer', // Rupiah bulat
-            'total_tunjangan'      => 'integer', // Rupiah bulat
             'potongan_bpjs'        => 'integer', // Rupiah bulat
             'potongan_kasbon'      => 'integer', // Rupiah bulat
             'potongan_lain'        => 'integer', // Rupiah bulat

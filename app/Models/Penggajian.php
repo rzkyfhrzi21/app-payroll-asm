@@ -39,7 +39,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'hasil_bersih_armada',  // Hasil bersih armada tahap 2: angkutan bersih - uang jalan - sparepart
     'persentase_komisi_bp', // Basis poin komisi supir (misal: 1000 = 10,00%)
     'gaji_komisi',          // Nilai bagi hasil komisi supir (hasil bersih armada x persentase)
-    'total_tunjangan',      // Tunjangan tambahan (tunjangan hadir, prestasi, dll)
     'potongan_bpjs',        // Potongan wajib iuran jaminan BPJS bulanan
     'potongan_kasbon',      // Potongan cicilan pinjaman kasbon periode berjalan
     'gaji_bersih',          // Angka final yang diterima supir (Rupiah bulat tanpa desimal)
@@ -83,7 +82,6 @@ class Penggajian extends Model
             'hasil_bersih_armada'   => 'integer',  // Nominal rupiah sisa armada
             'persentase_komisi_bp'  => 'integer',  // Basis poin persen (1000 = 10%)
             'gaji_komisi'           => 'integer',  // Nominal rupiah komisi supir
-            'total_tunjangan'       => 'integer',  // Nominal rupiah tunjangan
             'potongan_bpjs'         => 'integer',  // Nominal rupiah iuran BPJS
             'potongan_kasbon'       => 'integer',  // Nominal rupiah potong kasbon
             'gaji_bersih'           => 'integer',  // Nominal rupiah gaji bersih final

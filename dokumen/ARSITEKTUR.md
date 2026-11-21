@@ -415,3 +415,5 @@ Saat Admin menekan tombol **"Hitung / Kalkulasi Gaji"** pada periode tertentu:
    - Memberikan flag `has_warning = true` (ikon segitiga kuning seperti pada UI Rise) apabila `net_truck_result < 0`, atau ada ritase yang belum memiliki tarif, atau potongan kasbon melebihi komisi gaji.
 4. Menyimpan/memperbarui baris di tabel `payrolls` dan meng-update total agregat (`total_payroll_amount`, `total_trip_money`, `total_net_pay`) di tabel `payroll_periods`.
 5. `DB::commit()`.
+
+<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->

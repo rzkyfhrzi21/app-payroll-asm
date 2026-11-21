@@ -406,7 +406,6 @@
 @php
                 $adaBarisPengajuan = ($permintaanAcc['jumlah_supir'] ?? 0) > 0;
                 $totalKomisiPengajuan = (int) ($permintaanAcc['komisi'] ?? 0);
-                $totalTunjanganPengajuan = (int) ($permintaanAcc['tunjangan'] ?? 0);
                 $totalBpjsPengajuan = (int) ($permintaanAcc['bpjs'] ?? 0);
                 $totalKasbonPengajuan = (int) ($permintaanAcc['kasbon'] ?? 0);
                 $totalPotonganHistorisPengajuan = (int) ($permintaanAcc['potongan_historis'] ?? 0);
@@ -430,12 +429,6 @@
                         <span class="text-slate-text-secondary">Total Komisi Supir</span>
                         <span class="font-bold tabular-nums text-slate-text-primary">{{ $rp($totalKomisiPengajuan) }}</span>
                     </div>
-                    @if ($totalTunjanganPengajuan > 0)
-                        <div class="flex items-center justify-between font-sans text-body-sm">
-                            <span class="text-slate-text-secondary">Total Tunjangan</span>
-                            <span class="font-bold tabular-nums text-net-pay-emerald">+{{ $rp($totalTunjanganPengajuan) }}</span>
-                        </div>
-                    @endif
                     @if ($totalPenambahanHistorisPengajuan > 0)
                         <div class="flex items-center justify-between font-sans text-body-sm">
                             <span class="text-slate-text-secondary">Penambahan Historis</span>
@@ -660,9 +653,6 @@
                                 </td>
                                 <td class="px-4 py-3 text-right font-semibold tabular-nums">
                                     {{ $rp($row['commission']) }}
-                                    @if (($row['tunjangan'] ?? 0) > 0)
-                                        <div class="font-sans text-[0.6875rem] font-medium text-net-pay-emerald">+ Tunjangan {{ $rp($row['tunjangan']) }}</div>
-                                    @endif
                                 </td>
                                 <!-- ==============================================================================
      KOMENTAR ORANG TUA (LOGIKA ALUR TAMPILAN OTORISASI PAYROLL & ACC PIMPINAN):
@@ -803,7 +793,6 @@
                             $totalOmzetKotorTabel = (int) collect($rows)->sum(fn ($baris) => (int) ($baris['omzet_kotor'] ?? $baris['omzet'] ?? 0));
                             $totalPotonganOperasionalTabel = (int) collect($rows)->sum('potongan_operasional');
                             $totalSparepartTabel = (int) collect($rows)->sum('sparepart');
-                            $totalTunjanganTabel = (int) collect($rows)->sum('tunjangan');
                             $totalBpjsTabel = (int) collect($rows)->sum('bpjs');
                             $totalKasbonTabel = (int) collect($rows)->sum('kasbon');
                             $totalPotonganHistorisTabel = (int) collect($rows)->sum('potongan_historis');
@@ -825,9 +814,6 @@
                             </td>
                             <td class="px-4 py-3 text-right tabular-nums">
                                 {{ $rp(collect($rows)->sum('commission')) }}
-                                @if ($totalTunjanganTabel > 0)
-                                    <div class="font-sans text-[0.6875rem] font-semibold text-net-pay-emerald">+ Tunjangan {{ $rp($totalTunjanganTabel) }}</div>
-                                @endif
                             </td>
                             <td class="px-4 py-3 text-right tabular-nums text-danger-red">
                                 -{{ $rp($totalPotonganTabel) }}
@@ -1026,18 +1012,7 @@
 
                                     <div class="flex items-center justify-between rounded-lg bg-card-bg p-2.5 shadow-sm">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-net-pay-surface font-sans text-xs font-bold text-net-pay-emerald">8</span>
-                                            <div>
-                                                <span class="font-semibold text-slate-text-primary">Penambah: Tunjangan &amp; Bonus Supir</span>
-                                                <span class="block font-sans text-body-sm text-slate-text-muted">Tambahan tunjangan di luar komisi ritase periode berjalan</span>
-                                            </div>
-                                        </div>
-                                        <span class="font-bold tabular-nums" :class="Number(detail.tunjangan || 0) > 0 ? 'text-net-pay-emerald' : 'text-slate-text-secondary'" x-text="'+' + formatRp(detail.tunjangan ?? 0)"></span>
-                                    </div>
-
-                                    <div class="flex items-center justify-between rounded-lg bg-card-bg p-2.5 shadow-sm">
-                                        <div class="flex items-center gap-2">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container font-sans text-xs font-bold text-slate-text-secondary">9</span>
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container font-sans text-xs font-bold text-slate-text-secondary">8</span>
                                             <div>
                                                 <span class="font-semibold text-slate-text-primary">Potongan: Iuran BPJS Ketenagakerjaan</span>
                                                 <span class="block font-sans text-body-sm text-slate-text-muted">Iuran jaminan sosial ketenagakerjaan supir periode berjalan</span>
@@ -1048,7 +1023,7 @@
 
                                     <div class="flex items-center justify-between rounded-lg bg-card-bg p-2.5 shadow-sm">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container font-sans text-xs font-bold text-slate-text-secondary">10</span>
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container font-sans text-xs font-bold text-slate-text-secondary">9</span>
                                             <div>
                                                 <span class="font-semibold text-slate-text-primary">Potongan: Angsuran Kasbon</span>
                                                 <span class="block font-sans text-body-sm text-slate-text-muted">Cicilan / potongan kasbon supir pada periode berjalan</span>
@@ -1059,7 +1034,7 @@
 
                                     <div x-show="Number(detail.potongan_historis || 0) > 0" x-cloak class="flex items-center justify-between rounded-lg bg-danger-surface/30 p-2.5 shadow-sm">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-danger-red font-sans text-xs font-bold text-white">11</span>
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-danger-red font-sans text-xs font-bold text-white">10</span>
                                             <div>
                                                 <span class="font-semibold text-danger-red">Penyesuaian: Potongan Historis Lainnya</span>
                                                 <span class="block font-sans text-body-sm text-slate-text-secondary">Potongan historis / selisih pembulatan arsip periode berjalan</span>
@@ -1070,7 +1045,7 @@
 
                                     <div x-show="Number(detail.penambahan_historis || 0) > 0" x-cloak class="flex items-center justify-between rounded-lg bg-net-pay-surface/40 p-2.5 shadow-sm">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-net-pay-emerald font-sans text-xs font-bold text-white">11</span>
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-net-pay-emerald font-sans text-xs font-bold text-white">10</span>
                                             <div>
                                                 <span class="font-semibold text-net-pay-emerald">Penyesuaian: Penambahan Historis Lainnya</span>
                                                 <span class="block font-sans text-body-sm text-slate-text-secondary">Penambahan / koreksi positif arsip periode berjalan</span>
@@ -1081,8 +1056,8 @@
 
                                     <div class="mt-1 flex flex-col gap-1 rounded-lg border border-card-border bg-surface-container p-2.5 font-sans text-body-sm">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-slate-text-secondary">Total Hak Supir (Komisi + Tunjangan<span x-show="Number(detail.penambahan_historis || 0) > 0"> + Penyesuaian</span>)</span>
-                                            <span class="font-semibold tabular-nums text-slate-text-primary" x-text="formatRp(Number(detail.commission || 0) + Number(detail.tunjangan || 0) + Number(detail.penambahan_historis || 0))"></span>
+                                            <span class="text-slate-text-secondary">Total Hak Supir (Komisi<span x-show="Number(detail.penambahan_historis || 0) > 0"> + Penyesuaian</span>)</span>
+                                            <span class="font-semibold tabular-nums text-slate-text-primary" x-text="formatRp(Number(detail.commission || 0) + Number(detail.penambahan_historis || 0))"></span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-slate-text-secondary">Total Potongan (BPJS + Kasbon<span x-show="Number(detail.potongan_historis || 0) > 0"> + Historis</span>)</span>
@@ -1246,7 +1221,6 @@
 @php
                         $adaBarisModal = ($permintaanAcc['jumlah_supir'] ?? 0) > 0;
                         $totalKomisiModal = (int) ($permintaanAcc['komisi'] ?? 0);
-                        $totalTunjanganModal = (int) ($permintaanAcc['tunjangan'] ?? 0);
                         $totalBpjsModal = (int) ($permintaanAcc['bpjs'] ?? 0);
                         $totalKasbonModal = (int) ($permintaanAcc['kasbon'] ?? 0);
                         $totalPotonganHistorisModal = (int) ($permintaanAcc['potongan_historis'] ?? 0);
@@ -1264,12 +1238,6 @@
                             <span class="text-slate-text-secondary">Total komisi supir</span>
                             <span class="font-bold tabular-nums text-slate-text-primary">{{ $rp($totalKomisiModal) }}</span>
                         </div>
-                        @if ($totalTunjanganModal > 0)
-                            <div class="mt-1 flex items-center justify-between font-sans text-body-sm">
-                                <span class="text-slate-text-secondary">Total tunjangan</span>
-                                <span class="font-bold tabular-nums text-net-pay-emerald">+{{ $rp($totalTunjanganModal) }}</span>
-                            </div>
-                        @endif
                         @if ($totalPenambahanHistorisModal > 0)
                             <div class="mt-1 flex items-center justify-between font-sans text-body-sm">
                                 <span class="text-slate-text-secondary">Penambahan historis</span>
@@ -1293,7 +1261,7 @@
                     </div>
                     <div class="rounded-lg bg-warning-surface/70 p-3">
                         <p class="font-sans text-body-sm text-slate-text-secondary">
-                            Pastikan lima poin pemeriksaan (kas, komisi, tunjangan, sparepart, potongan kasbon/BPJS)
+                            Pastikan empat poin pemeriksaan (kas, komisi, sparepart, potongan kasbon/BPJS)
                             sudah Anda tinjau sebelum menyetujui.
                         </p>
                     </div>

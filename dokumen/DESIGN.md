@@ -164,3 +164,5 @@ Salin prompt di bawah ini satu per satu ke dalam **Stitch** (Anda juga dapat mel
 > - **Summary Card (Blue-Indigo Gradient):** Current Period 'Agu - Sep 2026', 'Estimasi Gaji Bersih (Net Pay): Rp 3.547.658', 'Total Muatan: 21 Rit (610 Ton)', and a white button 'Unduh Slip Gaji (PDF)'.
 > - **Two Mini Cards:** 'Uang Jalan Diterima: Rp 43.850.000' and 'Sisa Potongan Kasbon: Rp 500.000'.
 > - **Bottom List:** 'Riwayat Pengantaran Harian (Ritase)' showing cards per date (18/09/2026 • MIP-PORT • 28,48 Ton • Uang Jalan Rp 2.250.000)."
+
+<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->

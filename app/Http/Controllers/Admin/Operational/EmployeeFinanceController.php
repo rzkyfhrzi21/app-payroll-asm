@@ -17,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 /**
@@ -283,97 +282,6 @@ class EmployeeFinanceController extends Controller
             judul: 'Potongan BPJS Massal Disimpan',
             aksi: 'BULK_BPJS_SUPIR',
             dataTambahan: ['jumlah' => $jumlahTerpilih, 'potongan_bpjs_bulanan' => $nominalBpjs],
-        );
-    }
-
-    public function storeAllowance(
-        Request $permintaan,
-        PayrollDataService $layananDataPayroll,
-        PayrollCalculationService $layananKalkulasi,
-    ): RedirectResponse|JsonResponse {
-        $nominalBersih = (int) preg_replace('/\D/', '', (string) $permintaan->input('nominal_tunjangan', 0));
-        $modeTunjangan = (string) $permintaan->input('mode_tunjangan', 'set');
-
-        $validator = Validator::make([
-            'id_karyawan' => $permintaan->input('id_karyawan'),
-            'id_periode_gaji' => $permintaan->input('id_periode_gaji'),
-            'nominal_tunjangan' => $nominalBersih,
-            'jenis_tunjangan' => $permintaan->input('jenis_tunjangan'),
-            'mode_tunjangan' => $modeTunjangan,
-        ], [
-            'id_karyawan' => ['required', 'integer', 'exists:karyawan,id'],
-            'id_periode_gaji' => ['nullable', 'integer', 'exists:periode_gaji,id'],
-            'nominal_tunjangan' => ['required', 'integer', 'min:0', 'max:100000000'],
-            'jenis_tunjangan' => ['nullable', 'string', 'max:100'],
-            'mode_tunjangan' => ['nullable', 'in:tambah,set'],
-        ], [
-            'id_karyawan.required' => 'Supir penerima tunjangan wajib dipilih.',
-            'nominal_tunjangan.required' => 'Nominal tunjangan/bonus wajib diisi.',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->responGalatStandar(
-                permintaan: $permintaan,
-                ruteTujuan: 'admin.operational.loans.index',
-                pesan: $validator->errors()->first(),
-                judul: 'Validasi Tunjangan Gagal',
-                aksi: 'STORE_ALLOWANCE_INVALID',
-                daftarGalat: $validator->errors()->toArray(),
-            );
-        }
-
-        $karyawan = Karyawan::query()->findOrFail((int) $permintaan->input('id_karyawan'));
-        $periode = $permintaan->filled('id_periode_gaji')
-            ? \App\Models\PeriodeGaji::query()->find((int) $permintaan->input('id_periode_gaji'))
-            : $layananDataPayroll->ambilPeriodeTerbaru();
-
-        if ($periode === null) {
-            return $this->responGalatStandar(
-                permintaan: $permintaan,
-                ruteTujuan: 'admin.operational.loans.index',
-                pesan: 'Periode penggajian aktif tidak ditemukan.',
-                judul: 'Gagal Menyimpan Tunjangan',
-                aksi: 'STORE_ALLOWANCE_NO_PERIOD',
-            );
-        }
-
-        $penggajian = Penggajian::query()
-            ->where('id_periode_gaji', $periode->id)
-            ->where('id_karyawan', $karyawan->id)
-            ->first();
-
-        if ($penggajian === null) {
-            return $this->responGalatStandar(
-                permintaan: $permintaan,
-                ruteTujuan: 'admin.operational.loans.index',
-                pesan: "Rekap penggajian untuk supir {$karyawan->nama_lengkap} pada periode {$periode->kode} belum dibuat.",
-                judul: 'Baris Penggajian Belum Ada',
-                aksi: 'STORE_ALLOWANCE_NO_PAYROLL',
-            );
-        }
-
-        $totalBaru = $modeTunjangan === 'tambah'
-            ? ((int) $penggajian->total_tunjangan + $nominalBersih)
-            : $nominalBersih;
-
-        $penggajianTerbaru = $layananKalkulasi->perbaruiKomponenSupir($penggajian, [
-            'total_tunjangan' => $totalBaru,
-        ]);
-
-        $nominalFormatted = 'Rp '.number_format((int) $penggajianTerbaru->total_tunjangan, 0, ',', '.');
-        $gajiBersihFormatted = 'Rp '.number_format((int) $penggajianTerbaru->gaji_bersih, 0, ',', '.');
-
-        return $this->responSuksesStandar(
-            permintaan: $permintaan,
-            ruteTujuan: 'admin.operational.loans.index',
-            pesan: "Tunjangan/bonus {$karyawan->nama_lengkap} pada periode {$periode->kode} berhasil disimpan menjadi {$nominalFormatted} (Gaji Bersih: {$gajiBersihFormatted}).",
-            judul: 'Tunjangan Supir Disimpan',
-            aksi: 'STORE_ALLOWANCE_SUPIR',
-            dataTambahan: [
-                'id_karyawan' => $karyawan->id,
-                'total_tunjangan' => (int) $penggajianTerbaru->total_tunjangan,
-                'gaji_bersih' => (int) $penggajianTerbaru->gaji_bersih,
-            ],
         );
     }
 

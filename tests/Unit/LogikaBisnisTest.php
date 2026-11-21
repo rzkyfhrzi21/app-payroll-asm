@@ -37,7 +37,6 @@ class LogikaBisnisTest extends TestCase
             'total_uang_jalan' => 2_000_000,
             'biaya_sparepart' => 500_000,
             'persentase_komisi_bp' => 1000,
-            'total_tunjangan' => 250_000,
             'potongan_bpjs' => 129_000,
             'potongan_kasbon' => 333_000,
         ]);
@@ -45,7 +44,7 @@ class LogikaBisnisTest extends TestCase
         $this->assertSame(40_766_581, $hasil['angkutan_bersih']);
         $this->assertSame(38_266_581, $hasil['hasil_bersih_armada']);
         $this->assertSame(3_826_658, $hasil['gaji_komisi']);
-        $this->assertSame(3_614_658, $hasil['gaji_bersih']);
+        $this->assertSame(3_364_658, $hasil['gaji_bersih']);
 
         foreach ($hasil as $kunci => $nilai) {
             $this->assertIsInt($nilai, "Komponen {$kunci} harus bilangan bulat Rupiah.");

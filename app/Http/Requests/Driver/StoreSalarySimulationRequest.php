@@ -42,7 +42,6 @@ class StoreSalarySimulationRequest extends FormRequest
             'biaya_sparepart' => ['nullable', 'integer', 'min:0'],                                      // Potongan sparepart
             'potongan_bpjs' => ['nullable', 'integer', 'min:0'],                                        // Potongan BPJS
             'potongan_kasbon' => ['nullable', 'integer', 'min:0'],                                      // Potongan kasbon
-            'total_tunjangan' => ['nullable', 'integer', 'min:0'],                                      // Tunjangan bonus
             'potongan_lain' => ['nullable', 'integer', 'min:0'],                                        // Potongan lain-lain
             'catatan' => ['nullable', 'string', 'max:500'],                                             // Catatan pribadi supir
         ];

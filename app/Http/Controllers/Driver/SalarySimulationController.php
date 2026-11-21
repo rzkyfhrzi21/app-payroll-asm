@@ -78,7 +78,6 @@ class SalarySimulationController extends Controller
         $ringkasanKasbon = $layananDataPayroll->kasbonSupir($karyawan, $periode);
         $potonganKasbonRiil = (int) ($ringkasanKasbon['potongan_periode_ini'] ?? 0);
         $potonganBpjsRiil = (int) ($karyawan->potongan_bpjs ?? 0);
-        $tunjanganTetapRiil = (int) ($karyawan->tunjangan_tetap ?? 0);
 
         // Biaya sparepart armada pegangan supir bulan ini
         $trukPegangan = $karyawan->truk()->first();
@@ -130,7 +129,6 @@ class SalarySimulationController extends Controller
                 'bpjs' => $potonganBpjsRiil,
                 'kasbon' => $potonganKasbonRiil,
                 'sparepart' => $biayaSparepartRiil,
-                'tunjangan' => $tunjanganTetapRiil,
                 'ada_truk' => $trukPegangan !== null,
                 'nopol_truk' => $trukPegangan?->nomor_polisi ?? '-',
             ],
@@ -178,7 +176,6 @@ class SalarySimulationController extends Controller
         }
 
         $biayaSparepart = (int) ($dataValid['biaya_sparepart'] ?? 0);
-        $totalTunjangan = (int) ($dataValid['total_tunjangan'] ?? 0);
         $potonganBpjs = (int) ($dataValid['potongan_bpjs'] ?? 0);
         $potonganKasbon = (int) ($dataValid['potongan_kasbon'] ?? 0);
         $potonganLain = (int) ($dataValid['potongan_lain'] ?? 0);
@@ -192,7 +189,6 @@ class SalarySimulationController extends Controller
             'total_uang_jalan' => $totalUangJalan,
             'biaya_sparepart' => $biayaSparepart,
             'persentase_komisi_bp' => 1000, // Basis poin 10%
-            'total_tunjangan' => $totalTunjangan,
             'potongan_bpjs' => $potonganBpjs,
             'potongan_kasbon' => $potonganKasbon,
             'potongan_historis_lain' => $potonganLain,
@@ -209,7 +205,6 @@ class SalarySimulationController extends Controller
             'total_uang_jalan' => $hasilHitung['total_uang_jalan'],
             'biaya_sparepart' => $hasilHitung['biaya_sparepart'],
             'gaji_komisi' => $hasilHitung['gaji_komisi'],
-            'total_tunjangan' => $hasilHitung['total_tunjangan'],
             'potongan_bpjs' => $hasilHitung['potongan_bpjs'],
             'potongan_kasbon' => $hasilHitung['potongan_kasbon'],
             'potongan_lain' => $potonganLain,

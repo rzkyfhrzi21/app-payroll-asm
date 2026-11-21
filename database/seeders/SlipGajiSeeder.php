@@ -97,7 +97,6 @@ class SlipGajiSeeder extends Seeder
             'hasil_bersih_armada' => 41766581,
             'persentase_komisi_bp' => 1000,
             'gaji_komisi' => 4176658,
-            'total_tunjangan' => 0,
             'potongan_bpjs' => 129000,
             'potongan_kasbon' => 0,
             'gaji_bersih' => 3547658,

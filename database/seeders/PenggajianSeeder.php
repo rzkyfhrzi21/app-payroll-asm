@@ -58,7 +58,6 @@ class PenggajianSeeder extends Seeder
                     'hasil_bersih_armada' => $hasilBersihArmada,
                     'persentase_komisi_bp' => $persentaseKomisiBp,
                     'gaji_komisi' => $gajiKomisi,
-                    'total_tunjangan' => 0,
                     'potongan_bpjs' => $potonganBpjs,
                     'potongan_kasbon' => $potonganKasbon,
                     'gaji_bersih' => $gajiKomisi - $potonganBpjs - $potonganKasbon,

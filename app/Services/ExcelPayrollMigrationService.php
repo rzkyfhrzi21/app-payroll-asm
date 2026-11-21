@@ -174,7 +174,6 @@ class ExcelPayrollMigrationService
                 $persentaseKomisiBp = $rekap['persentase_komisi_bp'] > 0
                     ? $rekap['persentase_komisi_bp']
                     : 1000;
-                $totalTunjangan = $rekap['total_tunjangan'];
                 $potonganBpjs = $rekap['potongan_bpjs'];
 
                 // Sesuai AGENTS.md 3.6: DILARANG memakai angka manual pada penggajian.potongan_kasbon;
@@ -194,7 +193,6 @@ class ExcelPayrollMigrationService
                     'total_uang_jalan' => $totalUangJalan,
                     'biaya_sparepart' => $biayaSparepart,
                     'persentase_komisi_bp' => $persentaseKomisiBp,
-                    'total_tunjangan' => $totalTunjangan,
                     'potongan_bpjs' => $potonganBpjs,
                     'potongan_kasbon' => $potonganKasbon,
                 ]);
@@ -232,7 +230,6 @@ class ExcelPayrollMigrationService
                         ? $this->layananKalkulasiGaji->hitungKomponenGaji([
                             'total_angkutan_kotor' => $gajiKomisi,
                             'persentase_komisi_bp' => 10000,
-                            'total_tunjangan' => $totalTunjangan,
                             'potongan_bpjs' => $potonganBpjs,
                             'potongan_kasbon' => $potonganKasbon,
                         ])['gaji_bersih']
@@ -255,7 +252,6 @@ class ExcelPayrollMigrationService
                         'hasil_bersih_armada' => $hasilBersihArmada,
                         'persentase_komisi_bp' => $hasilPerhitunganRumus['persentase_komisi_bp'],
                         'gaji_komisi' => $gajiKomisi,
-                        'total_tunjangan' => $hasilPerhitunganRumus['total_tunjangan'],
                         'potongan_bpjs' => $hasilPerhitunganRumus['potongan_bpjs'],
                         'potongan_kasbon' => $hasilPerhitunganRumus['potongan_kasbon'],
                         'gaji_bersih' => $gajiBersih,
@@ -619,7 +615,6 @@ class ExcelPayrollMigrationService
                 'total_uang_jalan' => $rekap['total_uang_jalan'] > 0 ? $rekap['total_uang_jalan'] : $totalUangJalanBlok,
                 'biaya_sparepart' => $rekap['biaya_sparepart'],
                 'persentase_komisi_bp' => $rekap['persentase_komisi_bp'] > 0 ? $rekap['persentase_komisi_bp'] : 1000,
-                'total_tunjangan' => $rekap['total_tunjangan'],
                 'potongan_bpjs' => $rekap['potongan_bpjs'],
                 'potongan_kasbon' => $rekap['potongan_kasbon'],
             ]);
@@ -1113,7 +1108,6 @@ class ExcelPayrollMigrationService
                             'total_uang_jalan' => 0,
                             'biaya_sparepart' => 0,
                             'persentase_komisi_bp' => 0,
-                            'total_tunjangan' => 0,
                             'potongan_bpjs' => 0,
                             'potongan_kasbon' => 0,
                             'gaji_bersih' => 0,
@@ -1261,7 +1255,6 @@ class ExcelPayrollMigrationService
                     'total_uang_jalan' => $totalUangJalan,
                     'biaya_sparepart' => $biayaSparepart,
                     'persentase_komisi_bp' => $persentaseKomisiBp,
-                    'total_tunjangan' => $rekap['total_tunjangan'],
                     'potongan_bpjs' => $rekap['potongan_bpjs'],
                     'potongan_kasbon' => $potonganKasbon,
                 ]);
@@ -1282,7 +1275,6 @@ class ExcelPayrollMigrationService
                     'hasil_bersih_armada' => $hasilPerhitunganRumus['hasil_bersih_armada'],
                     'persentase_komisi_bp' => $hasilPerhitunganRumus['persentase_komisi_bp'],
                     'gaji_komisi' => $hasilPerhitunganRumus['gaji_komisi'],
-                    'total_tunjangan' => $hasilPerhitunganRumus['total_tunjangan'],
                     'potongan_bpjs' => $hasilPerhitunganRumus['potongan_bpjs'],
                     'potongan_kasbon' => $hasilPerhitunganRumus['potongan_kasbon'],
                     'gaji_bersih' => $gajiBersih,
@@ -1525,7 +1517,6 @@ class ExcelPayrollMigrationService
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'Hasil Bersih Armada', '', '', (int) $penggajian->hasil_bersih_armada, '']);
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'Persentase Komisi', '', '', ((int) $penggajian->persentase_komisi_bp) / 10000, '']);
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'Gaji Komisi (Gross Pay)', '', '', (int) $penggajian->gaji_komisi, '']);
-                    fputcsv($keluaran, ['', '', '', '', '', '', '', 'Tunjangan', '', '', (int) $penggajian->total_tunjangan, '']);
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'Potongan BPJS', '', '', (int) $penggajian->potongan_bpjs, '']);
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'Potongan Kasbon', '', '', (int) $penggajian->potongan_kasbon, '']);
                     fputcsv($keluaran, ['', '', '', '', '', '', '', 'GAJI BERSIH DITERIMA', '', '', (int) $penggajian->gaji_bersih, '']);
@@ -1600,7 +1591,6 @@ class ExcelPayrollMigrationService
                 ['', '', '', '', '', '', '', 'Hasil Bersih Armada', '', '', '2271485', ''],
                 ['', '', '', '', '', '', '', 'Persentase Komisi', '', '', '0.1', ''],
                 ['', '', '', '', '', '', '', 'Gaji Komisi (Gross Pay)', '', '', '227149', ''],
-                ['', '', '', '', '', '', '', 'Tunjangan', '', '', '0', ''],
                 ['', '', '', '', '', '', '', 'Potongan BPJS', '', '', '129000', ''],
                 ['', '', '', '', '', '', '', 'Potongan Kasbon', '', '', '0', ''],
                 ['', '', '', '', '', '', '', 'GAJI BERSIH DITERIMA', '', '', '98149', ''],
@@ -1898,7 +1888,6 @@ class ExcelPayrollMigrationService
             'hasil_bersih_armada' => 0,
             'persentase_komisi_bp' => 1000,
             'gaji_komisi' => 0,
-            'total_tunjangan' => 0,
             'potongan_bpjs' => 0,
             'potongan_kasbon' => 0,
             'gaji_bersih' => 0,
@@ -1995,8 +1984,6 @@ class ExcelPayrollMigrationService
                         : (int) round($desimalKomisi * 100);
                 } elseif (str_starts_with($labelRekap, 'gaji komisi')) {
                     $rekap['gaji_komisi'] = $this->bersihkanAngkaBulat($nilaiRekapMentah);
-                } elseif ($labelRekap === 'tunjangan') {
-                    $rekap['total_tunjangan'] = $this->bersihkanAngkaBulat($nilaiRekapMentah);
                 } elseif ($labelRekap === 'potongan bpjs') {
                     $rekap['potongan_bpjs'] = $this->bersihkanAngkaBulat($nilaiRekapMentah);
                 } elseif ($labelRekap === 'potongan kasbon') {

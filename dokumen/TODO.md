@@ -205,3 +205,5 @@ npm run build
 
 - Tampilan ERD hitam-putih (grayscale): header `#E6E6E6`, isi putih, garis `#666666`, teks `#111111`, latar putih eksplisit agar ekspor PNG tidak transparan.
 - Penanda audit teks: `.mark-label` (kuning = label kolom) dan `.mark-dummy` (merah = data contoh). Target akhir: merah = 0 setelah seluruh layar memakai database; kuning boleh tetap sebagai penanda kolom.
+
+<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->

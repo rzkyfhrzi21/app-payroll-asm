@@ -165,7 +165,6 @@ class KontrakDataTabelAjaxTest extends TestCase
             'hasil_bersih_armada' => 99950000,
             'persentase_komisi_bp' => 1000,
             'gaji_komisi' => 9995000,
-            'total_tunjangan' => 0,
             'potongan_bpjs' => 129000,
             'potongan_kasbon' => 0,
             'gaji_bersih' => 9866000,

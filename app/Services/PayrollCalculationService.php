@@ -37,7 +37,9 @@ use Illuminate\Validation\ValidationException;
  *   hasil_bersih_armada x persentase_komisi (standar 1000 basis poin = 10,00%)
  * 
  * Tahap 4 (Gaji Bersih / Uang Diterima Supir):
- *   gaji_komisi + total_tunjangan - potongan_bpjs - cicilan_kasbon
+ *   gaji_komisi - potongan_bpjs - cicilan_kasbon
+ *
+ * Catatan sementara: fitur tunjangan dihapus dari seluruh perhitungan.
  * 
  * BATAS WEWENANG OTORISASI:
  * - Admin/HRD HANYA BOLEH mengajukan draf gaji ('draft' -> 'pending').
@@ -53,7 +55,7 @@ class PayrollCalculationService
      * (1) Hitung Tahap 1: Omzet kotor angkutan dikurangi potongan operasional rute.
      * (2) Hitung Tahap 2: Angkutan bersih dikurangi uang saku jalan dan nota sparepart truk.
      * (3) Hitung Tahap 3: Hitung bagi hasil komisi supir (dibulatkan ke Rupiah terdekat).
-     * (4) Hitung Tahap 4: Tambah tunjangan lalu kurangi iuran BPJS dan angsuran kasbon.
+     * (4) Hitung Tahap 4: Kurangi komisi dengan iuran BPJS dan angsuran kasbon.
      * (5) Pastikan seluruh nominal tidak ada yang minus (dijaga minimal Rp 0 via max(0, ...)).
      *
      * @param  array<string, int|float|string|null>  $komponen
@@ -78,14 +80,13 @@ class PayrollCalculationService
         $persentaseKomisiBp = max(0, (int) ($komponen['persentase_komisi_bp'] ?? 1000));
         $gajiKomisi         = (int) round(($hasilBersihArmada * $persentaseKomisiBp) / 10000);
 
-        // (4) Tahap 4: Komisi ditambah Tunjangan lalu dikurangi BPJS dan Cicilan Kasbon = Gaji Bersih
-        $totalTunjangan       = max(0, (int) ($komponen['total_tunjangan'] ?? 0));
+        // (4) Tahap 4: Komisi dikurangi BPJS dan Cicilan Kasbon = Gaji Bersih
         $potonganBpjs         = max(0, (int) ($komponen['potongan_bpjs'] ?? 0));
         $potonganKasbon       = max(0, (int) ($komponen['potongan_kasbon'] ?? 0));
         $potonganHistorisLain = max(0, (int) ($komponen['potongan_historis_lain'] ?? 0));
 
         // (5) Angka final yang akan ditransfer ke rekening supir
-        $gajiBersih = max(0, $gajiKomisi + $totalTunjangan - $potonganBpjs - $potonganKasbon - $potonganHistorisLain);
+        $gajiBersih = max(0, $gajiKomisi - $potonganBpjs - $potonganKasbon - $potonganHistorisLain);
 
         return [
             'total_rit'            => $totalRit,
@@ -98,7 +99,6 @@ class PayrollCalculationService
             'hasil_bersih_armada'  => $hasilBersihArmada,
             'persentase_komisi_bp' => $persentaseKomisiBp,
             'gaji_komisi'          => $gajiKomisi,
-            'total_tunjangan'      => $totalTunjangan,
             'potongan_bpjs'        => $potonganBpjs,
             'potongan_kasbon'      => $potonganKasbon,
             'gaji_bersih'          => $gajiBersih,
@@ -157,7 +157,7 @@ class PayrollCalculationService
                     // yang memiliki penyesuaian di luar BPJS & kasbon) agar gaji_bersih tidak berubah sepihak.
                     $selisihHistoris = max(
                         0,
-                        ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+                        ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
                         - (int) $penggajian->gaji_bersih
                     );
 
@@ -182,7 +182,6 @@ class PayrollCalculationService
                         'total_uang_jalan' => $totalUangJalan,
                         'biaya_sparepart' => (int) $penggajian->biaya_sparepart,
                         'persentase_komisi_bp' => (int) ($penggajian->persentase_komisi_bp ?: 1000),
-                        'total_tunjangan' => (int) $penggajian->total_tunjangan,
                         'potongan_bpjs' => (int) $penggajian->potongan_bpjs,
                         'potongan_kasbon' => (int) $penggajian->potongan_kasbon,
                         'potongan_historis_lain' => $selisihHistoris,
@@ -243,7 +242,6 @@ class PayrollCalculationService
             'total_uang_jalan' => (int) $daftarRitase->sum('uang_jalan'),
             'biaya_sparepart' => $biayaSparepartPeriode,
             'persentase_komisi_bp' => (int) ($karyawan->persentase_komisi_bp ?: 1000),
-            'total_tunjangan' => 0,
             'potongan_bpjs' => (int) $karyawan->potongan_bpjs_bulanan,
             'potongan_kasbon' => $potonganKasbonPeriode,
         ]);
@@ -259,8 +257,8 @@ class PayrollCalculationService
     /**
      * Perbarui komponen gaji seorang supir dan hitung ulang seluruh tahap turunannya.
      *
-     * Dipanggil saat Admin mengubah sparepart/tunjangan/BPJS di Drawer Detail Payroll,
-     * pembaruan BPJS/tunjangan pada modul Kasbon & Potongan, maupun saat supir
+     * Dipanggil saat Admin mengubah sparepart/BPJS di Drawer Detail Payroll,
+     * pembaruan BPJS pada modul Kasbon & Potongan, maupun saat supir
      * mengonfirmasi tonase timbangan surat jalan.
      *
      * @param  array<string, int|float|string|null>  $input
@@ -271,11 +269,11 @@ class PayrollCalculationService
         // pada slip historis tetap terjaga setelah gaji dihitung ulang.
         $selisihHistoris = max(
             0,
-            ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+            ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
             - (int) $penggajian->gaji_bersih
         );
 
-        // Terapkan perubahan input (biaya_sparepart, total_tunjangan, potongan_bpjs) bila disediakan,
+        // Terapkan perubahan input (biaya_sparepart, potongan_bpjs) bila disediakan,
         // lalu delegasikan perhitungan Tahap 1-4 ke hitungKomponenGaji().
         $hasilHitung = $this->hitungKomponenGaji([
             'total_rit' => (int) $penggajian->total_rit,
@@ -287,9 +285,6 @@ class PayrollCalculationService
                 ? (int) $input['biaya_sparepart']
                 : (int) $penggajian->biaya_sparepart,
             'persentase_komisi_bp' => (int) ($penggajian->persentase_komisi_bp ?: 1000),
-            'total_tunjangan' => array_key_exists('total_tunjangan', $input)
-                ? (int) $input['total_tunjangan']
-                : (int) $penggajian->total_tunjangan,
             'potongan_bpjs' => array_key_exists('potongan_bpjs', $input)
                 ? (int) $input['potongan_bpjs']
                 : (int) $penggajian->potongan_bpjs,

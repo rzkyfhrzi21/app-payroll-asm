@@ -122,3 +122,5 @@ Berdasarkan standar slip gaji perusahaan (_Rincian Gaji Supir_), perhitungan gaj
 1. **Integritas Transaksi Database:** Proses kalkulasi gaji (`calculate`) dan persetujuan (`approve`/`reject`) wajib dibungkus dalam `DB::transaction()` agar pemotongan saldo kasbon konsisten.
 2. **Presisi Keuangan & Tonase:** Seluruh nilai mata uang disimpan dalam tipe `BIGINT` (Rupiah bulat tanpa sen) atau `DECIMAL(15,2)`, sedangkan tonase menggunakan `DECIMAL(8,2)` untuk mencegah selisih pembulatan pada perkalian tarif.
 3. **Otorisasi Ketat:** Middleware Role (`role:admin`, `role:pimpinan`, `role:karyawan`) dan Policy memastikan supir hanya dapat melihat slip gaji miliknya sendiri dan hanya untuk periode yang telah berstatus `approved` atau `paid`.
+
+<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->

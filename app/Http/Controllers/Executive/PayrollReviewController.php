@@ -118,7 +118,6 @@ class PayrollReviewController extends Controller
                 'uang_jalan' => 0,
                 'sparepart' => 0,
                 'komisi' => 0,
-                'tunjangan' => 0,
             ],
             'riwayatPermintaanAcc' => $layananDataPayroll->riwayatPermintaanAcc(),
         ];

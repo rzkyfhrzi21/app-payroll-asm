@@ -165,10 +165,6 @@
                         <span class="font-bold tabular-nums text-slate-900">@rupiah($supir['gaji_komisi'])</span>
                     </div>
                     <div class="flex justify-between py-1">
-                        <span class="text-slate-600">Tunjangan Tambahan</span>
-                        <span class="tabular-nums">@rupiah($supir['total_tunjangan'])</span>
-                    </div>
-                    <div class="flex justify-between py-1">
                         <span class="text-slate-600">Potongan BPJS Ketenagakerjaan</span>
                         <span class="tabular-nums text-rose-600">- @rupiah($supir['potongan_bpjs'])</span>
                     </div>

@@ -347,12 +347,11 @@ class PayrollDataService
         }
 
         $gajiKomisi = (int) $penggajian->gaji_komisi;
-        $totalTunjangan = (int) $penggajian->total_tunjangan;
         $potonganBpjs = (int) $penggajian->potongan_bpjs;
         $potonganKasbon = (int) $penggajian->potongan_kasbon;
         $potonganResmi = $potonganBpjs + $potonganKasbon;
         $gajiBersih = (int) $penggajian->gaji_bersih;
-        $selisihHistoris = ($gajiKomisi + $totalTunjangan - $potonganResmi) - $gajiBersih;
+        $selisihHistoris = ($gajiKomisi - $potonganResmi) - $gajiBersih;
         $potonganHistoris = max(0, $selisihHistoris);
         $penambahanHistoris = max(0, -$selisihHistoris);
         $persentaseKomisiBp = (int) ($penggajian->persentase_komisi_bp ?: 1000);
@@ -373,7 +372,6 @@ class PayrollDataService
             'potongan_operasional' => (int) $penggajian->potongan_operasional,
             'omzet' => (int) $penggajian->angkutan_bersih,
             'sparepart' => (int) $penggajian->biaya_sparepart,
-            'tunjangan' => $totalTunjangan,
             'bpjs' => $potonganBpjs,
             'kasbon' => $potonganKasbon,
             'net_result' => (int) $penggajian->hasil_bersih_armada,
@@ -654,7 +652,6 @@ class PayrollDataService
                     'kasbon_sisa' => $sisaKasbon,
                     'kasbon_aktif' => (int) $karyawan->kasbon_count,
                     'komisi_periode' => $penggajianPeriode === null ? 0 : (int) $penggajianPeriode->gaji_komisi,
-                    'tunjangan_periode' => $penggajianPeriode === null ? 0 : (int) $penggajianPeriode->total_tunjangan,
                     'gaji_bersih_periode' => $penggajianPeriode === null ? 0 : (int) $penggajianPeriode->gaji_bersih,
                     'potongan_kasbon_periode' => $penggajianPeriode === null ? 0 : (int) $penggajianPeriode->potongan_kasbon,
                 ];
@@ -2810,7 +2807,6 @@ class PayrollDataService
                     'hasil_bersih_armada' => (int) $penggajian->hasil_bersih_armada,
                     'persen_komisi_label' => $this->formatPersentaseKomisi($penggajian->persentase_komisi_bp),
                     'gaji_komisi' => (int) $penggajian->gaji_komisi,
-                    'total_tunjangan' => (int) $penggajian->total_tunjangan,
                     'potongan_bpjs' => $potonganBpjs,
                     'potongan_kasbon' => $potonganKasbon,
                     'total_potongan' => $totalPotonganSupir,
@@ -3005,19 +3001,18 @@ class PayrollDataService
         $cashOut = $uangJalan + $sparepart;
         $hasilBersihArmada = (int) $daftarPenggajian->sum('hasil_bersih_armada');
         $komisi = (int) $daftarPenggajian->sum('gaji_komisi');
-        $tunjangan = (int) $daftarPenggajian->sum('total_tunjangan');
         $bpjs = (int) $daftarPenggajian->sum('potongan_bpjs');
         $kasbon = (int) $daftarPenggajian->sum('potongan_kasbon');
         $gajiBersih = (int) $daftarPenggajian->sum('gaji_bersih');
         $potonganHistoris = (int) $daftarPenggajian->sum(fn (Penggajian $penggajian) => max(
             0,
-            ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+            ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
             - (int) $penggajian->gaji_bersih
         ));
         $penambahanHistoris = (int) $daftarPenggajian->sum(fn (Penggajian $penggajian) => max(
             0,
             (int) $penggajian->gaji_bersih
-            - ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+            - ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
         ));
         $margin = max(0, $omzet - $cashOut - $gajiBersih);
         $marginPct = $omzet > 0 ? number_format($margin / $omzet * 100, 1, '.', '').'%' : '0.0%';
@@ -3033,7 +3028,6 @@ class PayrollDataService
             'potongan_operasional' => $potonganOperasional,
             'hasil_bersih_armada' => $hasilBersihArmada,
             'commission' => $komisi,
-            'tunjangan' => $tunjangan,
             'bpjs' => $bpjs,
             'kasbon' => $kasbon,
             'deduction' => $bpjs + $kasbon,
@@ -3195,12 +3189,11 @@ class PayrollDataService
             $truk = $penggajian->truk;
             $sparepart = (int) $penggajian->biaya_sparepart;
             $gajiKomisi = (int) $penggajian->gaji_komisi;
-            $totalTunjangan = (int) $penggajian->total_tunjangan;
             $potonganBpjs = (int) $penggajian->potongan_bpjs;
             $potonganKasbon = (int) $penggajian->potongan_kasbon;
             $potonganResmi = $potonganBpjs + $potonganKasbon;
             $gajiBersih = (int) $penggajian->gaji_bersih;
-            $selisihHistoris = ($gajiKomisi + $totalTunjangan - $potonganResmi) - $gajiBersih;
+            $selisihHistoris = ($gajiKomisi - $potonganResmi) - $gajiBersih;
             $potonganHistoris = max(0, $selisihHistoris);
             $penambahanHistoris = max(0, -$selisihHistoris);
 
@@ -3247,7 +3240,6 @@ class PayrollDataService
                 'trip_money' => (int) $penggajian->total_uang_jalan,
                 'sparepart' => $sparepart,
                 'commission' => $gajiKomisi,
-                'tunjangan' => $totalTunjangan,
                 'bpjs' => $potonganBpjs,
                 'kasbon' => $potonganKasbon,
                 'deduction' => $potonganResmi,
@@ -3384,7 +3376,7 @@ class PayrollDataService
                 'omzet' => (int) $penggajian->angkutan_bersih,
                 'trip_money' => (int) $penggajian->total_uang_jalan,
                 'sparepart' => (int) $penggajian->biaya_sparepart,
-                'gross' => (int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan,
+                'gross' => (int) $penggajian->gaji_komisi,
                 'bpjs' => (int) $penggajian->potongan_bpjs,
                 'kasbon' => (int) $penggajian->potongan_kasbon,
                 'net' => (int) $penggajian->gaji_bersih,
@@ -3712,18 +3704,17 @@ class PayrollDataService
         $sparepart = (int) $baris->sum('biaya_sparepart');
         $hasilBersihArmada = (int) $baris->sum('hasil_bersih_armada');
         $komisi = (int) $baris->sum('gaji_komisi');
-        $tunjangan = (int) $baris->sum('total_tunjangan');
         $gajiBersih = (int) $baris->sum('gaji_bersih');
 
         $potonganHistoris = (int) $baris->sum(fn (Penggajian $penggajian) => max(
             0,
-            ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+            ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
             - (int) $penggajian->gaji_bersih
         ));
         $penambahanHistoris = (int) $baris->sum(fn (Penggajian $penggajian) => max(
             0,
             (int) $penggajian->gaji_bersih
-            - ((int) $penggajian->gaji_komisi + (int) $penggajian->total_tunjangan - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
+            - ((int) $penggajian->gaji_komisi - (int) $penggajian->potongan_bpjs - (int) $penggajian->potongan_kasbon)
         ));
 
         $sjBelumVerifikasi = $periode === null
@@ -3762,7 +3753,7 @@ class PayrollDataService
             'jumlah_sudah_cair' => $jumlahSudahCair,
             'siap_cair' => $siapCair,
 
-            // Lima poin pemeriksaan sesuai Activity Diagram.
+            // Empat poin pemeriksaan sesuai Activity Diagram (fitur tunjangan dihapus sementara).
             'pemeriksaan' => [
                 [
                     'label' => 'Total kebutuhan kas (cash requirement)',
@@ -3775,12 +3766,6 @@ class PayrollDataService
                     'nilai' => $komisi,
                     'keterangan' => 'Komisi dihitung dari hasil bersih armada Rp '.number_format($hasilBersihArmada, 0, ',', '.'),
                     'lolos' => $komisi > 0,
-                ],
-                [
-                    'label' => 'Tunjangan & bonus',
-                    'nilai' => $tunjangan,
-                    'keterangan' => $tunjangan > 0 ? 'Tunjangan aktif pada periode berjalan' : 'Tidak ada tunjangan pada periode ini',
-                    'lolos' => true,
                 ],
                 [
                     'label' => 'Potongan sparepart & operasional',
@@ -3815,7 +3800,6 @@ class PayrollDataService
             'uang_jalan' => $uangJalan,
             'sparepart' => $sparepart,
             'komisi' => $komisi,
-            'tunjangan' => $tunjangan,
         ];
     }
 

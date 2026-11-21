@@ -534,12 +534,6 @@
                                         <span>Gaji Komisi Supir</span>
                                         <span class="font-display text-headline-sm tabular-nums" x-text="formatRp(previewKomisiSupir)"></span>
                                     </div>
-                                    <template x-if="previewTunjangan > 0">
-                                        <div class="flex items-center justify-between py-1 text-net-pay-emerald">
-                                            <span>+ Tunjangan / Bonus</span>
-                                            <span class="font-semibold tabular-nums" x-text="'+' + formatRp(previewTunjangan)"></span>
-                                        </div>
-                                    </template>
                                     <div class="my-0.5 border-t border-card-border"></div>
                                     <div class="flex items-center justify-between py-1 text-slate-text-secondary">
                                         <span>- Potongan BPJS</span>
@@ -578,7 +572,7 @@
                                     <span class="font-sans text-label-sm font-bold uppercase tracking-wider text-slate-text-primary">Penyesuaian Komponen Gaji</span>
                                     <span class="rounded bg-primary/10 px-2 py-0.5 font-sans text-[11px] font-semibold text-primary">Tersimpan ke DB</span>
                                 </div>
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div class="flex flex-col gap-1">
                                         <label class="font-sans text-label-sm font-semibold text-slate-text-secondary">Potongan S.Part (Rp)</label>
                                         <input
@@ -586,16 +580,6 @@
                                             min="0"
                                             step="1000"
                                             x-model.number="editDriverForm.biaya_sparepart"
-                                            class="rounded-lg border border-card-border bg-card-bg px-3 py-1.5 font-sans text-body-sm font-semibold tabular-nums text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                                        >
-                                    </div>
-                                    <div class="flex flex-col gap-1">
-                                        <label class="font-sans text-label-sm font-semibold text-slate-text-secondary">Tunjangan / Bonus (Rp)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="1000"
-                                            x-model.number="editDriverForm.total_tunjangan"
                                             class="rounded-lg border border-card-border bg-card-bg px-3 py-1.5 font-sans text-body-sm font-semibold tabular-nums text-slate-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                                         >
                                     </div>

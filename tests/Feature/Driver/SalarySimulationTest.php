@@ -57,7 +57,6 @@ class SalarySimulationTest extends TestCase
             'biaya_sparepart' => 500000,
             'potongan_bpjs' => 129000,
             'potongan_kasbon' => 200000,
-            'total_tunjangan' => 100000,
             'potongan_lain' => 0,
             'surat_jalan' => [
                 [

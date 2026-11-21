@@ -10,7 +10,6 @@ export default function registerAdminPayroll(Alpine) {
         selected: null,
         editDriverForm: {
             biaya_sparepart: 0,
-            total_tunjangan: 0,
             potongan_bpjs: 0,
         },
         transferOpen: false,
@@ -48,10 +47,6 @@ export default function registerAdminPayroll(Alpine) {
             return Math.round(this.previewHasilBersihTruk * (persenKomisi / 100));
         },
 
-        get previewTunjangan() {
-            return Math.max(0, Number(this.editDriverForm.total_tunjangan || 0));
-        },
-
         get previewBpjs() {
             return Math.max(0, Number(this.editDriverForm.potongan_bpjs || 0));
         },
@@ -63,7 +58,7 @@ export default function registerAdminPayroll(Alpine) {
             const penambahanHistoris = Number(this.selected.penambahan_historis || 0);
             return Math.max(
                 0,
-                this.previewKomisiSupir + this.previewTunjangan - this.previewBpjs - kasbon - potonganHistoris + penambahanHistoris
+                this.previewKomisiSupir - this.previewBpjs - kasbon - potonganHistoris + penambahanHistoris
             );
         },
 
@@ -169,7 +164,6 @@ export default function registerAdminPayroll(Alpine) {
             this.selected = row;
             this.editDriverForm = {
                 biaya_sparepart: Number(row?.sparepart || 0),
-                total_tunjangan: Number(row?.tunjangan || 0),
                 potongan_bpjs: Number(row?.bpjs || 0),
             };
             this.drawerOpen = true;
@@ -187,7 +181,6 @@ export default function registerAdminPayroll(Alpine) {
                 'PATCH',
                 {
                     biaya_sparepart: this.editDriverForm.biaya_sparepart,
-                    total_tunjangan: this.editDriverForm.total_tunjangan,
                     potongan_bpjs: this.editDriverForm.potongan_bpjs,
                 }
             );

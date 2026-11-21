@@ -141,7 +141,6 @@ Route::middleware(['auth', 'role:admin', 'throttle:interaksi-admin'])->prefix('a
         Route::patch('/loans/{loan}/angsuran/{angsuran}', [EmployeeFinanceController::class, 'potongAngsuran'])->name('loans.potong');
         Route::post('/loans/bpjs', [EmployeeFinanceController::class, 'storeBpjs'])->name('loans.bpjs');
         Route::post('/loans/bpjs-massal', [EmployeeFinanceController::class, 'storeBpjsMassal'])->name('loans.bpjs-massal');
-        Route::post('/loans/allowances', [EmployeeFinanceController::class, 'storeAllowance'])->name('loans.allowances');
         Route::post('/loans/debit-memos', [EmployeeFinanceController::class, 'storeDebitMemo'])->name('loans.debit-memos');
 
         // Route calendar dimatikan sementara; diganti panel kalender kanan.
