@@ -160,7 +160,7 @@
     </mxCell>
 
     <mxCell id="t_simulasi_gaji" value="simulasi_gaji" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;startSize=30;container=1;collapsible=0;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontColor=#111111;rounded=0;" vertex="1" parent="1">
-      <mxGeometry x="40" y="1700" width="390" height="672" as="geometry" />
+      <mxGeometry x="40" y="1700" width="390" height="640" as="geometry" />
     </mxCell>
     <mxCell id="t_simulasi_gaji_note" value="Arsip kalkulator simulasi gaji mandiri supir (1-31 rit)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=9;fontColor=#666666;fontStyle=2;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="30" width="390" height="28" as="geometry" />
@@ -198,29 +198,26 @@
     <mxCell id="t_simulasi_gaji_10" value="&lt;b&gt;gaji_komisi&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Estimasi bagi hasil komisi supir&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="378" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_11" value="&lt;b&gt;total_tunjangan&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Estimasi tambahan tunjangan&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_12" value="&lt;b&gt;potongan_bpjs&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan BPJS pada simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="410" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_12" value="&lt;b&gt;potongan_bpjs&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan BPJS pada simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_13" value="&lt;b&gt;potongan_kasbon&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan angsuran kasbon pada simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="442" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_13" value="&lt;b&gt;potongan_kasbon&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan angsuran kasbon pada simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_14" value="&lt;b&gt;potongan_lain&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan tambahan manual&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="474" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_14" value="&lt;b&gt;potongan_lain&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan tambahan manual&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_15" value="&lt;b&gt;gaji_bersih&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Estimasi gaji bersih diterima (Net Pay)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="506" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_15" value="&lt;b&gt;gaji_bersih&lt;/b&gt; : BIGINT UNSIGNED&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Estimasi gaji bersih diterima (Net Pay)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_16" value="&lt;b&gt;mode_potongan&lt;/b&gt; : VARCHAR(20)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Mode potongan: riil atau manual&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="538" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_16" value="&lt;b&gt;mode_potongan&lt;/b&gt; : VARCHAR(20)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Mode potongan: riil atau manual&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
+    <mxCell id="t_simulasi_gaji_17" value="&lt;b&gt;catatan&lt;/b&gt; : TEXT nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Catatan skenario simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
       <mxGeometry x="0" y="570" width="390" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_simulasi_gaji_17" value="&lt;b&gt;catatan&lt;/b&gt; : TEXT nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Catatan skenario simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
-      <mxGeometry x="0" y="602" width="390" height="32" as="geometry" />
-    </mxCell>
     <mxCell id="t_simulasi_gaji_18" value="&lt;b&gt;deleted_at&lt;/b&gt; : TIMESTAMP nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Penanda soft delete simulasi&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_simulasi_gaji">
-      <mxGeometry x="0" y="634" width="390" height="32" as="geometry" />
+      <mxGeometry x="0" y="602" width="390" height="32" as="geometry" />
     </mxCell>
 
     <mxCell id="t_jenis_truk" value="jenis_truk" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;startSize=30;container=1;collapsible=0;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontColor=#111111;rounded=0;" vertex="1" parent="1">
@@ -501,7 +498,7 @@
     </mxCell>
 
     <mxCell id="t_penggajian" value="penggajian" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;startSize=30;container=1;collapsible=0;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontColor=#111111;rounded=0;" vertex="1" parent="1">
-      <mxGeometry x="940" y="1190" width="410" height="768" as="geometry" />
+      <mxGeometry x="940" y="1190" width="410" height="736" as="geometry" />
     </mxCell>
     <mxCell id="t_penggajian_note" value="Rekapitulasi &amp; snapshot perhitungan gaji 4 tahap per supir" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=9;fontColor=#666666;fontStyle=2;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="30" width="410" height="28" as="geometry" />
@@ -548,29 +545,26 @@
     <mxCell id="t_penggajian_13" value="&lt;b&gt;gaji_komisi&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;round(hasil_bersih_armada * bp / 10000) (Tahap 3)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="474" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_14" value="&lt;b&gt;total_tunjangan&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Total tambahan tunjangan / insentif&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_15" value="&lt;b&gt;potongan_bpjs&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan BPJS Ketenagakerjaan periode ini&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="506" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_15" value="&lt;b&gt;potongan_bpjs&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Potongan BPJS Ketenagakerjaan periode ini&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_16" value="&lt;b&gt;potongan_kasbon&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;SUM(angsuran_kasbon.nominal) periode berjalan&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="538" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_16" value="&lt;b&gt;potongan_kasbon&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;SUM(angsuran_kasbon.nominal) periode berjalan&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_17" value="&lt;b&gt;gaji_bersih&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Take-Home Pay bulat Rupiah (Tahap 4)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="570" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_17" value="&lt;b&gt;gaji_bersih&lt;/b&gt; : BIGINT&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Take-Home Pay bulat Rupiah (Tahap 4)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_18" value="&lt;b&gt;status&lt;/b&gt; : VARCHAR(20)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Status baris: draft, approved, paid&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="602" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_18" value="&lt;b&gt;status&lt;/b&gt; : VARCHAR(20)&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Status baris: draft, approved, paid&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_19" value="&lt;b&gt;id_penyetuju&lt;/b&gt; : BIGINT UNSIGNED nullable  &lt;b&gt;[FK]&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Pimpinan pemberi ACC baris ini (users.id)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=#FAFAFA;fontColor=#111111;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="634" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_19" value="&lt;b&gt;id_penyetuju&lt;/b&gt; : BIGINT UNSIGNED nullable  &lt;b&gt;[FK]&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Pimpinan pemberi ACC baris ini (users.id)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=#FAFAFA;fontColor=#111111;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
+    <mxCell id="t_penggajian_20" value="&lt;b&gt;disetujui_pada&lt;/b&gt; : TIMESTAMP nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Waktu ACC Pimpinan pada baris supir ini&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
       <mxGeometry x="0" y="666" width="410" height="32" as="geometry" />
     </mxCell>
-    <mxCell id="t_penggajian_20" value="&lt;b&gt;disetujui_pada&lt;/b&gt; : TIMESTAMP nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Waktu ACC Pimpinan pada baris supir ini&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
-      <mxGeometry x="0" y="698" width="410" height="32" as="geometry" />
-    </mxCell>
     <mxCell id="t_penggajian_21" value="&lt;b&gt;dicairkan_pada&lt;/b&gt; : TIMESTAMP nullable&lt;br&gt;&lt;font color=&quot;#777777&quot; style=&quot;font-size:9px&quot;&gt;Waktu pencairan dana gaji supir (paid)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#333333;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=6;fontSize=10.5;overflow=hidden;whiteSpace=nowrap;" vertex="1" parent="t_penggajian">
-      <mxGeometry x="0" y="730" width="410" height="32" as="geometry" />
+      <mxGeometry x="0" y="698" width="410" height="32" as="geometry" />
     </mxCell>
 
     <mxCell id="rel_R1" value="1 .. 1" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;strokeColor=#555555;strokeWidth=1.3;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_users" target="t_karyawan">

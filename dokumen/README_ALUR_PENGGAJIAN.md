@@ -28,7 +28,7 @@ Ringkasan tahapan operasional dari pembuatan Surat Jalan hingga penerbitan slip 
    - `PayrollCalculationService::rekonsiliasiPeriode()` **hanya** menghitung ritase yang berstatus **`terverifikasi`**.
    - Ketika Admin mengajukan periode ke Pimpinan (`POST /admin/payroll/{period}/submit`), server **memblokir pengajuan (HTTP 422)** apabila masih terdapat Surat Jalan pada periode tersebut yang berstatus **`draft`**, **`terbit`**, **`sedang_dikirim`**, atau **`menunggu_verifikasi`**.
 6. **Audit, ACC Bertahap, & Penolakan Pimpinan — Pimpinan (`/executive/payroll`):**
-   - Pimpinan memeriksa rincian pendapatan (omzet, uang jalan, komisi supir, tunjangan) dan potongan (sparepart, BPJS, kasbon) per supir.
+   - Pimpinan memeriksa rincian pendapatan (omzet, uang jalan, komisi supir) dan potongan (sparepart, BPJS, kasbon) per supir.
    - Jika tidak sesuai, Pimpinan dapat melakukan **Tolak/Revisi** sehingga periode kembali ke `draft` disertai **`periode_gaji.catatan_penolakan`**.
    - Pimpinan dapat memberikan **ACC satuan** per supir (`PATCH /executive/payroll/{period}/approve` dengan `id_penggajian`), **ACC baris terpilih lewat checkbox** (`POST /executive/payroll/{period}/approve-batch` dengan `ids`), atau **ACC Semua** (`approved`), yang mencatat `id_penyetuju` dan `disetujui_pada` pada `penggajian` (dan pada `periode_gaji` ketika seluruh supir telah di-ACC).
 7. **Pencairan Dana (`approved` → `paid`) — Pimpinan (`/executive/payroll`):**
@@ -58,7 +58,6 @@ Ritase Aktif (tonase_kg × tarif_per_ton)
                           └─► hasil_bersih_armada
                                 └─ (×) persentase_komisi_bp / 10.000 (dibulatkan ke Rupiah terdekat)
                                       └─► gaji_komisi (Gaji Komisi Supir)
-                                            └─ (+) total_tunjangan
                                             └─ (-) potongan_bpjs
                                             └─ (-) potongan_kasbon
                                             └─ (-) potongan_historis_lain (saat rekonsiliasi slip historis)
@@ -75,7 +74,7 @@ Ritase Aktif (tonase_kg × tarif_per_ton)
    - `gaji_komisi = (int) round(($hasil_bersih_armada * $persentase_komisi_bp) / 10000)`
    - Default `persentase_komisi_bp` adalah `1000` (10%).
 4. **Tahap 4 — Gaji Bersih Diterima Supir (`gaji_bersih`):**
-   - `gaji_bersih = max(0, gaji_komisi + total_tunjangan - potongan_bpjs - potongan_kasbon - potongan_historis_lain)`
+   - `gaji_bersih = max(0, gaji_komisi - potongan_bpjs - potongan_kasbon - potongan_historis_lain)`
    - **Penjelasan `$selisihHistoris` (`potongan_historis_lain`):** Pada `rekonsiliasiPeriode()` dan `perbaruiKomponenSupir()`, apabila baris `penggajian` sudah ada (misalnya dari seeder slip historis atau impor Excel yang memiliki penyesuaian historis di luar kolom BPJS dan kasbon), selisih antara rumus murni dan `gaji_bersih` yang tercatat dipertahankan sebagai `potongan_historis_lain` agar nominal historis tidak berubah sepihak saat dihitung ulang.
 
 ---
@@ -84,7 +83,7 @@ Ritase Aktif (tonase_kg × tarif_per_ton)
 
 | File | Peran & Method Utama |
 |---|---|
-| `app-payroll-asm/app/Services/PayrollCalculationService.php` | **Mesin Kalkulasi & Persetujuan Inti.**<br>- `hitungKomponenGaji()`: rumus tunggal 4 tahap.<br>- `rekonsiliasiPeriode()`: membentuk baris `penggajian` dari `ritase` atau menghitung ulang baris yang sudah ada dalam `DB::transaction()`.<br>- `perbaruiKomponenSupir()`: memperbarui komponen (`biaya_sparepart`, `total_tunjangan`, `potongan_bpjs`) dan menghitung ulang turunan.<br>- `prosesPersetujuanPeriode()`: memproses ACC (`approved`) atau pengembalian ke `draft`.<br>- `hitungPotonganKasbonPeriode()` & `hitungSparepartTrukPeriode()`: mengambil agregasi sumber data kasbon & sparepart. |
+| `app-payroll-asm/app/Services/PayrollCalculationService.php` | **Mesin Kalkulasi & Persetujuan Inti.**<br>- `hitungKomponenGaji()`: rumus tunggal 4 tahap.<br>- `rekonsiliasiPeriode()`: membentuk baris `penggajian` dari `ritase` atau menghitung ulang baris yang sudah ada dalam `DB::transaction()`.<br>- `perbaruiKomponenSupir()`: memperbarui komponen (`biaya_sparepart`, `potongan_bpjs`) dan menghitung ulang turunan.<br>- `prosesPersetujuanPeriode()`: memproses ACC (`approved`) atau pengembalian ke `draft`.<br>- `hitungPotonganKasbonPeriode()` & `hitungSparepartTrukPeriode()`: mengambil agregasi sumber data kasbon & sparepart. |
 | `app-payroll-asm/app/Http/Controllers/Admin/PayrollController.php` | **Controller Payroll Admin (`/admin/payroll`).**<br>- `index()`: menampilkan daftar supir & ringkasan periode.<br>- `calculate()`: `POST /admin/payroll/{period}/calculate` -> memanggil `rekonsiliasiPeriode()`.<br>- `submit()`: `PATCH /admin/payroll/{period}/submit` -> mengubah status ke `pending`.<br>- `approval()`: `POST /admin/payroll/{period}/approval` -> divalidasi `SubmitPayrollApprovalRequest` (hanya menerima `mode = 'reject'`) untuk menarik pengajuan ke `draft`.<br>- `updateDriver()` & `destroyDriver()`: edit komponen via drawer atau hapus baris gaji yang belum terkunci/tanpa ritase aktif. |
 | `app-payroll-asm/app/Http/Controllers/Executive/PayrollReviewController.php` | **Controller Otorisasi Pimpinan (`/executive/payroll`).**<br>- `index()` & `show()`: pemilih periode dan lembar audit Pimpinan.<br>- `approve()` (`PATCH /executive/payroll/{period}/approve`) & `approveBatch()` (`POST /executive/payroll/{period}/approve-batch`): memanggil `prosesPersetujuanPeriode(..., 'approve')`.<br>- `reject()` (`PATCH /executive/payroll/{period}/reject`): memanggil `prosesPersetujuanPeriode(..., 'reject')` dengan catatan revisi. |
 | `app-payroll-asm/app/Services/PayrollDataService.php` | **Query & Pemetaan Data Tampilan Payroll.**<br>- Admin: `formatPeriode()`, `ringkasanPayroll()`, `barisPayroll()`, `barisPayrollTerpaginasi()`.<br>- Pimpinan: `ringkasanEksekutif()`, `barisReviewPayrollEksekutif()`, `permintaanAccPimpinan()`, `ringkasanSemuaPeriodeEksekutif()`, `riwayatPermintaanAcc()`.<br>- Portal Supir & Laporan: `payrollSupir()`, `ritaseSupir()`, `kasbonSupir()`, `rincianLaporanPeriode()`. |
@@ -93,7 +92,7 @@ Ritase Aktif (tonase_kg × tarif_per_ton)
 | `app-payroll-asm/resources/views/executive/payroll/index.blade.php` | **Antarmuka Audit & Otorisasi Pimpinan.** Tahap pilih periode, ringkasan kas payroll, tabel review supir, drawer rincian pendapatan & potongan, serta tombol ACC / Tolak Revisi. |
 
 ### Pemanggil Pendukung Lainnya
-- `app-payroll-asm/app/Http/Controllers/Admin/Operational/EmployeeFinanceController.php`: `storeBpjs()`, `storeBpjsMassal()`, dan `storeAllowance()` menyinkronkan perubahan BPJS/tunjangan ke baris `penggajian` periode aktif lewat `PayrollCalculationService::perbaruiKomponenSupir()`.
+- `app-payroll-asm/app/Http/Controllers/Admin/Operational/EmployeeFinanceController.php`: `storeBpjs()` dan `storeBpjsMassal()` menyinkronkan perubahan BPJS ke baris `penggajian` periode aktif lewat `PayrollCalculationService::perbaruiKomponenSupir()`.
 - `app-payroll-asm/app/Http/Controllers/Driver/TripHistoryController.php`: `konfirmasi()` memperbarui tonase ritase supir lalu menyinkronkan total tonase, omzet kotor, dan komponen turunan lewat `PayrollCalculationService::perbaruiKomponenSupir()`.
 
 ---
@@ -144,5 +143,3 @@ Aturan pemisahan kewenangan:
    - Sesuai aturan proyek (`AGENTS.md` 3.6), `penggajian.potongan_kasbon` **dilarang** diisi angka manual dan wajib berasal dari akumulasi tabel `angsuran_kasbon`.
    - `PayrollCalculationService::hitungPotonganKasbonPeriode()` menjumlahkan `angsuran_kasbon.nominal` dari kasbon milik `id_karyawan` yang berstatus `approved` atau `lunas`, baik yang sudah tertaut langsung lewat `id_periode_gaji` maupun yang `tanggal_rencana`-nya jatuh di rentang `[tanggal_mulai, tanggal_selesai]` periode (karena cicilan masa depan dapat bernilai `id_periode_gaji = NULL`).
    - Pada proses impor migrasi (`ExcelPayrollMigrationService::imporBerkasMigrasi()`), `potongan_kasbon` juga diambil langsung dari `SUM(angsuran_kasbon.nominal)` untuk `id_periode_gaji` dan `id_karyawan` terkait, bukan dari sel angka manual di file Excel.
-
-<!-- CATATAN SEMENTARA: Fitur tunjangan (total_tunjangan) untuk sementara dihapus dari aplikasi (branch master). Versi lengkap dengan tunjangan tersimpan di branch v1. Isi dokumen ini belum diubah. -->
