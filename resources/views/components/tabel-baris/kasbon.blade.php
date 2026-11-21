@@ -40,19 +40,19 @@
     </td>
     <td class="px-4 py-3 text-center">
         <x-ui.tabel-aksi label="Aksi Kasbon">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetail(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetail({!! \Illuminate\Support\Js::from($baris) !!})">
                 Detail Kasbon
             </x-ui.tabel-aksi-item>
             @if (($baris['sisa'] ?? 0) > 0 && ($baris['angsuran_berikut'] ?? null) !== null)
-                <x-ui.tabel-aksi-item ikon="price_check" tone="utama" @click="bukaPotong(@js($baris))">
+                <x-ui.tabel-aksi-item ikon="price_check" tone="utama" @click="bukaPotong({!! \Illuminate\Support\Js::from($baris) !!})">
                     Potong Cicilan Ke-{{ $baris['angsuran_berikut']['urutan'] }}
                 </x-ui.tabel-aksi-item>
             @endif
-            <x-ui.tabel-aksi-item ikon="edit" @click="bukaEdit(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" @click="bukaEdit({!! \Illuminate\Support\Js::from($baris) !!})">
                 Ubah Kasbon
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapus(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapus({!! \Illuminate\Support\Js::from($baris) !!})">
                 Hapus Kasbon
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>

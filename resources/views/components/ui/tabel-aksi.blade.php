@@ -24,17 +24,57 @@
     class="relative inline-block text-left"
     x-data="{
         menuAksiTerbuka: false,
-        posisiMenuAksi: { top: '0px', left: '0px' },
+        posisiMenuAksi: { top: '0px', left: '0px', tinggiMaks: 'none' },
         bukaMenuAksi(event) {
-            const kotak = event.currentTarget.getBoundingClientRect();
+            if (this.menuAksiTerbuka) {
+                this.menuAksiTerbuka = false;
+                return;
+            }
+
+            const tombol = event.currentTarget.getBoundingClientRect();
             const lebarMenu = {{ (int) $lebar }};
+            const jarak = 6;
             const batasKanan = window.innerWidth - lebarMenu - 8;
-            const kiri = Math.max(8, Math.min(batasKanan, kotak.right - lebarMenu));
-            const tinggiPerkiraan = 240;
-            const lebihBaikKeAtas = (kotak.bottom + tinggiPerkiraan) > window.innerHeight && kotak.top > tinggiPerkiraan;
-            const atas = lebihBaikKeAtas ? Math.max(8, kotak.top - tinggiPerkiraan) : (kotak.bottom + 6);
-            this.posisiMenuAksi = { top: atas + 'px', left: kiri + 'px' };
-            this.menuAksiTerbuka = !this.menuAksiTerbuka;
+
+            // Posisi awal: menempel tepat di bawah tombol. Menu diukur setelah
+            // dirender, baru digeser bila ruang di bawah tidak cukup.
+            this.posisiMenuAksi = {
+                top: (tombol.bottom + jarak) + 'px',
+                left: Math.max(8, Math.min(batasKanan, tombol.right - lebarMenu)) + 'px',
+                tinggiMaks: 'none',
+            };
+            this.menuAksiTerbuka = true;
+
+            this.$nextTick(() => {
+                const menu = this.$refs.menuAksi;
+                if (!menu) return;
+
+                const tinggiMenu = menu.offsetHeight;
+                const ruangBawah = window.innerHeight - tombol.bottom - jarak - 8;
+                const ruangAtas = tombol.top - jarak - 8;
+
+                let atas = tombol.bottom + jarak;
+                let tinggiMaks = 'none';
+
+                if (tinggiMenu > ruangBawah) {
+                    if (tinggiMenu <= ruangAtas) {
+                        // Cukup ruang di atas: tempel ke sisi atas tombol.
+                        atas = tombol.top - jarak - tinggiMenu;
+                    } else {
+                        // Tidak muat di kedua sisi: pakai sisi yang lebih lapang,
+                        // batasi tinggi menu agar isinya tetap bisa digulir.
+                        const pakaiAtas = ruangAtas > ruangBawah;
+                        atas = pakaiAtas ? 8 : tombol.bottom + jarak;
+                        tinggiMaks = Math.max(120, pakaiAtas ? ruangAtas : ruangBawah) + 'px';
+                    }
+                }
+
+                this.posisiMenuAksi = {
+                    ...this.posisiMenuAksi,
+                    top: Math.round(Math.max(8, atas)) + 'px',
+                    tinggiMaks,
+                };
+            });
         },
     }"
     @click.outside="menuAksiTerbuka = false"
@@ -55,10 +95,12 @@
     <div
         x-show="menuAksiTerbuka"
         x-cloak
+        x-ref="menuAksi"
         x-transition.origin.top.right
-        :style="'position: fixed; top: ' + posisiMenuAksi.top + '; left: ' + posisiMenuAksi.left + '; width: {{ (int) $lebar }}px;'"
-        class="z-[70] overflow-hidden rounded-xl border border-card-border bg-card-bg p-1.5 text-left shadow-drawer"
+        :style="'position: fixed; top: ' + posisiMenuAksi.top + '; left: ' + posisiMenuAksi.left + '; width: {{ (int) $lebar }}px; max-height: ' + posisiMenuAksi.tinggiMaks + ';'"
+        class="z-[70] overflow-y-auto rounded-xl border border-card-border bg-card-bg p-1.5 text-left shadow-drawer"
         role="menu"
+        @click="menuAksiTerbuka = false"
     >
         {{ $slot }}
     </div>

@@ -181,6 +181,7 @@
                             <x-ui.table-empty :colspan="8" label="data supir" :tampilkan-reset="$adaFilterAktif" />
                         @endif
                     </tbody>
+                </table>
             </div>
             </x-ui.tabel-massal>
 

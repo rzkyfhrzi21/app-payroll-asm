@@ -48,14 +48,14 @@
     <td class="px-4 py-3 text-right tabular-nums text-slate-text-primary">{{ $baris['tonase'] ?? '0,00' }} Ton</td>
     <td class="px-4 py-3 text-center">
         <x-ui.tabel-aksi label="Aksi Rute">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailRute(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailRute({!! \Illuminate\Support\Js::from($baris) !!})">
                 Detail Rute
             </x-ui.tabel-aksi-item>
-            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditRute(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditRute({!! \Illuminate\Support\Js::from($baris) !!})">
                 Ubah Rute
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusRute(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusRute({!! \Illuminate\Support\Js::from($baris) !!})">
                 Hapus Rute
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>

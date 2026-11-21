@@ -83,14 +83,14 @@
 
     <td class="px-4 py-3 text-center">
         <x-ui.tabel-aksi label="Aksi Supir">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailSupir(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailSupir({!! \Illuminate\Support\Js::from($baris) !!})">
                 Detail Supir
             </x-ui.tabel-aksi-item>
-            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditSupir(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditSupir({!! \Illuminate\Support\Js::from($baris) !!})">
                 Edit Profil Supir
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusSupir(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusSupir({!! \Illuminate\Support\Js::from($baris) !!})">
                 Hapus Data Supir
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>

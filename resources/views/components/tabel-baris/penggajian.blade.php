@@ -67,14 +67,14 @@
 
     <td class="px-4 py-3 text-center" @click.stop>
         <x-ui.tabel-aksi label="Aksi Payroll Supir">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="openDrawer(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="openDrawer({!! \Illuminate\Support\Js::from($baris) !!})">
                 Lihat Slip &amp; Rincian Gaji
             </x-ui.tabel-aksi-item>
-            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="openDrawer(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="openDrawer({!! \Illuminate\Support\Js::from($baris) !!})">
                 Edit Komponen Gaji
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusPayroll(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusPayroll({!! \Illuminate\Support\Js::from($baris) !!})">
                 Keluarkan dari Periode
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>

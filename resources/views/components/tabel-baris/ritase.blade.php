@@ -86,7 +86,7 @@
     </td>
     <td class="px-4 py-3 text-center">
         <x-ui.tabel-aksi label="Aksi Surat Jalan">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailRitase(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailRitase({!! \Illuminate\Support\Js::from($baris) !!})">
                 Detail Surat Jalan
             </x-ui.tabel-aksi-item>
             <a
@@ -99,11 +99,11 @@
                 <span class="material-symbols-outlined text-[1.25rem]">print</span>
                 <span>Cetak Surat Jalan</span>
             </a>
-            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="openEdit(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="openEdit({!! \Illuminate\Support\Js::from($baris) !!})">
                 Edit Surat Jalan
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusRitase(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusRitase({!! \Illuminate\Support\Js::from($baris) !!})">
                 Hapus Surat Jalan
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>

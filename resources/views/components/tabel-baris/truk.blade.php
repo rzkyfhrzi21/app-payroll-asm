@@ -49,14 +49,14 @@
     <td class="px-4 py-3 text-right font-semibold tabular-nums text-primary">{{ $baris['tonase'] ?? '0,00' }} <span class="font-sans text-label-sm font-normal text-slate-text-muted">Ton</span></td>
     <td class="px-4 py-3 text-center">
         <x-ui.tabel-aksi label="Aksi Unit Armada">
-            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailTruk(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="visibility" @click="bukaDetailTruk({!! \Illuminate\Support\Js::from($baris) !!})">
                 Detail Unit
             </x-ui.tabel-aksi-item>
-            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditTruk(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="edit" tone="utama" @click="bukaEditTruk({!! \Illuminate\Support\Js::from($baris) !!})">
                 Ubah Unit
             </x-ui.tabel-aksi-item>
             <div class="my-1 border-t border-card-border"></div>
-            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusTruk(@js($baris))">
+            <x-ui.tabel-aksi-item ikon="delete" tone="hapus" @click="bukaHapusTruk({!! \Illuminate\Support\Js::from($baris) !!})">
                 Hapus Unit
             </x-ui.tabel-aksi-item>
         </x-ui.tabel-aksi>
