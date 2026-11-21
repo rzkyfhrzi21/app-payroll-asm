@@ -11,7 +11,7 @@
         <mxCell id="judul" value="Entity Relationship Diagram (ERD) Sistem Penggajian Supir Batubara (PT ASM)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#111111;" vertex="1" parent="1">
           <mxGeometry x="40" y="24" width="1310" height="36" as="geometry" />
         </mxCell>
-        <mxCell id="sub" value="Skema Aktual MySQL / TiDB Cloud Serverless (13 Tabel Domain) · Seluruh Nominal Uang &amp; Tonase Menggunakan BIGINT Bulat" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+        <mxCell id="sub" value="Skema Aktual MySQL 8 (13 Tabel Domain) · Seluruh Nominal Uang &amp; Tonase Menggunakan BIGINT Bulat" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
           <mxGeometry x="40" y="60" width="1310" height="24" as="geometry" />
         </mxCell>
     <mxCell id="t_users" value="users" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;startSize=30;container=1;collapsible=0;fillColor=#E6E6E6;swimlaneFillColor=#FFFFFF;strokeColor=#666666;fontSize=13;fontColor=#111111;rounded=0;" vertex="1" parent="1">

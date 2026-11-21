@@ -28,7 +28,7 @@ Sistem ini memecahkan berbagai risiko bisnis nyata, seperti:
 | :--- | :--- |
 | **Backend Framework** | **Laravel 13.x** (PHP `^8.3`), Monolith Server-Side Rendered (SSR) |
 | **Frontend & UI** | **Blade Components**, **Tailwind CSS v3.4**, **Alpine.js v3**, **Vite 7** |
-| **Database Utama** | **TiDB Cloud Serverless (MySQL Compatible, Port `4000` + TLS/SSL)** / MySQL 8.0 |
+| **Database Utama** | **MySQL 8.0 lokal** (`127.0.0.1:3306`, tanpa SSL), terpasang di VPS yang sama dengan aplikasi |
 | **Session & Cache** | `file` driver di disk lokal (`SESSION_DRIVER=file`, `CACHE_STORE=file`) untuk latensi rendah |
 | **Penyimpanan Media** | Disk lokal `storage/app/public` (`storage:link`), kompresi otomatis gambar ke `.webp` (maks 2 MB) |
 | **Integrasi Notifikasi** | SMTP Gmail (Email Slip Gaji) & **Fonnte API** (WhatsApp Gateway) |
@@ -158,7 +158,7 @@ npm install
 copy .env.example .env
 php artisan key:generate
 
-:: 4. Sesuaikan kredensial DB di .env (TiDB Cloud Serverless port 4000 atau MySQL lokal)
+:: 4. Sesuaikan kredensial DB di .env (MySQL 8 lokal, default 127.0.0.1:3306)
 ::    Lalu jalankan migrasi, seeder data contoh, dan symlink storage publik
 php artisan migrate --seed
 php artisan storage:link
