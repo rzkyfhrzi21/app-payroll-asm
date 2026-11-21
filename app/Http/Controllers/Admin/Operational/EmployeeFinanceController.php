@@ -64,10 +64,10 @@ class EmployeeFinanceController extends Controller
 
         return view('admin.operational.loans.index', [
             'rows'                => $layananDataPayroll->daftarKasbonTerpaginasi($filter, $perHalaman),
-            'summary'             => $layananDataPayroll->ringkasanKasbon($layananDataPayroll->daftarKasbon()),
+            'summary'             => $layananDataPayroll->ringkasanKasbonDariSql(),
             'period'              => $layananDataPayroll->formatPeriode($periodeAktif),
             'drivers'             => $layananDataPayroll->daftarSupirAktif(),
-            'daftarKomponenSupir' => $layananDataPayroll->dataKomisiDanPotongan(),
+            'daftarKomponenSupir' => $layananDataPayroll->komponenSupirTerpaginasi(['cari' => '', 'status' => 'all'], $perHalaman),
             'periodeOptions'      => $layananDataPayroll->daftarOpsiPeriode(),
             'periodeAktifId'      => $periodeAktif?->id,
             'trucks'              => $layananDataPayroll->pilihanTrukBiaya(),

@@ -250,6 +250,7 @@
             {{-- Subtab Potongan BPJS --}}
             <div
                 x-show="tabAktif === 'bpjs'"
+                data-wadah-tabel="komponen_supir"
                 x-cloak
                 class="flex flex-col"
                 x-data="panelBpjsMassal({ url: @js(route('admin.operational.loans.bpjs-massal')) })"
@@ -296,6 +297,33 @@
                     </div>
                 </div>
 
+                <div class="flex flex-col items-center justify-between gap-space-sm border-b border-card-border p-space-md md:flex-row">
+                    <div class="relative w-full md:w-80">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[1.125rem] text-slate-text-muted">search</span>
+                        <input
+                            type="text"
+                            name="cari"
+                            class="w-full rounded-lg bg-surface py-2 pl-9 pr-4 font-sans text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:ring-2 focus:ring-primary-container"
+                            placeholder="Cari nama supir atau NIP..."
+                        >
+                    </div>
+                    <div class="flex w-full flex-wrap items-center gap-space-sm md:w-auto">
+                        <select name="status" class="rounded-lg bg-surface px-3 py-2 font-sans text-body-sm text-slate-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-container">
+                            <option value="all">Status Kerja: Semua</option>
+                            <option value="aktif">Status Kerja: Aktif</option>
+                            <option value="nonaktif">Status Kerja: Nonaktif</option>
+                        </select>
+                        <button
+                            type="button"
+                            data-tombol-reset-filter
+                            onclick="window.resetTabelAjax('komponen_supir')"
+                            class="hidden inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 font-sans text-body-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100"
+                        >
+                            <span class="material-symbols-outlined text-[1rem]">restart_alt</span>
+                            <span>Reset Filter</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse text-left">
                         <thead>
@@ -317,48 +345,19 @@
                                 <th class="px-4 py-3 text-center font-semibold text-slate-text-secondary">Keterangan</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-card-border font-sans text-financial-table">
-                            @forelse (($daftarKomponenSupir ?? []) as $komponenSupir)
-                                <tr class="transition-colors hover:bg-surface-container-low/60">
-                                    <td class="px-2 py-3 text-center">
-                                        <input
-                                            type="checkbox"
-                                            value="{{ $komponenSupir['id'] }}"
-                                            x-model="terpilih"
-                                            data-centang-bpjs
-                                            class="h-4 w-4 cursor-pointer rounded border-card-border text-primary focus:ring-2 focus:ring-primary"
-                                            aria-label="Pilih supir {{ $komponenSupir['nama'] }}"
-                                        >
-                                    </td>
-                                    <td class="px-4 py-3 text-center tabular-nums text-slate-text-muted">{{ $loop->iteration }}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="font-display text-headline-sm font-semibold text-slate-text-primary">{{ $komponenSupir['nama'] }}</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-slate-text-secondary">{{ $komponenSupir['nip'] }}</td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-label-sm font-bold {{ $komponenSupir['status'] === 'aktif' ? 'bg-net-pay-surface text-net-pay-emerald' : 'bg-surface-container text-slate-text-secondary' }}">
-                                            {{ ucfirst($komponenSupir['status']) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 text-right font-bold tabular-nums text-slate-text-primary">{{ $rp($komponenSupir['bpjs']) }}</td>
-                                    <td class="px-4 py-3 text-center">
-                                        @if ($komponenSupir['bpjs'] > 0)
-                                            <span class="inline-flex items-center rounded-full bg-net-pay-surface px-2 py-0.5 font-sans text-label-sm font-bold text-net-pay-emerald">Terdaftar</span>
-                                        @else
-                                            <span class="inline-flex items-center rounded-full bg-surface-container px-2 py-0.5 font-sans text-label-sm font-bold text-slate-text-secondary">Belum terdaftar</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-5 py-8 text-center font-sans text-body-sm text-slate-text-muted">
-                                        Belum ada data supir.
-                                    </td>
-                                </tr>
-                            @endforelse
+                        <tbody id="tbodyKomponenSupir" class="divide-y divide-card-border font-sans text-financial-table">
+                            @foreach ($daftarKomponenSupir as $indeksKomponen => $komponenSupir)
+                                @include('components.tabel-baris.komponen_supir', ['baris' => $komponenSupir, 'nomor' => $daftarKomponenSupir->firstItem() + $indeksKomponen])
+                            @endforeach
+
+                            @if ($daftarKomponenSupir->isEmpty())
+                                <x-ui.table-empty :colspan="7" label="supir" />
+                            @endif
                         </tbody>
                     </table>
                 </div>
+
+                <x-ui.tabel-ajax entitas="komponen_supir" label="supir" target-id="tbodyKomponenSupir" :kolom="7" :filter="['status' => 'all']" :per-halaman-awal="$perPage" />
             </div>{{-- /subtab bpjs --}}
         </div>
 

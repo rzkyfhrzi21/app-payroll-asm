@@ -506,14 +506,12 @@ class PayrollDataService
     public function ringkasanKasbonSidebar(): array
     {
         $periode = $this->ambilPeriodeTerbaru();
-        $totalKasbon = (int) Kasbon::query()
+        $ringkasanKasbonAktif = Kasbon::query()
             ->where('status', '!=', 'lunas')
-            ->sum('sisa_pinjaman');
-
-        $jumlahSupir = Kasbon::query()
-            ->where('status', '!=', 'lunas')
-            ->distinct()
-            ->count('id_karyawan');
+            ->selectRaw('coalesce(sum(sisa_pinjaman), 0) as total, count(distinct id_karyawan) as jumlah_supir')
+            ->first();
+        $totalKasbon = (int) $ringkasanKasbonAktif->total;
+        $jumlahSupir = (int) $ringkasanKasbonAktif->jumlah_supir;
 
         $daftarPenggajian = $this->ambilPenggajianPeriode($periode);
         $totalGajiBersih = (int) $daftarPenggajian->sum('gaji_bersih');
@@ -559,6 +557,7 @@ class PayrollDataService
     public function daftarSupirAktif(): array
     {
         return Karyawan::query()
+            ->select(['id', 'nama_lengkap', 'nomor_induk_karyawan'])
             ->where('status', 'aktif')
             ->orderBy('nama_lengkap')
             ->get()
@@ -622,24 +621,32 @@ class PayrollDataService
     {
         $periode = $this->ambilPeriodeTerbaru();
 
+        // Agregat kasbon dihitung di SQL (withCount/withSum), dan penggajian hanya
+        // diambil untuk periode terbaru, bukan seluruh riwayat tiap supir.
         $daftarKaryawan = Karyawan::query()
+            ->select(['id', 'nomor_induk_karyawan', 'nama_lengkap', 'status', 'persentase_komisi_bp', 'potongan_bpjs_bulanan'])
             ->withCount(['kasbon'])
-            ->with([
-                'kasbon',
-                'penggajian' => fn ($kueri) => $kueri->with('periodeGaji')->orderByDesc('id'),
-            ])
+            ->withSum(['kasbon as sisa_kasbon_berjalan' => fn ($kueri) => $kueri->where('status', '!=', 'lunas')], 'sisa_pinjaman')
             ->orderByDesc('id')
             ->get();
 
+        $penggajianPerKaryawan = $periode === null
+            ? collect()
+            : Penggajian::query()
+                ->select(['id', 'id_karyawan', 'gaji_komisi', 'gaji_bersih', 'potongan_kasbon'])
+                ->where('id_periode_gaji', $periode->id)
+                ->orderByDesc('id')
+                ->get()
+                ->unique('id_karyawan')
+                ->keyBy('id_karyawan');
+
         return $daftarKaryawan
-            ->map(function (Karyawan $karyawan) use ($periode): array {
-                $sisaKasbon = (int) $karyawan->kasbon
-                    ->where('status', '!=', 'lunas')
-                    ->sum('sisa_pinjaman');
+            ->map(function (Karyawan $karyawan) use ($periode, $penggajianPerKaryawan): array {
+                $sisaKasbon = (int) $karyawan->sisa_kasbon_berjalan;
 
                 $penggajianPeriode = $periode === null
                     ? null
-                    : $karyawan->penggajian->firstWhere('id_periode_gaji', $periode->id);
+                    : $penggajianPerKaryawan->get($karyawan->id);
 
                 return [
                     'id' => $karyawan->id,
@@ -657,6 +664,69 @@ class PayrollDataService
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Versi terpaginasi untuk tabel Potongan BPJS: hanya supir pada halaman aktif
+     * yang diambil dari database; pencarian dan filter status berjalan di SQL.
+     * Kunci baris sama dengan dataKomisiDanPotongan().
+     *
+     * @param  array<string, mixed>  $filter
+     */
+    public function komponenSupirTerpaginasi(array $filter, int $perHalaman): LengthAwarePaginator
+    {
+        $periode = $this->ambilPeriodeTerbaru();
+        $kataKunci = trim((string) ($filter['cari'] ?? ''));
+        $status = strtolower(trim((string) ($filter['status'] ?? 'all')));
+
+        $kueri = Karyawan::query()
+            ->select(['id', 'nomor_induk_karyawan', 'nama_lengkap', 'status', 'persentase_komisi_bp', 'potongan_bpjs_bulanan'])
+            ->withCount(['kasbon'])
+            ->withSum(['kasbon as sisa_kasbon_berjalan' => fn ($sub) => $sub->where('status', '!=', 'lunas')], 'sisa_pinjaman');
+
+        if ($status !== '' && $status !== 'all') {
+            $kueri->where('status', $status);
+        }
+
+        if ($kataKunci !== '') {
+            $kueri->where(function (Builder $sub) use ($kataKunci): void {
+                $sub->where('nama_lengkap', 'like', "%{$kataKunci}%")
+                    ->orWhere('nomor_induk_karyawan', 'like', "%{$kataKunci}%");
+            });
+        }
+
+        $paginator = $kueri->orderByDesc('id')->paginate($perHalaman)->withQueryString();
+
+        // Penggajian periode terbaru hanya untuk supir di halaman ini.
+        $penggajianPerKaryawan = $periode === null || $paginator->isEmpty()
+            ? collect()
+            : Penggajian::query()
+                ->select(['id', 'id_karyawan', 'gaji_komisi', 'gaji_bersih', 'potongan_kasbon'])
+                ->where('id_periode_gaji', $periode->id)
+                ->whereIn('id_karyawan', $paginator->getCollection()->pluck('id'))
+                ->orderByDesc('id')
+                ->get()
+                ->unique('id_karyawan')
+                ->keyBy('id_karyawan');
+
+        return $paginator->through(function (Karyawan $karyawan) use ($penggajianPerKaryawan): array {
+            $penggajian = $penggajianPerKaryawan->get($karyawan->id);
+
+            return [
+                'id' => $karyawan->id,
+                'nip' => $karyawan->nomor_induk_karyawan,
+                'nama' => $karyawan->nama_lengkap,
+                'status' => $karyawan->status,
+                'komisi_persen' => $this->formatPersentaseKomisi($karyawan->persentase_komisi_bp),
+                'komisi_bp' => (int) $karyawan->persentase_komisi_bp,
+                'bpjs' => (int) $karyawan->potongan_bpjs_bulanan,
+                'kasbon_sisa' => (int) $karyawan->sisa_kasbon_berjalan,
+                'kasbon_aktif' => (int) $karyawan->kasbon_count,
+                'komisi_periode' => $penggajian === null ? 0 : (int) $penggajian->gaji_komisi,
+                'gaji_bersih_periode' => $penggajian === null ? 0 : (int) $penggajian->gaji_bersih,
+                'potongan_kasbon_periode' => $penggajian === null ? 0 : (int) $penggajian->potongan_kasbon,
+            ];
+        });
     }
 
     /**
@@ -863,7 +933,14 @@ class PayrollDataService
     private function kueriKasbon(): Builder
     {
         return Kasbon::query()
-            ->with(['karyawan:id,nama_lengkap,nomor_induk_karyawan', 'angsuran']);
+            ->select([
+                'id', 'id_karyawan', 'tanggal_pengambilan', 'total_pinjaman', 'nominal_angsuran',
+                'jumlah_tenor', 'sisa_pinjaman', 'keterangan', 'status',
+            ])
+            ->with([
+                'karyawan:id,nama_lengkap,nomor_induk_karyawan',
+                'angsuran:id,id_kasbon,urutan,nominal,tanggal_rencana,status',
+            ]);
     }
 
     /**
@@ -902,6 +979,41 @@ class PayrollDataService
                 'status' => $a->status,
                 'status_label' => AngsuranKasbon::daftarStatus()[$a->status] ?? $a->status,
             ])->all(),
+        ];
+    }
+
+    /**
+     * Ringkasan kartu atas halaman kasbon, dihitung langsung di SQL (satu query)
+     * sehingga tidak perlu memuat seluruh kasbon beserta angsurannya ke PHP.
+     * Hasilnya identik dengan ringkasanKasbon(daftarKasbon()).
+     */
+    public function ringkasanKasbonDariSql(): array
+    {
+        $statusAktif = "('approved', 'pending')";
+        // Cicilan berikut = angsuran 'terjadwal' dengan urutan terkecil per kasbon.
+        $cicilanBerikut = "(select a.nominal from angsuran_kasbon a where a.id_kasbon = kasbon.id and a.status = 'terjadwal' order by a.urutan asc limit 1)";
+
+        $hasil = Kasbon::query()
+            ->leftJoin('karyawan', fn ($gabung) => $gabung
+                ->on('karyawan.id', '=', 'kasbon.id_karyawan')
+                ->whereNull('karyawan.deleted_at'))
+            ->selectRaw("
+                count(*) as jumlah_kasbon,
+                coalesce(sum(kasbon.total_pinjaman), 0) as total_pinjaman,
+                coalesce(sum(case when kasbon.status in {$statusAktif} then kasbon.sisa_pinjaman end), 0) as outstanding,
+                count(distinct case when kasbon.status in {$statusAktif} then coalesce(karyawan.nomor_induk_karyawan, '—') end) as active_drivers,
+                coalesce(sum(case when kasbon.status in {$statusAktif} then coalesce({$cicilanBerikut}, 0) end), 0) as cicilan_bulan_ini
+            ")
+            ->first();
+
+        return [
+            'outstanding' => (int) $hasil->outstanding,
+            'active_drivers' => (int) $hasil->active_drivers,
+            'total_pinjaman' => (int) $hasil->total_pinjaman,
+            'cicilan_bulan_ini' => (int) $hasil->cicilan_bulan_ini,
+            'jumlah_kasbon' => (int) $hasil->jumlah_kasbon,
+            'batas_maksimal' => Kasbon::BATAS_MAKSIMAL,
+            'tenor_maksimal' => Kasbon::TENOR_MAKSIMAL,
         ];
     }
 
@@ -1572,6 +1684,8 @@ class PayrollDataService
     public function pilihanTrukBiaya(): array
     {
         return Truk::query()
+            ->select(['id', 'nomor_polisi', 'merek_model', 'id_karyawan'])
+            ->with('karyawan:id,nama_lengkap')
             ->where('status', 'aktif')
             ->orderBy('nomor_polisi')
             ->get()

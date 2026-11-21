@@ -58,7 +58,7 @@ class DashboardController extends Controller
             'period'               => $layananDataPayroll->formatPeriode($periode),
             'periodOptions'        => $layananDataPayroll->daftarOpsiPeriode(),
             'ringkasanPayroll'     => $ringkasanPayroll,
-            'ringkasanKasbon'      => $layananDataPayroll->ringkasanKasbon($layananDataPayroll->daftarKasbon()),
+            'ringkasanKasbon'      => $layananDataPayroll->ringkasanKasbonDariSql(),
             'ringkasanArmada'      => $this->ringkasanArmada(),
             'ringkasanPengeluaran' => $this->ringkasanPengeluaran($periode?->id),
             'aktivitasTerbaru'     => $this->aktivitasTerbaru(),

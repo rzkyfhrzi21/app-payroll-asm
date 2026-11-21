@@ -155,6 +155,7 @@ class InteraksiTabelPeranController extends Controller
             'rute' => 'rute',
             'biaya' => 'pengeluaran',
             'kasbon' => 'kasbon',
+            'komponen_supir' => 'supir',
             'penggajian' => 'penggajian supir',
             'periode_gaji' => 'periode gaji',
             default => $entitas,

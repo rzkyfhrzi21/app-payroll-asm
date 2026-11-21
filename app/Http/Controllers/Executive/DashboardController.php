@@ -46,7 +46,7 @@ class DashboardController extends Controller
             'cost'           => $layananDataPayroll->komposisiBiayaEksekutif($periode),
             'auditUnit'      => $layananDataPayroll->unitBebanSparepartTertinggi($periode),
             'kebutuhanKasGaji'=> $layananDataPayroll->kebutuhanKasGajiSeluruhPeriode(),
-            'ringkasanKasbon'=> $layananDataPayroll->ringkasanKasbon($layananDataPayroll->daftarKasbon()),
+            'ringkasanKasbon'=> $layananDataPayroll->ringkasanKasbonDariSql(),
             'sudahAcc'       => in_array($periode?->status, ['approved', 'paid'], true),
         ]);
     }

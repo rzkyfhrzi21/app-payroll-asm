@@ -82,12 +82,15 @@ export default function registerAdminLoans(Alpine) {
 
         get semuaTerpilih() {
             const semua = this.daftarCentang();
-            return semua.length > 0 && this.terpilih.length === semua.length;
+            return semua.length > 0 && semua.every((input) => this.terpilih.includes(input.value));
         },
 
+        // Tabel berhalaman: "pilih semua" hanya menyentuh baris di halaman aktif
+        // dan tidak menghapus pilihan dari halaman lain.
         pilihSemua(aktif) {
-            const semua = this.daftarCentang();
-            this.terpilih = aktif ? semua.map((input) => input.value) : [];
+            const nilaiHalaman = this.daftarCentang().map((input) => input.value);
+            const sisa = this.terpilih.filter((nilai) => !nilaiHalaman.includes(nilai));
+            this.terpilih = aktif ? [...sisa, ...nilaiHalaman] : sisa;
         },
 
         formatNominal() {

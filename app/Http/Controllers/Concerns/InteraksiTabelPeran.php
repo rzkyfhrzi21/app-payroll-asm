@@ -39,7 +39,7 @@ trait InteraksiTabelPeran
     protected function entitasDiizinkan(string $peran): array
     {
         return match ($peran) {
-            'admin' => ['karyawan', 'truk', 'rute', 'ritase', 'biaya', 'biaya_operasional', 'kasbon', 'periode_gaji', 'laporan', 'penggajian', 'payroll'],
+            'admin' => ['karyawan', 'truk', 'rute', 'ritase', 'biaya', 'biaya_operasional', 'kasbon', 'komponen_supir', 'periode_gaji', 'laporan', 'penggajian', 'payroll'],
             'pimpinan' => ['karyawan', 'truk', 'rute', 'ritase', 'biaya', 'biaya_operasional', 'kasbon', 'periode_gaji', 'laporan', 'penggajian', 'payroll'],
             'supir' => ['ritase', 'kasbon', 'penggajian', 'payroll'],
             default => [],
@@ -92,6 +92,7 @@ trait InteraksiTabelPeran
             'truk' => $layanan->dataTrukMasterTerpaginasi($filter, $perHalaman),
             'rute' => $layanan->daftarRuteTerpaginasi($filter, $perHalaman),
             'kasbon' => $layanan->daftarKasbonTerpaginasi($filter, $perHalaman),
+            'komponen_supir' => $layanan->komponenSupirTerpaginasi($filter, $perHalaman),
             'biaya', 'biaya_operasional' => $layanan->barisBiayaOperasionalTerpaginasi($periode, $filter, $perHalaman),
             'ritase' => $lintasPeriode
                 ? $layanan->barisRitaseRentangTanggalTerpaginasi($tanggalDari, $tanggalSampai, $filter, $perHalaman)

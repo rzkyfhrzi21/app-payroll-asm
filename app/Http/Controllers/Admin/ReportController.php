@@ -483,7 +483,7 @@ class ReportController extends Controller
 
     public function unduhTemplateMigrasi(ExcelPayrollMigrationService $layananMigrasi): \Symfony\Component\HttpFoundation\BinaryFileResponse|StreamedResponse
     {
-        $berkasXlsx = base_path('dokumen/CONTOH FORMAT Slip Gaji.xlsx');
+        $berkasXlsx = resource_path('templates/CONTOH FORMAT Slip Gaji.xlsx');
         if (is_file($berkasXlsx)) {
             return response()->download($berkasXlsx, 'Template_Kosong_Slip_Gaji.xlsx');
         }
@@ -495,7 +495,7 @@ class ReportController extends Controller
     {
         // Berkas contoh HARUS berisi data supaya bisa langsung diuji unggah,
         // berbeda dari template kosong pada unduhTemplateMigrasi().
-        $berkasXlsx = base_path('dokumen/DUMMY Slip Gaji.xlsx');
+        $berkasXlsx = resource_path('templates/DUMMY Slip Gaji.xlsx');
         if (is_file($berkasXlsx)) {
             return response()->download($berkasXlsx, 'CONTOH_FORMAT_Slip_Gaji.xlsx');
         }
