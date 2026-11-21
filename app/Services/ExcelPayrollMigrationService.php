@@ -387,7 +387,7 @@ class ExcelPayrollMigrationService
         $daftarAnomali = [];
 
         // Data master dimuat SEKALI ke memori. Tanpa ini setiap blok slip menembak
-        // database terpisah (TiDB Cloud) sehingga berkas besar melewati batas 30 detik.
+        // database satu per satu sehingga berkas besar melewati batas 30 detik.
         $petaPeriodeGaji = PeriodeGaji::query()->get(['kode', 'status'])->keyBy('kode');
         $petaKaryawan = Karyawan::query()->with('pengguna')->get()->keyBy('nama_lengkap');
         $petaTruk = Truk::query()->with('jenisTruk')->get()->keyBy('nomor_polisi');
